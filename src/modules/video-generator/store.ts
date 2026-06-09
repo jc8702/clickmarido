@@ -1,19 +1,25 @@
 import { create } from 'zustand';
-import { Project, Briefing, VideoTemplate } from '@/types';
+import { Project, Briefing, VideoTemplate, ProjectImage, GeneratedVideo } from '@/types';
 import { AIService } from '@/services/ai/ai-service';
+import { VideoGenerator as LocalVideoGenerator } from '@/services/video/video-generator';
+import { supabaseService } from '@/services/supabase/supabase-client';
 
 interface VideoStudioState {
   projects: Project[];
   templates: VideoTemplate[];
   currentProject: Project | null;
   isLoading: boolean;
+  isGeneratingVideo: boolean;
   error: string | null;
-  
+
   createProject: (briefing: Briefing) => Promise<Project>;
   generateContentForProject: (projectId: string) => Promise<void>;
   setCurrentProject: (project: Project | null) => void;
   deleteProject: (projectId: string) => void;
   loadInitialData: () => void;
+  addImage: (projectId: string, image: ProjectImage) => void;
+  removeImage: (projectId: string, imageId: string) => void;
+  generateVideo: (projectId: string) => Promise<void>;
 }
 
 const TEMPLATE_CLICK_MARIDO_INSTITUCIONAL: VideoTemplate = {
@@ -124,18 +130,33 @@ const INITIAL_PROJECT_MOCK: Project = {
     instagramCaption: 'Chega de adiar os consertos da sua casa! 🛠️🏠\n\nCom o Click Marido, você resolve tudo o que precisa em uma única visita. Trocamos torneiras, chuveiros, tomadas, montamos móveis e muito mais. Sempre com profissional de confiança, preço justo e orçamento prático via WhatsApp.',
     whatsappCta: '📲 Clique no link da bio e fale conosco pelo WhatsApp agora mesmo!',
     hashtags: ['#ClickMarido', '#ReparosResidenciais', '#MaridoDeAluguel', '#DonaDeCasa', '#LarDoceLar', '#ConsertosRapidos']
-  }
+  },
+  images: [],
+  video: undefined
 };
+
+function getSavedApiKey(): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  try {
+    return localStorage.getItem('clickmarido_gemini_key') || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function syncToSupabase(projects: Project[]) {
+  projects.forEach(p => supabaseService.saveProject(p).catch(() => {}));
+}
 
 export const useVideoStudioStore = create<VideoStudioState>((set, get) => ({
   projects: [],
   templates: [TEMPLATE_CLICK_MARIDO_INSTITUCIONAL],
   currentProject: null,
   isLoading: false,
+  isGeneratingVideo: false,
   error: null,
 
   loadInitialData: () => {
-    // Carrega dados iniciais fictícios para visualização premium imediata
     const stored = localStorage.getItem('clickmarido_projects');
     if (stored) {
       try {
@@ -146,30 +167,33 @@ export const useVideoStudioStore = create<VideoStudioState>((set, get) => ({
     } else {
       set({ projects: [INITIAL_PROJECT_MOCK] });
       localStorage.setItem('clickmarido_projects', JSON.stringify([INITIAL_PROJECT_MOCK]));
+      syncToSupabase([INITIAL_PROJECT_MOCK]);
     }
   },
 
   createProject: async (briefing: Briefing): Promise<Project> => {
     set({ isLoading: true, error: null });
-    
+
     const newProject: Project = {
       id: `proj-${Date.now()}`,
       name: `${briefing.companyName} - ${briefing.videoObjective.slice(0, 25)}...`,
       createdAt: new Date().toISOString(),
       status: 'generating',
-      briefing
+      briefing,
+      images: [],
+      video: undefined
     };
 
     set(state => {
       const updated = [newProject, ...state.projects];
       localStorage.setItem('clickmarido_projects', JSON.stringify(updated));
-      return { 
+      syncToSupabase(updated);
+      return {
         projects: updated,
         currentProject: newProject
       };
     });
 
-    // Inicia geração assíncrona
     setTimeout(async () => {
       await get().generateContentForProject(newProject.id);
     }, 200);
@@ -188,26 +212,49 @@ export const useVideoStudioStore = create<VideoStudioState>((set, get) => ({
     }));
 
     try {
-      // 1. Gera o Roteiro
-      const script = await AIService.generateScript(project.briefing);
-      
-      // 2. Gera o Storyboard
-      const storyboard = await AIService.generateStoryboard(project.briefing, script);
-      
-      // 3. Gera os Prompts de Vídeo
-      const prompts = await AIService.generateVideoPrompts(project.briefing, storyboard);
-      
-      // 4. Gera a Legenda
-      const caption = await AIService.generateCaption(project.briefing, script);
+      const apiKey = getSavedApiKey();
+      let script, storyboard, prompts, caption;
+
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            briefing: project.briefing,
+            apiKey: apiKey || undefined
+          })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            script = result.data.script;
+            storyboard = result.data.storyboard;
+            prompts = result.data.prompts;
+            caption = result.data.caption;
+          } else {
+            throw new Error(result.error || 'API route failed');
+          }
+        } else {
+          throw new Error(`API responded with ${response.status}`);
+        }
+      } catch (apiError) {
+        console.warn('API route unavailable, using local AIService:', apiError);
+        script = await AIService.generateScript(project.briefing, apiKey);
+        storyboard = await AIService.generateStoryboard(project.briefing, script, apiKey);
+        prompts = await AIService.generateVideoPrompts(project.briefing, storyboard, apiKey);
+        caption = await AIService.generateCaption(project.briefing, script, apiKey);
+      }
 
       set(state => {
-        const updatedProjects = state.projects.map(p => 
-          p.id === projectId 
-            ? { ...p, script, storyboard, prompts, caption, status: 'completed' as const } 
+        const updatedProjects = state.projects.map(p =>
+          p.id === projectId
+            ? { ...p, script, storyboard, prompts, caption, status: 'completed' as const }
             : p
         );
         localStorage.setItem('clickmarido_projects', JSON.stringify(updatedProjects));
-        
+        syncToSupabase(updatedProjects);
+
         const nextCurrent = updatedProjects.find(p => p.id === projectId) || null;
         return {
           projects: updatedProjects,
@@ -233,10 +280,118 @@ export const useVideoStudioStore = create<VideoStudioState>((set, get) => ({
     set(state => {
       const updated = state.projects.filter(p => p.id !== projectId);
       localStorage.setItem('clickmarido_projects', JSON.stringify(updated));
+      syncToSupabase(updated);
       return {
         projects: updated,
         currentProject: state.currentProject?.id === projectId ? null : state.currentProject
       };
     });
+  },
+
+  addImage: (projectId: string, image: ProjectImage) => {
+    set(state => {
+      const updatedProjects = state.projects.map(p => {
+        if (p.id !== projectId) return p;
+        return { ...p, images: [...(p.images || []), image] };
+      });
+      localStorage.setItem('clickmarido_projects', JSON.stringify(updatedProjects));
+      syncToSupabase(updatedProjects);
+      return {
+        projects: updatedProjects,
+        currentProject: state.currentProject?.id === projectId
+          ? updatedProjects.find(p => p.id === projectId) || null
+          : state.currentProject
+      };
+    });
+  },
+
+  removeImage: (projectId: string, imageId: string) => {
+    set(state => {
+      const updatedProjects = state.projects.map(p => {
+        if (p.id !== projectId) return p;
+        return { ...p, images: (p.images || []).filter(img => img.id !== imageId) };
+      });
+      localStorage.setItem('clickmarido_projects', JSON.stringify(updatedProjects));
+      syncToSupabase(updatedProjects);
+      return {
+        projects: updatedProjects,
+        currentProject: state.currentProject?.id === projectId
+          ? updatedProjects.find(p => p.id === projectId) || null
+          : state.currentProject
+      };
+    });
+  },
+
+  generateVideo: async (projectId: string) => {
+    const project = get().projects.find(p => p.id === projectId);
+    if (!project || !project.script || !project.storyboard) return;
+
+    set({ isGeneratingVideo: true, error: null });
+
+    set(state => ({
+      projects: state.projects.map(p =>
+        p.id === projectId
+          ? { ...p, video: { url: '', prompt: '', status: 'pending' as const, createdAt: new Date().toISOString() } as GeneratedVideo }
+          : p
+      ),
+      currentProject: state.currentProject?.id === projectId
+        ? { ...state.currentProject, video: { url: '', prompt: '', status: 'pending' as const, createdAt: new Date().toISOString() } as GeneratedVideo }
+        : state.currentProject
+    }));
+
+    try {
+      const generator = new LocalVideoGenerator();
+      const blob = await generator.generate(
+        project.images || [],
+        project.script,
+        project.storyboard
+      );
+
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+
+        set(state => {
+          const updatedProjects = state.projects.map(p =>
+            p.id === projectId
+              ? {
+                  ...p,
+                  video: {
+                    url,
+                    prompt: project.script?.hook || '',
+                    status: 'completed' as const,
+                    createdAt: new Date().toISOString()
+                  }
+                }
+              : p
+          );
+          localStorage.setItem('clickmarido_projects', JSON.stringify(updatedProjects));
+          syncToSupabase(updatedProjects);
+          return {
+            projects: updatedProjects,
+            currentProject: state.currentProject?.id === projectId
+              ? updatedProjects.find(p => p.id === projectId) || null
+              : state.currentProject,
+            isGeneratingVideo: false
+          };
+        });
+      } else {
+        throw new Error('Falha ao gerar vídeo');
+      }
+    } catch (err: unknown) {
+      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : 'Falha ao gerar vídeo';
+      set(state => ({
+        error: errorMessage,
+        isGeneratingVideo: false,
+        projects: state.projects.map(p =>
+          p.id === projectId
+            ? { ...p, video: undefined }
+            : p
+        ),
+        currentProject: state.currentProject?.id === projectId
+          ? { ...state.currentProject, video: undefined }
+          : state.currentProject
+      }));
+    }
   }
 }));

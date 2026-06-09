@@ -36,6 +36,20 @@ export interface Caption {
   hashtags: string[];
 }
 
+export interface ProjectImage {
+  id: string;
+  dataUrl: string;
+  name: string;
+  scene?: string;
+}
+
+export interface GeneratedVideo {
+  url: string;
+  prompt: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  createdAt: string;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -45,6 +59,8 @@ export interface Project {
   storyboard?: StoryboardItem[];
   prompts?: VideoPromptItem[];
   caption?: Caption;
+  images?: ProjectImage[];
+  video?: GeneratedVideo;
   status: 'draft' | 'generating' | 'completed' | 'failed';
 }
 

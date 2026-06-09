@@ -1,6 +1,5 @@
 import { Briefing, Script, StoryboardItem, VideoPromptItem, Caption } from '@/types';
 
-// Mock Generator para simular a geração caso as chaves de API não estejam configuradas
 const generateMockScript = (briefing: Briefing): Script => {
   const serviceText = briefing.services.length > 0 ? briefing.services.join(', ') : 'reparos residenciais';
   return {
@@ -89,65 +88,46 @@ const generateMockCaption = (briefing: Briefing, _script: Script): Caption => {
 };
 
 export class AIService {
-  private static getApiKey(provider: 'gemini' | 'claude' | 'openrouter'): string | undefined {
-    if (typeof window === 'undefined') {
-      if (provider === 'gemini') return process.env.GEMINI_API_KEY;
-      if (provider === 'claude') return process.env.CLAUDE_API_KEY;
-      return process.env.OPENROUTER_API_KEY;
+  private static resolveApiKey(providedKey?: string): string | undefined {
+    if (providedKey) return providedKey;
+    if (typeof window === 'undefined') return process.env.GEMINI_API_KEY;
+    try {
+      return localStorage.getItem('clickmarido_gemini_key') || undefined;
+    } catch {
+      return undefined;
     }
-    return undefined;
   }
 
-  // Helper para chamar a API caso as chaves estejam configuradas
-  private static async callAI(prompt: string, provider: 'gemini' | 'claude' | 'openrouter' = 'gemini'): Promise<string> {
-    const key = this.getApiKey(provider);
-    if (!key) {
-      throw new Error('API Key não configurada');
-    }
-
-    // Exemplo de integração usando fetch direto com a API selecionada
-    if (provider === 'gemini') {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+  private static async callGemini(prompt: string, apiKey: string): Promise<string> {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: 'application/json' }
+          generationConfig: {
+            responseMimeType: 'application/json',
+            temperature: 0.7,
+          }
         })
-      });
-      if (!response.ok) {
-        throw new Error(`Erro na API do Gemini: ${response.statusText}`);
       }
-      const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    }
-
-    // Fallback genérico para OpenRouter
-    const openRouterKey = this.getApiKey('openrouter') || key;
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openRouterKey}`,
-        'HTTP-Referer': 'https://clickmarido.com.br',
-        'X-Title': 'Click Marido Marketing Studio'
-      },
-      body: JSON.stringify({
-        model: provider === 'claude' ? 'anthropic/claude-3-haiku' : 'google/gemini-flash-1.5',
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
+    );
 
     if (!response.ok) {
-      throw new Error(`Erro na API do OpenRouter: ${response.statusText}`);
+      const errorBody = await response.text().catch(() => '');
+      throw new Error(`Gemini API error (${response.status}): ${response.statusText} ${errorBody}`);
     }
+
     const data = await response.json();
-    return data.choices?.[0]?.message?.content || '';
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   }
 
-  static async generateScript(briefing: Briefing): Promise<Script> {
-    try {
-      const prompt = `Você é um copywriter profissional de anúncios de alta conversão para Instagram Reels.
+  static async generateScript(briefing: Briefing, apiKey?: string): Promise<Script> {
+    const key = this.resolveApiKey(apiKey);
+    if (key) {
+      try {
+        const prompt = `Você é um copywriter profissional de anúncios de alta conversão para Instagram Reels.
 Com base no seguinte briefing, gere um roteiro de vídeo estruturado exatamente como JSON, sem comentários ou formatação Markdown fora do bloco JSON.
 O JSON deve ter exatamente esta estrutura:
 {
@@ -167,20 +147,22 @@ Briefing:
 - Objetivo do vídeo: ${briefing.videoObjective}
 - Duração estimada: ${briefing.duration} segundos.`;
 
-      const responseText = await this.callAI(prompt, 'gemini');
-      // Tenta fazer parse do JSON retornado da IA
-      const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-      return JSON.parse(cleanJson) as Script;
-    } catch (error) {
-      console.warn('Usando Mock de Fallback para Roteiro:', error);
-      // Retorna mock local se falhar ou se não tiver API key
-      return new Promise((resolve) => setTimeout(() => resolve(generateMockScript(briefing)), 1200));
+        const responseText = await this.callGemini(prompt, key);
+        const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+        return JSON.parse(cleanJson) as Script;
+      } catch (error) {
+        console.warn('Gemini API error for script, falling back to mock:', error);
+      }
     }
+
+    return new Promise((resolve) => setTimeout(() => resolve(generateMockScript(briefing)), 1200));
   }
 
-  static async generateStoryboard(briefing: Briefing, script: Script): Promise<StoryboardItem[]> {
-    try {
-      const prompt = `Com base no roteiro gerado e no briefing, crie um storyboard detalhado para cada cena do vídeo de ${briefing.duration} segundos.
+  static async generateStoryboard(briefing: Briefing, script: Script, apiKey?: string): Promise<StoryboardItem[]> {
+    const key = this.resolveApiKey(apiKey);
+    if (key) {
+      try {
+        const prompt = `Com base no roteiro gerado e no briefing, crie um storyboard detalhado para cada cena do vídeo de ${briefing.duration} segundos.
 Retorne um JSON contendo uma lista de objetos representando as cenas. Responda apenas com o JSON puro, sem marcações markdown adicionais.
 O formato deve ser exatamente:
 [
@@ -200,18 +182,22 @@ Roteiro:
 - Cena 3 (Resultado): ${script.scene3}
 - CTA: ${script.cta}`;
 
-      const responseText = await this.callAI(prompt, 'gemini');
-      const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-      return JSON.parse(cleanJson) as StoryboardItem[];
-    } catch (error) {
-      console.warn('Usando Mock de Fallback para Storyboard:', error);
-      return new Promise((resolve) => setTimeout(() => resolve(generateMockStoryboard(briefing, script)), 1000));
+        const responseText = await this.callGemini(prompt, key);
+        const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+        return JSON.parse(cleanJson) as StoryboardItem[];
+      } catch (error) {
+        console.warn('Gemini API error for storyboard, falling back to mock:', error);
+      }
     }
+
+    return new Promise((resolve) => setTimeout(() => resolve(generateMockStoryboard(briefing, script)), 1000));
   }
 
-  static async generateVideoPrompts(briefing: Briefing, storyboard: StoryboardItem[]): Promise<VideoPromptItem[]> {
-    try {
-      const prompt = `Você é um engenheiro de prompts de IA de vídeo especialista em gerar prompts cinematográficos altamente detalhados para geradores de vídeo como Gemini Veo, Kling, Runway Gen-2 ou Sora.
+  static async generateVideoPrompts(briefing: Briefing, storyboard: StoryboardItem[], apiKey?: string): Promise<VideoPromptItem[]> {
+    const key = this.resolveApiKey(apiKey);
+    if (key) {
+      try {
+        const prompt = `Você é um engenheiro de prompts de IA de vídeo especialista em gerar prompts cinematográficos altamente detalhados para geradores de vídeo como Gemini Veo, Kling, Runway Gen-2 ou Sora.
 Com base nas seguintes cenas de storyboard, retorne um array JSON com os prompts otimizados para IA de vídeo para cada uma.
 Gere termos em inglês para melhor compatibilidade com os modelos de vídeo de IA.
 Estrutura do JSON a ser retornado (apenas o JSON puro):
@@ -226,18 +212,22 @@ Estrutura do JSON a ser retornado (apenas o JSON puro):
 Storyboard:
 ${JSON.stringify(storyboard, null, 2)}`;
 
-      const responseText = await this.callAI(prompt, 'gemini');
-      const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-      return JSON.parse(cleanJson) as VideoPromptItem[];
-    } catch (error) {
-      console.warn('Usando Mock de Fallback para Prompts de Vídeo:', error);
-      return new Promise((resolve) => setTimeout(() => resolve(generateMockVideoPrompts(briefing, storyboard)), 800));
+        const responseText = await this.callGemini(prompt, key);
+        const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+        return JSON.parse(cleanJson) as VideoPromptItem[];
+      } catch (error) {
+        console.warn('Gemini API error for video prompts, falling back to mock:', error);
+      }
     }
+
+    return new Promise((resolve) => setTimeout(() => resolve(generateMockVideoPrompts(briefing, storyboard)), 800));
   }
 
-  static async generateCaption(briefing: Briefing, script: Script): Promise<Caption> {
-    try {
-      const prompt = `Gere uma legenda de Instagram profissional e persuasiva com base no roteiro do vídeo.
+  static async generateCaption(briefing: Briefing, script: Script, apiKey?: string): Promise<Caption> {
+    const key = this.resolveApiKey(apiKey);
+    if (key) {
+      try {
+        const prompt = `Gere uma legenda de Instagram profissional e persuasiva com base no roteiro do vídeo.
 Retorne um objeto JSON contendo o texto da legenda, um CTA direto para o WhatsApp e hashtags relevantes.
 Retorne apenas o JSON puro, sem markdown extra.
 Estrutura:
@@ -252,12 +242,14 @@ Roteiro:
 - Corpo: ${script.scene1} | ${script.scene2} | ${script.scene3}
 - CTA original: ${script.cta}`;
 
-      const responseText = await this.callAI(prompt, 'gemini');
-      const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-      return JSON.parse(cleanJson) as Caption;
-    } catch (error) {
-      console.warn('Usando Mock de Fallback para Legenda:', error);
-      return new Promise((resolve) => setTimeout(() => resolve(generateMockCaption(briefing, script)), 500));
+        const responseText = await this.callGemini(prompt, key);
+        const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+        return JSON.parse(cleanJson) as Caption;
+      } catch (error) {
+        console.warn('Gemini API error for caption, falling back to mock:', error);
+      }
     }
+
+    return new Promise((resolve) => setTimeout(() => resolve(generateMockCaption(briefing, script)), 500));
   }
 }

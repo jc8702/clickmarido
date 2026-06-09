@@ -5,7 +5,7 @@ import { Briefing } from '@/types';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { briefing } = body as { briefing: Briefing };
+    const { briefing, apiKey } = body as { briefing: Briefing; apiKey?: string };
 
     if (!briefing) {
       return NextResponse.json(
@@ -14,37 +14,21 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1. Gera o Roteiro
-    const script = await AIService.generateScript(briefing);
-
-    // 2. Gera o Storyboard
-    const storyboard = await AIService.generateStoryboard(briefing, script);
-
-    // 3. Gera os Prompts de Vídeo
-    const prompts = await AIService.generateVideoPrompts(briefing, storyboard);
-
-    // 4. Gera a Legenda
-    const caption = await AIService.generateCaption(briefing, script);
+    const script = await AIService.generateScript(briefing, apiKey);
+    const storyboard = await AIService.generateStoryboard(briefing, script, apiKey);
+    const prompts = await AIService.generateVideoPrompts(briefing, storyboard, apiKey);
+    const caption = await AIService.generateCaption(briefing, script, apiKey);
 
     return NextResponse.json({
       success: true,
-      data: {
-        script,
-        storyboard,
-        prompts,
-        caption
-      },
+      data: { script, storyboard, prompts, caption },
       error: null
     });
   } catch (error: unknown) {
     console.error('Erro na API de geração:', error);
     const errorMessage = error instanceof Error ? error.message : 'Falha ao processar conteúdo com IA';
     return NextResponse.json(
-      {
-        success: false,
-        data: null,
-        error: errorMessage
-      },
+      { success: false, data: null, error: errorMessage },
       { status: 500 }
     );
   }
