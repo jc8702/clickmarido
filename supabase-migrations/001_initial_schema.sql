@@ -1,13 +1,12 @@
 -- ============================================================
--- Click Marido Motion Studio - Schema Completo
--- Execute no SQL Editor do Supabase
+-- MIGRATION 001: Click Marido Motion Studio - Schema Completo
 -- ============================================================
 
 -- Extensões
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================================
--- PROFILES (extensão do auth.users do Supabase)
+-- PROFILES (extensão do auth.users)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -21,8 +20,18 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 -- ============================================================
--- PROJECTS (principal)
+-- PROJECTS (evolução da tabela existente)
 -- ============================================================
+ALTER TABLE IF EXISTS projects ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
+ALTER TABLE IF EXISTS projects ADD COLUMN IF NOT EXISTS timeline JSONB DEFAULT '{"tracks": [], "duration": 0}'::jsonb;
+ALTER TABLE IF EXISTS projects ADD COLUMN IF NOT EXISTS captions JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE IF EXISTS projects ADD COLUMN IF NOT EXISTS captions_srt TEXT;
+ALTER TABLE IF EXISTS projects ADD COLUMN IF NOT EXISTS captions_vtt TEXT;
+ALTER TABLE IF EXISTS projects ADD COLUMN IF NOT EXISTS render_config JSONB DEFAULT '{"resolution": "1080p", "codec": "h264", "format": "mp4"}'::jsonb;
+ALTER TABLE IF EXISTS projects ADD COLUMN IF NOT EXISTS narration JSONB;
+ALTER TABLE IF EXISTS projects ADD COLUMN IF NOT EXISTS total_cost_cents INT DEFAULT 0;
+
+-- Se a tabela não existir ainda, cria do zero
 CREATE TABLE IF NOT EXISTS public.projects (
   id TEXT PRIMARY KEY,
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -84,6 +93,24 @@ CREATE INDEX IF NOT EXISTS idx_project_images_project ON public.project_images(p
 -- ============================================================
 -- JOBS (processamento assíncrono)
 -- ============================================================
+DO $$ BEGIN
+  CREATE TYPE job_type AS ENUM (
+    'image_analysis', 'motion_generation', 'tts_generation',
+    'lipsync', 'caption_generation', 'video_render',
+    'composite_final'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE job_status AS ENUM (
+    'queued', 'processing', 'completed', 'failed', 'cancelled'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
 CREATE TABLE IF NOT EXISTS public.jobs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   project_id TEXT REFERENCES public.projects(id) ON DELETE CASCADE,
@@ -132,7 +159,7 @@ CREATE TABLE IF NOT EXISTS public.voice_presets (
 );
 
 -- ============================================================
--- USAGE LOG (rastreamento de custos)
+-- USAGE LOG
 -- ============================================================
 CREATE TABLE IF NOT EXISTS public.usage_log (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -151,7 +178,7 @@ CREATE INDEX IF NOT EXISTS idx_usage_user ON public.usage_log(user_id);
 CREATE INDEX IF NOT EXISTS idx_usage_created ON public.usage_log(created_at DESC);
 
 -- ============================================================
--- TRIGGERS
+-- TRIGGER: updated_at
 -- ============================================================
 CREATE OR REPLACE FUNCTION update_updated_at()
 RETURNS TRIGGER AS $$
@@ -174,7 +201,7 @@ CREATE TRIGGER jobs_updated_at
   EXECUTE FUNCTION update_updated_at();
 
 -- ============================================================
--- ÍNDICES
+-- ÍNDICES ADICIONAIS
 -- ============================================================
 CREATE INDEX IF NOT EXISTS idx_projects_user_id ON public.projects(user_id);
 CREATE INDEX IF NOT EXISTS idx_projects_status ON public.projects(status);

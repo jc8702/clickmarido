@@ -12,7 +12,9 @@
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
     "@supabase/supabase-js": "^2.108.1",
+    "bullmq": "^5.78.0",
     "clsx": "^2.1.1",
+    "ioredis": "^5.11.1",
     "lucide-react": "^1.17.0",
     "next": "^16.3.0-canary.46",
     "react": "19.2.7",
