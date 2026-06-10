@@ -37,7 +37,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
   const resolvedParams = use(params);
   const { id } = resolvedParams;
 
-  const { projects, deleteProject, generateContentForProject, addImage, removeImage, generateVideo, isGeneratingVideo } = useVideoStudioStore();
+  const { projects, deleteProject, generateContentForProject, addImage, removeImage, generateVideo, generateVideoIA, isGeneratingVideo } = useVideoStudioStore();
   const project = projects.find(p => p.id === id);
 
   const [activeTab, setActiveTab] = useState('script');
@@ -46,6 +46,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
+  const [selectedSceneForUpload, setSelectedSceneForUpload] = useState<string | null>(null);
 
   useEffect(() => {
     const onProgress = (e: Event) => {
@@ -108,6 +109,8 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
       return;
     }
 
+    const targetScene = selectedSceneForUpload || `Imagem ${(project.images?.length || 0) + 1}`;
+
     const reader = new FileReader();
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
@@ -115,20 +118,26 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
         id: `img-${Date.now()}`,
         dataUrl,
         name: file.name,
-        scene: project.storyboard?.[project.images?.length || 0]?.scene || `Imagem ${(project.images?.length || 0) + 1}`
+        scene: targetScene
       });
       setUploading(false);
+      setSelectedSceneForUpload(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
     };
     reader.onerror = () => {
       alert('Erro ao ler a imagem');
       setUploading(false);
+      setSelectedSceneForUpload(null);
     };
     reader.readAsDataURL(file);
   };
 
   const handleGenerateVideo = async () => {
     await generateVideo(project.id);
+  };
+
+  const handleGenerateVideoIA = async () => {
+    await generateVideoIA(project.id);
   };
 
   const loadingStepsText = [
@@ -392,37 +401,60 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
             <div className="bg-zinc-900/40 p-4 rounded-lg border border-zinc-900 flex items-start gap-3">
               <Upload className="w-5 h-5 text-blue-500 mt-0.5" />
               <div className="space-y-1">
-                <h4 className="text-sm font-bold text-white">Imagens de Referência</h4>
+                <h4 className="text-sm font-bold text-white">Upload de Fotos Mapeadas por Cena</h4>
                 <p className="text-xs text-zinc-400">
-                  Faça upload de fotos dos ambientes, produtos ou serviços para usar como referência na geração do vídeo. Máximo 5MB por imagem.
+                  Associe cada imagem a uma cena específica do Storyboard para gerar uma narrativa visual perfeita e sem repetição.
                 </p>
               </div>
             </div>
 
-            <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
-              {project.images?.map((img) => (
-                <div key={img.id} className="relative group rounded-lg overflow-hidden border border-zinc-800 bg-zinc-950 aspect-[4/3]">
-                  <img src={img.dataUrl} alt={img.name} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <Button variant="destructive" size="icon" className="w-8 h-8" onClick={() => removeImage(project.id, img.id)}>
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                    <p className="text-xxs text-zinc-300 truncate">{img.name}</p>
-                  </div>
-                </div>
-              ))}
-
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="relative rounded-lg border-2 border-dashed border-zinc-800 hover:border-blue-500/50 bg-zinc-950 aspect-[4/3] flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors"
-              >
-                <Upload className="w-6 h-6 text-zinc-500" />
-                <span className="text-xs text-zinc-500 font-medium">
-                  {uploading ? 'Carregando...' : 'Adicionar Imagem'}
-                </span>
-              </div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {project.storyboard?.map((item, idx) => {
+                const img = project.images?.find(i => i.scene === item.scene);
+                return (
+                  <Card key={idx} className="border-zinc-900 bg-zinc-950/40 flex flex-col justify-between overflow-hidden">
+                    <CardHeader className="pb-3 bg-zinc-900/20 border-b border-zinc-900/50">
+                      <div className="flex justify-between items-center">
+                        <Badge variant="outline" className="text-blue-400 border-blue-500/20 font-mono text-[10px]">{item.scene}</Badge>
+                        <span className="text-[10px] text-zinc-500 font-bold">{item.duration}</span>
+                      </div>
+                      <CardDescription className="text-xxs text-zinc-400 line-clamp-2 mt-1">
+                        {item.action}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-4 flex-1 flex flex-col justify-center min-h-[180px]">
+                      {img ? (
+                        <div className="relative group rounded-md overflow-hidden border border-zinc-800 bg-zinc-950 aspect-[4/3] w-full">
+                          <img src={img.dataUrl} alt={img.name} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <Button variant="destructive" size="sm" className="flex items-center gap-1" onClick={() => removeImage(project.id, img.id)}>
+                              <X className="w-3.5 h-3.5" />
+                              Remover
+                            </Button>
+                          </div>
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                            <p className="text-xxs text-zinc-300 truncate">{img.name}</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() => {
+                            setSelectedSceneForUpload(item.scene);
+                            fileInputRef.current?.click();
+                          }}
+                          className="relative rounded-md border-2 border-dashed border-zinc-800 hover:border-blue-500/50 bg-zinc-950/60 aspect-[4/3] flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors w-full"
+                        >
+                          <Upload className="w-6 h-6 text-zinc-500" />
+                          <span className="text-xs text-zinc-400 font-medium">
+                            {uploading && selectedSceneForUpload === item.scene ? 'Enviando...' : 'Carregar Imagem'}
+                          </span>
+                          <span className="text-[10px] text-zinc-600 text-center px-4">Ideal: foto do serviço correspondente</span>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
 
             <input
@@ -432,12 +464,6 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
               className="hidden"
               onChange={handleImageUpload}
             />
-
-            {(!project.images || project.images.length === 0) && (
-              <div className="text-center p-8 text-zinc-500 text-sm">
-                Nenhuma imagem adicionada ainda. Faça upload de fotos para usar como referência na geração do vídeo.
-              </div>
-            )}
           </TabsContent>
 
           {/* TAB: VÍDEO */}
@@ -445,74 +471,86 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
             <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 p-4 rounded-lg border border-purple-500/20 flex items-start gap-3">
               <Film className="w-5 h-5 text-purple-500 mt-0.5" />
               <div className="space-y-1">
-                <h4 className="text-sm font-bold text-white">Gerar Vídeo Automaticamente</h4>
-                <p className="text-xs text-zinc-400">
-                  O vídeo é gerado diretamente no seu navegador usando as imagens de referência + roteiro. Sem necessidade de API externa.
-                  {(!project.images || project.images.length === 0) && ' Adicione imagens na aba "Imagens" primeiro.'}
+                <h4 className="text-sm font-bold text-white">Geração de Reels Profissionais</h4>
+                <p className="text-xs text-zinc-400 font-normal">
+                  Escolha entre gerar a animação cinematográfica completa usando Inteligência Artificial (locução realista, movimentos de câmera e sincronização labial) ou renderizar uma prévia local rápida direto no seu navegador.
+                  {(!project.images || project.images.length === 0) && ' Adicione imagens na aba "Imagens" antes de prosseguir.'}
                 </p>
               </div>
             </div>
 
             {project.video?.status === 'completed' && project.video.url ? (
-              <Card className="border-zinc-900 overflow-hidden">
-                <div className="aspect-video bg-zinc-950">
+              <Card className="border-zinc-900 overflow-hidden bg-zinc-950">
+                <div className="aspect-[9/16] max-w-[340px] mx-auto bg-zinc-950 border border-zinc-900 rounded-lg overflow-hidden shadow-2xl relative">
                   <video
                     src={project.video.url}
                     controls
-                    className="w-full h-full"
+                    className="w-full h-full object-cover"
                     poster=""
                   >
                     Seu navegador não suporta vídeo.
                   </video>
                 </div>
-                <CardContent className="p-4 space-y-3">
+                <CardContent className="p-4 space-y-3 mt-4 border-t border-zinc-900">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-sm font-bold text-white">Vídeo Gerado</p>
-                      <p className="text-xs text-zinc-400">Reproduza ou faça download</p>
+                      <p className="text-sm font-bold text-white">Reels Concluído</p>
+                      <p className="text-xs text-zinc-400">Vídeo gerado via inteligência artificial com áudio e movimento</p>
                     </div>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-xs"
+                        className="text-xs font-semibold cursor-pointer"
                         onClick={() => {
                           const a = document.createElement('a');
                           a.href = project.video!.url;
-                          a.download = `clickmarido-${project.id.slice(0, 8)}.webm`;
+                          a.download = `clickmarido-${project.id.slice(0, 8)}.mp4`;
                           a.click();
                         }}
                       >
                         <Download className="w-3.5 h-3.5 mr-1" />
-                        Download
+                        Download MP4
                       </Button>
                     </div>
                   </div>
-                  <Button size="sm" onClick={handleGenerateVideo} disabled={isGeneratingVideo} className="w-full">
-                    {isGeneratingVideo ? (
-                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Gerando...</>
-                    ) : (
-                      <><RefreshCw className="w-4 h-4 mr-2" />Regenerar Vídeo</>
-                    )}
-                  </Button>
+                  
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <Button size="sm" variant="default" onClick={handleGenerateVideoIA} disabled={isGeneratingVideo} className="w-full font-bold">
+                      {isGeneratingVideo ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processando...</>
+                      ) : (
+                        <><Sparkles className="w-4 h-4 mr-2" />Regenerar com IA</>
+                      )}
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={handleGenerateVideo} disabled={isGeneratingVideo} className="w-full font-bold">
+                      {isGeneratingVideo ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Gerando...</>
+                      ) : (
+                        <><RefreshCw className="w-4 h-4 mr-2" />Gerar Prévia Local</>
+                      )}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ) : isGeneratingVideo ? (
               <div className="flex flex-col items-center justify-center p-12 text-center space-y-6 border border-zinc-900 rounded-lg bg-zinc-900/10 min-h-[300px]">
-                <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
+                <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
                 <div className="space-y-2 max-w-md">
-                  <h3 className="text-lg font-bold text-white">Gerando Vídeo...</h3>
-                  <p className="text-sm text-zinc-400">
-                    Renderizando {project.images?.length || 0} imagem(ns) com o roteiro em 1080x1920.
+                  <h3 className="text-lg font-bold text-white">Processando na Fila do Servidor...</h3>
+                  <p className="text-sm text-zinc-400 leading-relaxed">
+                    Estamos criando a locução (ElevenLabs), gerando movimento das fotos (Google Veo 2.0), aplicando a sincronização de lábios (Wav2Lip) e mixando a trilha musical de fundo via FFmpeg.
+                  </p>
+                  <p className="text-xs text-amber-500 font-semibold font-mono animate-pulse">
+                    O pipeline assíncrono está ativo. Isso pode levar de 1 a 2 minutos. Fique à vontade para navegar em outras páginas.
                   </p>
                 </div>
                 <div className="w-full max-w-sm bg-zinc-800 h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-purple-500 to-blue-500 h-full rounded-full transition-all duration-300 ease-out"
-                    style={{ width: `${videoProgress}%` }}
+                    className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-full rounded-full animate-pulse"
+                    style={{ width: '100%' }}
                   ></div>
                 </div>
-                <p className="text-xs text-zinc-500">{videoProgress}%</p>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center p-12 text-center space-y-6 border border-zinc-900 rounded-lg bg-zinc-900/10 min-h-[300px]">
@@ -520,29 +558,45 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                   <Film className="w-8 h-8 text-purple-400" />
                 </div>
                 <div className="space-y-2 max-w-md">
-                  <h3 className="text-lg font-bold text-white">Vídeo ainda não gerado</h3>
-                  <p className="text-sm text-zinc-400">
+                  <h3 className="text-lg font-bold text-white">Pronto para Geração</h3>
+                  <p className="text-sm text-zinc-400 font-normal">
                     {project.images && project.images.length > 0
-                      ? `${project.images.length} imagem(ns) carregada(s). O vídeo será criado em formato vertical (1080x1920) com as imagens + texto do roteiro.`
-                      : 'Adicione imagens de referência na aba "Imagens" para gerar o vídeo com o roteiro.'}
+                      ? `${project.images.length} imagem(ns) carregada(s) e mapeada(s) às cenas do roteiro. Escolha um dos métodos de renderização abaixo:`
+                      : 'Adicione imagens de referência mapeadas por cena na aba "Imagens" para iniciar a geração do Reels.'}
                   </p>
                   {(project.images && project.images.length > 0) && (
-                    <div className="flex flex-wrap justify-center gap-2 mt-3">
+                    <div className="flex flex-wrap justify-center gap-2 mt-3 pb-2">
                       {project.images.map(img => (
-                        <img key={img.id} src={img.dataUrl} alt={img.name} className="w-12 h-12 object-cover rounded-md border border-zinc-800" />
+                        <div key={img.id} className="relative group">
+                          <img src={img.dataUrl} alt={img.name} className="w-12 h-12 object-cover rounded-md border border-zinc-800" />
+                          <Badge className="absolute -top-1.5 -right-1.5 text-[8px] px-1 py-0 bg-blue-600 scale-90">{img.scene?.split(' ')[1]}</Badge>
+                        </div>
                       ))}
                     </div>
                   )}
                 </div>
-                <Button
-                  size="lg"
-                  onClick={handleGenerateVideo}
-                  disabled={isGeneratingVideo || !project.images || project.images.length === 0}
-                  className="flex items-center gap-2 font-bold shadow-md shadow-purple-500/10"
-                >
-                  <Play className="w-5 h-5" />
-                  Gerar Vídeo Agora
-                </Button>
+                
+                <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md justify-center pt-2">
+                  <Button
+                    size="lg"
+                    onClick={handleGenerateVideoIA}
+                    disabled={isGeneratingVideo || !project.images || project.images.length === 0}
+                    className="flex items-center gap-2 font-bold shadow-lg shadow-blue-500/10 bg-blue-600 hover:bg-blue-500 text-white cursor-pointer w-full"
+                  >
+                    <Sparkles className="w-5 h-5 text-blue-200" />
+                    Gerar Reels Completo (IA)
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={handleGenerateVideo}
+                    disabled={isGeneratingVideo || !project.images || project.images.length === 0}
+                    className="flex items-center gap-2 font-bold text-zinc-300 border-zinc-800 cursor-pointer w-full"
+                  >
+                    <Play className="w-5 h-5" />
+                    Prévia Local Rápida (Mudo)
+                  </Button>
+                </div>
               </div>
             )}
           </TabsContent>

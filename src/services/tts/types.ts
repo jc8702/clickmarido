@@ -5,6 +5,7 @@ export interface TTSRequest {
   voice: VoiceConfig;
   speed?: number;
   pitch?: number;
+  apiKey?: string;
 }
 
 export interface PhonemeTiming {

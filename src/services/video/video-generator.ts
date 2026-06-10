@@ -51,20 +51,33 @@ export class VideoGenerator {
 
     recorder.start();
 
+    const storyboardScenes = _storyboard || [];
     const scenes = [
-      { text: script.hook, imageIdx: 0, duration: 5 },
-      { text: script.scene1, imageIdx: 1 % Math.max(images.length, 1), duration: 5 },
-      { text: script.scene2, imageIdx: 2 % Math.max(images.length, 1), duration: 5 },
-      { text: script.scene3, imageIdx: 3 % Math.max(images.length, 1), duration: 5 },
-      { text: script.cta, imageIdx: 4 % Math.max(images.length, 1), duration: 5 },
+      { text: script.hook, sceneName: storyboardScenes[0]?.scene || 'Cena 1 - O Gancho', duration: 5 },
+      { text: script.scene1, sceneName: storyboardScenes[1]?.scene || 'Cena 2 - A Dor', duration: 5 },
+      { text: script.scene2, sceneName: storyboardScenes[2]?.scene || 'Cena 3 - A Solução', duration: 5 },
+      { text: script.scene3, sceneName: storyboardScenes[3]?.scene || 'Cena 4 - O Trabalho', duration: 5 },
+      { text: script.cta, sceneName: storyboardScenes[4]?.scene || 'Cena 5 - CTA', duration: 5 },
     ];
 
     const totalFrames = scenes.reduce((sum, s) => sum + s.duration * this.options.fps, 0);
     let frameIndex = 0;
 
-    for (const scene of scenes) {
+    for (let idx = 0; idx < scenes.length; idx++) {
+      const scene = scenes[idx];
       const sceneFrames = scene.duration * this.options.fps;
-      const img = images[scene.imageIdx];
+      
+      // Busca a imagem mapeada para a cena específica
+      let img = images.find(i => i.scene === scene.sceneName);
+      
+      // Fallbacks
+      if (!img) {
+        img = images[idx];
+      }
+      if (!img) {
+        img = images[0];
+      }
+
       const imgEl = await this.loadImage(img?.dataUrl);
 
       for (let f = 0; f < sceneFrames; f++) {

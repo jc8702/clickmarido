@@ -22,7 +22,8 @@ export class ElevenLabsProvider implements ITTSProvider {
   }
 
   async generateSpeech(request: TTSRequest): Promise<TTSResult> {
-    if (!this.apiKey) {
+    const key = request.apiKey || this.apiKey;
+    if (!key) {
       throw new Error('ElevenLabs API key não configurada');
     }
 
@@ -30,7 +31,7 @@ export class ElevenLabsProvider implements ITTSProvider {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'xi-api-key': this.apiKey,
+        'xi-api-key': key,
       },
       body: JSON.stringify({
         text: request.text,

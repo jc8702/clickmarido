@@ -20,6 +20,7 @@ interface VideoStudioState {
   addImage: (projectId: string, image: ProjectImage) => void;
   removeImage: (projectId: string, imageId: string) => void;
   generateVideo: (projectId: string) => Promise<void>;
+  generateVideoIA: (projectId: string) => Promise<void>;
 }
 
 const TEMPLATE_CLICK_MARIDO_INSTITUCIONAL: VideoTemplate = {
@@ -392,6 +393,94 @@ export const useVideoStudioStore = create<VideoStudioState>((set, get) => ({
           ? { ...state.currentProject, video: undefined }
           : state.currentProject
       }));
+    }
+  },
+
+  generateVideoIA: async (projectId: string) => {
+    const project = get().projects.find(p => p.id === projectId);
+    if (!project || !project.script || !project.storyboard) return;
+
+    set({ isGeneratingVideo: true, error: null });
+
+    set(state => {
+      const updated = state.projects.map(p =>
+        p.id === projectId ? { ...p, status: 'generating' as const } : p
+      );
+      localStorage.setItem('clickmarido_projects', JSON.stringify(updated));
+      return {
+        projects: updated,
+        currentProject: state.currentProject?.id === projectId
+          ? { ...state.currentProject, status: 'generating' as const }
+          : state.currentProject
+      };
+    });
+
+    try {
+      const apiKey = localStorage.getItem('clickmarido_elevenlabs_key') || undefined;
+
+      const response = await fetch(`/api/projects/${projectId}/generate-ia-video`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `Falha ao iniciar geração por IA: HTTP ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Falha ao iniciar geração por IA');
+      }
+
+      const pollInterval = setInterval(async () => {
+        try {
+          const checkRes = await fetch(`/api/projects/${projectId}`);
+          if (checkRes.ok) {
+            const checkData = await checkRes.json();
+            if (checkData.success && checkData.data) {
+              const updatedProject = checkData.data as Project;
+              
+              if (updatedProject.status === 'completed' || updatedProject.status === 'failed') {
+                clearInterval(pollInterval);
+
+                set(state => {
+                  const updatedProjects = state.projects.map(p =>
+                    p.id === projectId ? updatedProject : p
+                  );
+                  localStorage.setItem('clickmarido_projects', JSON.stringify(updatedProjects));
+                  return {
+                    projects: updatedProjects,
+                    currentProject: state.currentProject?.id === projectId ? updatedProject : state.currentProject,
+                    isGeneratingVideo: false,
+                    error: updatedProject.status === 'failed' ? 'Geração de vídeo por IA falhou no worker' : null
+                  };
+                });
+              }
+            }
+          }
+        } catch (pollErr) {
+          console.error('[Polling] Erro ao verificar status do projeto:', pollErr);
+        }
+      }, 4000);
+
+    } catch (err: unknown) {
+      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : 'Erro na geração de vídeo por IA';
+      set(state => {
+        const rollbackProjects = state.projects.map(p =>
+          p.id === projectId ? { ...p, status: 'completed' as const } : p
+        );
+        return {
+          error: errorMessage,
+          isGeneratingVideo: false,
+          projects: rollbackProjects,
+          currentProject: state.currentProject?.id === projectId
+            ? { ...state.currentProject, status: 'completed' as const }
+            : state.currentProject
+        };
+      });
     }
   }
 }));

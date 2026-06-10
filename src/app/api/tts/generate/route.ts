@@ -6,12 +6,13 @@ import { TTSProviderName } from '@/services/tts/types';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { text, voice, speed, pitch, provider } = body as {
+    const { text, voice, speed, pitch, provider, apiKey } = body as {
       text: string;
       voice: VoiceConfig;
       speed?: number;
       pitch?: number;
       provider?: TTSProviderName;
+      apiKey?: string;
     };
 
     if (!text) {
@@ -39,6 +40,7 @@ export async function POST(request: Request) {
       speed,
       pitch,
       provider,
+      apiKey,
     });
 
     return NextResponse.json({

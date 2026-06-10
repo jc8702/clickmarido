@@ -44,6 +44,7 @@ export class TTSService {
       speed?: number;
       pitch?: number;
       provider?: TTSProviderName;
+      apiKey?: string;
     }
   ): Promise<TTSResult> {
     const provider = this.getProvider(options?.provider);
@@ -53,6 +54,7 @@ export class TTSService {
       voice,
       speed: options?.speed,
       pitch: options?.pitch,
+      apiKey: options?.apiKey,
     };
 
     return provider.generateSpeech(request);

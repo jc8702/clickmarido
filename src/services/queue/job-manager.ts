@@ -61,7 +61,8 @@ export class JobManager {
 
     for (const [type, handler] of this.workerHandlers) {
       const wrappedHandler = async (job: QueueJob) => {
-        await handler(job);
+        const result = await handler(job);
+        job.result = result;
       };
       await this.backend.listen(type, wrappedHandler);
     }

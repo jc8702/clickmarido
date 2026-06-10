@@ -10,6 +10,7 @@ export default function SettingsPage() {
   const [keys, setKeys] = useState({
     geminiKey: '',
     openrouterKey: '',
+    elevenlabsKey: '',
     supabaseUrl: '',
     supabaseAnonKey: ''
   });
@@ -22,6 +23,7 @@ export default function SettingsPage() {
         setKeys({
           geminiKey: localStorage.getItem('clickmarido_gemini_key') || '',
           openrouterKey: localStorage.getItem('clickmarido_openrouter_key') || '',
+          elevenlabsKey: localStorage.getItem('clickmarido_elevenlabs_key') || '',
           supabaseUrl: localStorage.getItem('clickmarido_supabase_url') || '',
           supabaseAnonKey: localStorage.getItem('clickmarido_supabase_anon_key') || ''
         });
@@ -34,6 +36,7 @@ export default function SettingsPage() {
   const handleSave = () => {
     localStorage.setItem('clickmarido_gemini_key', keys.geminiKey);
     localStorage.setItem('clickmarido_openrouter_key', keys.openrouterKey);
+    localStorage.setItem('clickmarido_elevenlabs_key', keys.elevenlabsKey);
     localStorage.setItem('clickmarido_supabase_url', keys.supabaseUrl);
     localStorage.setItem('clickmarido_supabase_anon_key', keys.supabaseAnonKey);
 
@@ -128,6 +131,40 @@ export default function SettingsPage() {
                 className="w-full h-10 px-3 rounded-md bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="Insira sua chave do OpenRouter (sk-or-...)"
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-zinc-900">
+          <CardHeader>
+            <CardTitle className="text-base font-bold text-white flex items-center gap-2">
+              <Sparkles className="w-4.5 h-4.5 text-pink-500" />
+              ElevenLabs API (Locução de Voz)
+            </CardTitle>
+            <CardDescription>
+              IA para geração de vozes realistas em português para narrar o Reels.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between items-baseline">
+                <label className="text-sm font-semibold text-zinc-300">ElevenLabs API Key</label>
+                <Badge variant="outline" className="text-zinc-500 border-zinc-800 text-[10px] font-mono">ELEVENLABS_API_KEY</Badge>
+              </div>
+              <input
+                type="password"
+                value={keys.elevenlabsKey}
+                onChange={(e) => handleChange('elevenlabsKey', e.target.value)}
+                className="w-full h-10 px-3 rounded-md bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="Insira sua chave da ElevenLabs (sk_...)"
+              />
+              <p className="text-xs text-zinc-500">
+                Obtenha sua chave no painel da{' '}
+                <a href="https://elevenlabs.io" target="_blank" rel="noopener noreferrer" className="text-pink-400 hover:underline">
+                  elevenlabs.io
+                </a>
+                .
+              </p>
             </div>
           </CardContent>
         </Card>

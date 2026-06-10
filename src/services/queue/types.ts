@@ -5,7 +5,8 @@ export type JobType =
   | 'lipsync'
   | 'caption_generation'
   | 'video_render'
-  | 'composite_final';
+  | 'composite_final'
+  | 'project_pipeline';
 
 export type JobStatus = 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled';
 

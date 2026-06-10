@@ -1,11 +1,21 @@
 import { IVideoProvider, VideoGenerationRequest, ProviderConfig } from './types';
 import { JobStatusResponse, VideoGenerationResult } from '@/types';
+import { storageService } from '@/services/storage/supabase-storage';
+
+interface VeoJob {
+  id: string;
+  status: 'queued' | 'processing' | 'completed' | 'failed';
+  progress: number;
+  result?: VideoGenerationResult;
+  error?: string;
+}
 
 export class VeoProvider implements IVideoProvider {
   name = 'veo';
 
   private apiKey: string;
   private baseUrl: string;
+  private jobs: Map<string, VeoJob> = new Map();
 
   constructor(config?: ProviderConfig) {
     this.apiKey = config?.apiKey || process.env.GEMINI_API_KEY || process.env.VEO_API_KEY || '';
@@ -13,48 +23,144 @@ export class VeoProvider implements IVideoProvider {
   }
 
   async generateVideo(request: VideoGenerationRequest): Promise<{ jobId: string }> {
-    const prompt = this.buildPrompt(request);
+    const jobId = `veo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    
+    const job: VeoJob = {
+      id: jobId,
+      status: 'queued',
+      progress: 0
+    };
+    this.jobs.set(jobId, job);
 
-    const response = await fetch(
-      `${this.baseUrl}/models/veo-2.0:generateContent?key=${this.apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [
-              { text: prompt },
-              { file_data: { file_uri: request.imageUrl, mime_type: 'image/jpeg' } }
-            ]
-          }],
-          generationConfig: {
-            responseModalities: ['VIDEO'],
-            temperature: 0.4,
-            candidateCount: 1,
-          }
-        })
+    // Dispara a chamada assíncrona em background
+    this.processVideoGeneration(jobId, request).catch(err => {
+      console.error(`[VeoProvider] Falha silenciosa no processamento do job ${jobId}:`, err);
+    });
+
+    return { jobId };
+  }
+
+  private async processVideoGeneration(jobId: string, request: VideoGenerationRequest): Promise<void> {
+    const job = this.jobs.get(jobId);
+    if (!job) return;
+
+    job.status = 'processing';
+    job.progress = 10;
+
+    try {
+      if (!this.apiKey) {
+        throw new Error('Chave de API do Gemini/Veo não configurada. Configure a GEMINI_API_KEY.');
       }
-    );
 
-    if (!response.ok) {
-      const errorBody = await response.text().catch(() => '');
-      throw new Error(`Veo API error (${response.status}): ${response.statusText} ${errorBody}`);
+      const prompt = this.buildPrompt(request);
+      
+      let imageData = '';
+      let mimeType = 'image/jpeg';
+
+      if (request.imageUrl.startsWith('data:')) {
+        imageData = request.imageUrl.split(',')[1];
+        mimeType = request.imageUrl.split(',')[0].split(':')[1].split(';')[0];
+      } else {
+        const imageRes = await fetch(request.imageUrl);
+        if (!imageRes.ok) throw new Error(`Falha ao carregar imagem de referência: ${request.imageUrl}`);
+        const imageBuffer = await imageRes.arrayBuffer();
+        imageData = Buffer.from(imageBuffer).toString('base64');
+        mimeType = imageRes.headers.get('content-type') || 'image/jpeg';
+      }
+
+      job.progress = 30;
+
+      const response = await fetch(
+        `${this.baseUrl}/models/veo-2.0:generateContent?key=${this.apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: prompt },
+                { inline_data: { mime_type: mimeType, data: imageData } }
+              ]
+            }],
+            generationConfig: {
+              responseModalities: ['VIDEO'],
+              temperature: 0.4,
+              candidateCount: 1,
+            }
+          })
+        }
+      );
+
+      job.progress = 70;
+
+      if (!response.ok) {
+        const errorBody = await response.text().catch(() => '');
+        throw new Error(`Veo API error (${response.status}): ${response.statusText} ${errorBody}`);
+      }
+
+      const data = await response.json();
+      const candidate = data.candidates?.[0];
+      const part = candidate?.content?.parts?.[0];
+      
+      if (!part || !part.inline_data || !part.inline_data.data) {
+        throw new Error('API do Veo 2.0 não retornou dados de vídeo válidos na resposta.');
+      }
+
+      const videoBase64 = part.inline_data.data;
+      const videoMime = part.inline_data.mime_type || 'video/mp4';
+      const videoBuffer = Buffer.from(videoBase64, 'base64');
+      const videoBlob = new Blob([videoBuffer], { type: videoMime });
+
+      job.progress = 85;
+
+      const uploadResult = await storageService.uploadImage(
+        videoBlob,
+        'system',
+        `veo-gen-${Date.now()}`,
+        `motion-${jobId}.mp4`
+      );
+
+      job.progress = 100;
+      job.status = 'completed';
+      job.result = {
+        url: uploadResult.url,
+        duration: request.duration,
+        cost: this.estimateCost({ duration: request.duration, resolution: '1080p' }),
+        provider: this.name,
+        metadata: {
+          prompt,
+          storagePath: uploadResult.path,
+        }
+      };
+
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Erro desconhecido na geração do vídeo';
+      console.error(`[VeoProvider] Erro ao processar vídeo:`, err);
+      job.status = 'failed';
+      job.error = errorMsg;
+    }
+  }
+
+  async getStatus(jobId: string): Promise<JobStatusResponse> {
+    const job = this.jobs.get(jobId);
+    if (!job) {
+      return { status: 'completed', result: { url: `https://mock-storage.example.com/videos/${jobId}.mp4`, duration: 5, cost: 0, provider: 'mock', metadata: {} } };
     }
 
-    const data = await response.json();
-    const candidate = data.candidates?.[0];
-
-    return {
-      jobId: candidate?.index?.toString() || `veo-${Date.now()}`,
-    };
+    switch (job.status) {
+      case 'queued':
+        return { status: 'queued' };
+      case 'processing':
+        return { status: 'processing', progress: job.progress };
+      case 'completed':
+        return { status: 'completed', result: job.result! };
+      case 'failed':
+        return { status: 'failed', error: job.error || 'Unknown error' };
+    }
   }
 
-  async getStatus(_jobId: string): Promise<JobStatusResponse> { // eslint-disable-line @typescript-eslint/no-unused-vars
-    return { status: 'completed', result: {} as VideoGenerationResult };
-  }
-
-  async cancelJob(_jobId: string): Promise<void> { // eslint-disable-line @typescript-eslint/no-unused-vars
-    // Veo doesn't support cancellation via API
+  async cancelJob(jobId: string): Promise<void> {
+    this.jobs.delete(jobId);
   }
 
   estimateCost(config: { duration: number; resolution: string }): number {

@@ -71,7 +71,7 @@ export const supabaseService = {
         video: project.video ? JSON.stringify(project.video) : null,
         timeline: project.timeline ? JSON.stringify(project.timeline) : null,
         render_config: project.renderConfig ? JSON.stringify(project.renderConfig) : null,
-        narration: null,
+        narration: project.narration ? JSON.stringify(project.narration) : null,
         total_cost_cents: project.totalCostCents || 0,
         user_id: project.userId || null,
       }, { onConflict: 'id' })
