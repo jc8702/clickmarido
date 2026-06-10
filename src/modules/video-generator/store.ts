@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { Project, Briefing, VideoTemplate, ProjectImage, GeneratedVideo } from '@/types';
 import { AIService } from '@/services/ai/ai-service';
 import { VideoGenerator as LocalVideoGenerator } from '@/services/video/video-generator';
-import { supabaseService } from '@/services/supabase/supabase-client';
 
 interface VideoStudioState {
   projects: Project[];
@@ -146,7 +145,13 @@ function getSavedApiKey(): string | undefined {
 }
 
 function syncToSupabase(projects: Project[]) {
-  projects.forEach(p => supabaseService.saveProject(p).catch(() => {}));
+  projects.forEach(p => {
+    fetch(`/api/projects/${p.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(p),
+    }).catch(err => console.error('Erro ao sincronizar projeto com a API:', err));
+  });
 }
 
 export const useVideoStudioStore = create<VideoStudioState>((set, get) => ({

@@ -21,3 +21,8 @@ Este documento contém o backlog detalhado de tarefas necessárias para implemen
 - [x] **Tarefa 4.1:** Ajustar a UI de uploads em [projects/[id]/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/src/app/projects/%5Bid%5D/page.tsx) para que o usuário associe explicitamente cada imagem carregada a uma cena do storyboard (ex: Cena 1 a 5).
 - [x] **Tarefa 4.2:** Modificar o renderizador local em [video-generator.ts](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/src/services/video/video-generator.ts) para usar o mapeamento explícito das fotos carregadas correspondentes a cada cena, sem repetição circular genérica.
 - [x] **Tarefa 4.3:** Ajustar a renderização do FFmpeg no backend ([video-compositor.ts](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/src/services/video/video-compositor.ts)) para sincronizar e misturar os clipes de vídeo gerados pela IA com a voz narrada e a música de fundo.
+
+## 🚀 Grupo 5: Deploy e Publicação
+- [x] **Tarefa 5.1:** Commitar todas as correções de código de tipos TypeScript, JSX e o FFmpegGenerator local.
+- [x] **Tarefa 5.2:** Realizar o push da branch main para o repositório remoto no GitHub.
+- [x] **Tarefa 5.3:** Validar que o build de produção local compila perfeitamente sem erros, garantindo um deploy web suave na Vercel.

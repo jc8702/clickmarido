@@ -39,26 +39,18 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json() as Record<string, unknown>;
-    const timeline = body.timeline;
-    const status = body.status as string | undefined;
-    const name = body.name as string | undefined;
 
+    // Tenta carregar o projeto existente para evitar perda de dados omitidos no body
     const existing = await supabaseService.getProject(id);
-    if (!existing.success || !existing.data) {
-      return NextResponse.json(
-        { success: false, error: 'Projeto não encontrado' },
-        { status: 404 }
-      );
+    let updated: Record<string, unknown>;
+
+    if (existing.success && existing.data) {
+      updated = { ...existing.data, ...body, id };
+    } else {
+      updated = { ...body, id };
     }
 
-    const patch: Record<string, unknown> = {};
-    if (name) patch.name = name;
-    if (status) patch.status = status;
-    if (timeline) patch.timeline = timeline;
-
-    const updated = { ...existing.data, ...patch };
-
-    const result = await supabaseService.saveProject(updated as Project);
+    const result = await supabaseService.saveProject(updated as unknown as Project);
     if (!result.success) throw new Error(result.error as string);
 
     return NextResponse.json({

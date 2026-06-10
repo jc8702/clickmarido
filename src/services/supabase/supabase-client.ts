@@ -5,7 +5,7 @@ function getConfig() {
   if (typeof window === 'undefined') {
     return {
       url: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+      key: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
     };
   }
   try {
