@@ -1,13 +1,20 @@
 # RESUMO DE PROJETO: Click Marido CRM
 
 ## Informações Gerais
-- **Status Atual:** ✅ CRM funcional — Video Studio removido completamente e banco de dados limpo
+- **Status Atual:** ✅ CRM funcional — Video Studio removido completamente, banco de dados limpo e dependências limpas
 - **Objetivo Central:** Sistema CRM para gerenciamento de clientes, serviços e orçamentos da Click Marido Reparos Residenciais
-- **Última Atualização:** 2026-06-11 16:53
+- **Última Atualização:** 2026-06-11 16:55
 
 ---
 
 ## Histórico de Alterações
+
+- **[11/06/2026 - 16:55]:** FASE 5 - Limpeza de Dependências e Variáveis de Ambiente
+  - Arquivos modificados/criados:
+    - `.gitignore` [MODIFY] — Adicionado `.env.local` explicitamente para garantir isolamento e segurança.
+    - `.env.local` [MODIFY] — Sobrescrito com um template limpo contendo apenas as variáveis Supabase e DB.
+    - Executado o `npm uninstall` e `npm prune` para garantir que nenhuma dependência do Video Studio permaneça em uso ou listada.
+  - Commits efetuados e enviados (push) para o branch `main`.
 
 - **[11/06/2026 - 16:53]:** FASE 4 - Limpeza do Banco de Dados e Configurações
   - Arquivos modificados/criados:
