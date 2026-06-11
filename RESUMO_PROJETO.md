@@ -1,13 +1,18 @@
 # RESUMO DE PROJETO: Click Marido CRM
 
 ## Informações Gerais
-- **Status Atual:** ✅ CRM funcional — Deploy efetuado na Vercel e sincronizado com GitHub
+- **Status Atual:** ✅ CRM funcional — Deploy efetuado na Vercel e pós-limpeza concluída
 - **Objetivo Central:** Sistema CRM para gerenciamento de clientes, serviços e orçamentos da Click Marido Reparos Residenciais
-- **Última Atualização:** 2026-06-11 17:03
+- **Última Atualização:** 2026-06-11 17:08
 
 ---
 
 ## Histórico de Alterações
+
+- **[11/06/2026 - 17:08]:** FASE 8 - Limpeza Pós-Execução
+  - Remoção de todos os arquivos de logs temporários (`build-output.log`, `dev-output.log` e `VIDEO_STUDIO_REMOVAL_LOG.md`).
+  - Limpeza da pasta de cache de build `.next`.
+  - Commits consolidados e enviados para o repositório (`git push origin main`).
 
 - **[11/06/2026 - 17:03]:** FASE 7 - Push para GitHub e Deploy
   - Sincronização final das alterações locais com o branch `main` no GitHub.
