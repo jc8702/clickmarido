@@ -1,13 +1,19 @@
 # RESUMO DE PROJETO: Click Marido CRM
 
 ## Informações Gerais
-- **Status Atual:** ✅ CRM funcional — Video Studio removido completamente
+- **Status Atual:** ✅ CRM funcional — Video Studio removido completamente e banco de dados limpo
 - **Objetivo Central:** Sistema CRM para gerenciamento de clientes, serviços e orçamentos da Click Marido Reparos Residenciais
-- **Última Atualização:** 2026-06-11 15:10
+- **Última Atualização:** 2026-06-11 16:53
 
 ---
 
 ## Histórico de Alterações
+
+- **[11/06/2026 - 16:53]:** FASE 4 - Limpeza do Banco de Dados e Configurações
+  - Arquivos modificados/criados:
+    - `supabase-migrations/002_remove_video_studio.sql` [NEW] — Migration para realizar drop das tabelas e colunas do Video Studio, e criar as tabelas de dados do CRM (`clients`, `service_requests`, `quotes`).
+    - `supabase-schema.sql` [MODIFY] — Schema de referência simplificado, contendo apenas profiles e as tabelas CRM ativas.
+  - Commits efetuados e enviados (push) para o branch `main`.
 
 - **[11/06/2026 - 15:10]:** Remoção completa do Video Studio (gerador de vídeos com IA)
   - Arquivos removidos (65+ arquivos):
@@ -66,8 +72,8 @@ src/
     layouts/
       sidebar.tsx            ← navegação CRM
       store-initializer.tsx  ← wrapper vazio
-    ui/
-      badge.tsx, button.tsx, card.tsx, tabs.tsx
+  ui/
+    badge.tsx, button.tsx, card.tsx, tabs.tsx
   modules/
     crm/
       store.ts               ← Zustand CRM store
@@ -88,10 +94,10 @@ src/
 - `/settings` — Configurações
 
 ## TODOs / Próximos Passos
+- [x] Criar migration SQL para tabelas `clients`, `service_requests`, `quotes` e remoção do Video Studio
 - [ ] Criar formulário de novo cliente (`/clientes/novo`)
 - [ ] Criar formulário de novo serviço (`/servicos/novo`)
 - [ ] Criar formulário de novo orçamento (`/orcamentos/novo`)
 - [ ] Integrar Supabase real para persistência (substituir mock data)
-- [ ] Criar migration SQL para tabelas `clients`, `service_requests`, `quotes`
 - [ ] Adicionar autenticação (Supabase Auth)
 - [ ] Adicionar página de cliente individual (`/clientes/[id]`)
