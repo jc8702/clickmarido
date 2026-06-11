@@ -1,345 +1,231 @@
+// ============================================================
+// supabase-client.ts — Click Marido CRM
+// Cliente Supabase para persistência de dados do CRM.
+// Video Studio removido completamente.
+// ============================================================
+
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Project, ImageAnalysis, ProjectStatus, VoicePreset } from '@/types';
+import type { Client, ServiceRequest, Quote } from '@/types';
 
 function getConfig() {
   if (typeof window === 'undefined') {
     return {
       url: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      key: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+      key:
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+        '',
     };
   }
   try {
     return {
-      url: process.env.NEXT_PUBLIC_SUPABASE_URL || localStorage.getItem('clickmarido_supabase_url') || '',
-      key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || localStorage.getItem('clickmarido_supabase_anon_key') || '',
+      url:
+        process.env.NEXT_PUBLIC_SUPABASE_URL ||
+        localStorage.getItem('clickmarido_supabase_url') ||
+        '',
+      key:
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+        localStorage.getItem('clickmarido_supabase_anon_key') ||
+        '',
     };
   } catch {
     return { url: '', key: '' };
   }
 }
 
-let client: SupabaseClient | null = null;
+let _client: SupabaseClient | null = null;
 
 export function getSupabase(): SupabaseClient | null {
-  if (client) return client;
+  if (_client) return _client;
   const { url, key } = getConfig();
   if (url && key) {
-    client = createClient(url, key);
+    _client = createClient(url, key);
   }
-  return client;
+  return _client;
 }
 
-function parseProjectRow(row: Record<string, unknown>): Project {
-  return {
-    id: row.id as string,
-    name: row.name as string,
-    createdAt: row.created_at as string,
-    status: row.status as ProjectStatus,
-    briefing: typeof row.briefing === 'string' ? JSON.parse(row.briefing as string) : row.briefing,
-    script: row.script ? (typeof row.script === 'string' ? JSON.parse(row.script as string) : row.script) : undefined,
-    storyboard: row.storyboard ? (typeof row.storyboard === 'string' ? JSON.parse(row.storyboard as string) : row.storyboard) : undefined,
-    prompts: row.prompts ? (typeof row.prompts === 'string' ? JSON.parse(row.prompts as string) : row.prompts) : undefined,
-    caption: row.caption ? (typeof row.caption === 'string' ? JSON.parse(row.caption as string) : row.caption) : undefined,
-    images: row.images ? (typeof row.images === 'string' ? JSON.parse(row.images as string) : row.images) : [],
-    video: row.video ? (typeof row.video === 'string' ? JSON.parse(row.video as string) : row.video) : undefined,
-    timeline: row.timeline ? (typeof row.timeline === 'string' ? JSON.parse(row.timeline as string) : row.timeline) : undefined,
-    renderConfig: row.render_config ? (typeof row.render_config === 'string' ? JSON.parse(row.render_config as string) : row.render_config) : undefined,
-    narration: row.narration ? (typeof row.narration === 'string' ? JSON.parse(row.narration as string) : row.narration) : undefined,
-    totalCostCents: row.total_cost_cents as number | undefined,
-    userId: row.user_id as string | undefined,
-  };
-}
+// ---------- CLIENTES ----------
 
-export const supabaseService = {
-  async saveProject(project: Project) {
+export const clientService = {
+  async list(): Promise<{ success: boolean; data: Client[]; error?: unknown }> {
     const db = getSupabase();
-    if (!db) return { success: false, error: 'Supabase não configurado' };
+    if (!db) return { success: false, data: [], error: 'Supabase não configurado' };
 
     const { data, error } = await db
-      .from('projects')
-      .upsert({
-        id: project.id,
-        name: project.name,
-        created_at: project.createdAt,
-        status: project.status,
-        briefing: typeof project.briefing === 'string' ? project.briefing : JSON.stringify(project.briefing),
-        script: project.script ? JSON.stringify(project.script) : null,
-        storyboard: project.storyboard ? JSON.stringify(project.storyboard) : null,
-        prompts: project.prompts ? JSON.stringify(project.prompts) : null,
-        caption: project.caption ? JSON.stringify(project.caption) : null,
-        images: project.images ? JSON.stringify(project.images) : '[]',
-        video: project.video ? JSON.stringify(project.video) : null,
-        timeline: project.timeline ? JSON.stringify(project.timeline) : null,
-        render_config: project.renderConfig ? JSON.stringify(project.renderConfig) : null,
-        narration: project.narration ? JSON.stringify(project.narration) : null,
-        total_cost_cents: project.totalCostCents || 0,
-        user_id: project.userId || null,
-      }, { onConflict: 'id' })
-      .select();
-
-    if (error) {
-      console.error('Erro ao salvar no Supabase:', error);
-      return { success: false, error };
-    }
-    return { success: true, data };
-  },
-
-  async getProjects(userId?: string): Promise<{ success: boolean; error?: unknown; data: Project[] }> {
-    const db = getSupabase();
-    if (!db) return { success: false, error: 'Supabase não configurado', data: [] };
-
-    let query = db.from('projects').select('*').order('created_at', { ascending: false });
-
-    if (userId) {
-      query = query.eq('user_id', userId);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error('Erro ao buscar do Supabase:', error);
-      return { success: false, error, data: [] };
-    }
-
-    const projects: Project[] = (data || []).map((row: Record<string, unknown>) => parseProjectRow(row));
-
-    return { success: true, data: projects };
-  },
-
-  async getProject(id: string): Promise<{ success: boolean; error?: unknown; data: Project | null }> {
-    const db = getSupabase();
-    if (!db) return { success: false, error: 'Supabase não configurado', data: null };
-
-    const { data, error } = await db
-      .from('projects')
+      .from('clients')
       .select('*')
-      .eq('id', id)
-      .single();
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Erro ao buscar projeto:', error);
-      return { success: false, error, data: null };
+      console.error('[Supabase] Erro ao listar clientes:', error);
+      return { success: false, data: [], error };
     }
 
-    return { success: true, data: parseProjectRow(data as Record<string, unknown>) };
+    return {
+      success: true,
+      data: (data || []).map((row: Record<string, unknown>) => ({
+        id: row.id as string,
+        name: row.name as string,
+        phone: row.phone as string,
+        email: row.email as string | undefined,
+        address: row.address as string | undefined,
+        status: row.status as Client['status'],
+        notes: row.notes as string | undefined,
+        createdAt: row.created_at as string,
+        updatedAt: row.updated_at as string,
+      })),
+    };
   },
 
-  async deleteProject(id: string) {
+  async upsert(client: Client): Promise<{ success: boolean; error?: unknown }> {
     const db = getSupabase();
     if (!db) return { success: false, error: 'Supabase não configurado' };
 
-    const { error } = await db
-      .from('projects')
-      .delete()
-      .eq('id', id);
+    const { error } = await db.from('clients').upsert(
+      {
+        id: client.id,
+        name: client.name,
+        phone: client.phone,
+        email: client.email || null,
+        address: client.address || null,
+        status: client.status,
+        notes: client.notes || null,
+        created_at: client.createdAt,
+        updated_at: client.updatedAt,
+      },
+      { onConflict: 'id' }
+    );
 
     if (error) {
-      console.error('Erro ao deletar no Supabase:', error);
+      console.error('[Supabase] Erro ao salvar cliente:', error);
       return { success: false, error };
     }
     return { success: true };
   },
 
-  // ============ PROJECT IMAGES ============
-
-  async saveProjectImage(data: {
-    projectId: string;
-    userId?: string;
-    originalUrl: string;
-    storagePath: string;
-    analysis?: ImageAnalysis;
-    width?: number;
-    height?: number;
-    fileSizeBytes?: number;
-    mimeType?: string;
-    sceneIndex?: number;
-    durationSeconds?: number;
-  }) {
+  async delete(id: string): Promise<{ success: boolean; error?: unknown }> {
     const db = getSupabase();
     if (!db) return { success: false, error: 'Supabase não configurado' };
 
-    const { data: result, error } = await db
-      .from('project_images')
-      .insert({
-        project_id: data.projectId,
-        user_id: data.userId || null,
-        original_url: data.originalUrl,
-        storage_path: data.storagePath,
-        analysis: data.analysis ? JSON.stringify(data.analysis) : null,
-        face_data: data.analysis?.faceData ? JSON.stringify(data.analysis.faceData) : null,
-        width: data.width || null,
-        height: data.height || null,
-        file_size_bytes: data.fileSizeBytes || null,
-        mime_type: data.mimeType || null,
-        scene_index: data.sceneIndex || 0,
-        duration_seconds: data.durationSeconds || 5.0,
-      })
-      .select()
-      .single();
+    const { error } = await db.from('clients').delete().eq('id', id);
 
     if (error) {
-      console.error('Erro ao salvar imagem:', error);
+      console.error('[Supabase] Erro ao deletar cliente:', error);
       return { success: false, error };
     }
-    return { success: true, data: result };
+    return { success: true };
   },
+};
 
-  async getProjectImages(projectId: string) {
+// ---------- SERVIÇOS ----------
+
+export const serviceRequestService = {
+  async list(): Promise<{ success: boolean; data: ServiceRequest[]; error?: unknown }> {
     const db = getSupabase();
-    if (!db) return { success: false, error: 'Supabase não configurado', data: [] };
+    if (!db) return { success: false, data: [], error: 'Supabase não configurado' };
 
     const { data, error } = await db
-      .from('project_images')
+      .from('service_requests')
       .select('*')
-      .eq('project_id', projectId)
-      .order('scene_index', { ascending: true });
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Erro ao buscar imagens:', error);
-      return { success: false, error, data: [] };
+      console.error('[Supabase] Erro ao listar serviços:', error);
+      return { success: false, data: [], error };
     }
 
-    return { success: true, data: data || [] };
+    return {
+      success: true,
+      data: (data || []).map((row: Record<string, unknown>) => ({
+        id: row.id as string,
+        clientId: row.client_id as string,
+        description: row.description as string,
+        status: row.status as ServiceRequest['status'],
+        scheduledAt: row.scheduled_at as string | undefined,
+        completedAt: row.completed_at as string | undefined,
+        valueEstimate: row.value_estimate as number | undefined,
+        valueFinal: row.value_final as number | undefined,
+        notes: row.notes as string | undefined,
+        createdAt: row.created_at as string,
+        updatedAt: row.updated_at as string,
+      })),
+    };
   },
 
-  async deleteProjectImage(imageId: string) {
+  async upsert(service: ServiceRequest): Promise<{ success: boolean; error?: unknown }> {
     const db = getSupabase();
     if (!db) return { success: false, error: 'Supabase não configurado' };
 
-    const { error } = await db
-      .from('project_images')
-      .delete()
-      .eq('id', imageId);
+    const { error } = await db.from('service_requests').upsert(
+      {
+        id: service.id,
+        client_id: service.clientId,
+        description: service.description,
+        status: service.status,
+        scheduled_at: service.scheduledAt || null,
+        completed_at: service.completedAt || null,
+        value_estimate: service.valueEstimate || null,
+        value_final: service.valueFinal || null,
+        notes: service.notes || null,
+        created_at: service.createdAt,
+        updated_at: service.updatedAt,
+      },
+      { onConflict: 'id' }
+    );
 
     if (error) {
-      console.error('Erro ao deletar imagem:', error);
+      console.error('[Supabase] Erro ao salvar serviço:', error);
       return { success: false, error };
     }
     return { success: true };
   },
 
-  // ============ VOICE PRESETS ============
-
-  async getVoicePresets(language?: string): Promise<{ success: boolean; data: VoicePreset[] }> {
-    const db = getSupabase();
-    if (!db) return { success: false, data: [] };
-
-    let query = db.from('voice_presets').select('*').eq('is_active', true);
-
-    if (language) {
-      query = query.eq('language', language);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error('Erro ao buscar vozes:', error);
-      return { success: false, data: [] };
-    }
-
-    const presets: VoicePreset[] = (data || []).map((row: Record<string, unknown>) => ({
-      id: row.id as string,
-      name: row.name as string,
-      gender: row.gender as 'male' | 'female',
-      style: row.style as VoicePreset['style'],
-      language: row.language as VoicePreset['language'],
-      provider: row.provider as string,
-      providerVoiceId: row.provider_voice_id as string,
-      previewUrl: row.preview_url as string | undefined,
-    }));
-
-    return { success: true, data: presets };
-  },
-
-  // ============ JOBS ============
-
-  async createJob(data: {
-    projectId: string;
-    userId?: string;
-    type: string;
-    provider: string;
-    input?: Record<string, unknown>;
-    priority?: number;
-  }) {
+  async delete(id: string): Promise<{ success: boolean; error?: unknown }> {
     const db = getSupabase();
     if (!db) return { success: false, error: 'Supabase não configurado' };
 
-    const { data: result, error } = await db
-      .from('jobs')
-      .insert({
-        project_id: data.projectId,
-        user_id: data.userId || null,
-        type: data.type,
-        provider: data.provider,
-        input: data.input ? JSON.stringify(data.input) : null,
-        priority: data.priority || 0,
-        status: 'queued',
-      })
-      .select()
-      .single();
+    const { error } = await db.from('service_requests').delete().eq('id', id);
 
     if (error) {
-      console.error('Erro ao criar job:', error);
-      return { success: false, error };
-    }
-    return { success: true, data: result };
-  },
-
-  async updateJobStatus(jobId: string, status: string, output?: Record<string, unknown>, errorMessage?: string) {
-    const db = getSupabase();
-    if (!db) return { success: false, error: 'Supabase não configurado' };
-
-    const updateData: Record<string, unknown> = { status };
-
-    if (output) updateData.output = JSON.stringify(output);
-    if (errorMessage) updateData.error_message = errorMessage;
-    if (status === 'processing') updateData.started_at = new Date().toISOString();
-    if (status === 'completed' || status === 'failed') updateData.completed_at = new Date().toISOString();
-
-    const { error } = await db
-      .from('jobs')
-      .update(updateData)
-      .eq('id', jobId);
-
-    if (error) {
-      console.error('Erro ao atualizar job:', error);
+      console.error('[Supabase] Erro ao deletar serviço:', error);
       return { success: false, error };
     }
     return { success: true };
   },
+};
 
-  // ============ USAGE LOG ============
+// ---------- ORÇAMENTOS ----------
 
-  async logUsage(data: {
-    userId: string;
-    projectId?: string;
-    jobId?: string;
-    provider: string;
-    operation: string;
-    costCents: number;
-    tokensUsed?: number;
-    durationMs?: number;
-  }) {
+export const quoteService = {
+  async list(): Promise<{ success: boolean; data: Quote[]; error?: unknown }> {
     const db = getSupabase();
-    if (!db) return { success: false, error: 'Supabase não configurado' };
+    if (!db) return { success: false, data: [], error: 'Supabase não configurado' };
 
-    const { error } = await db
-      .from('usage_log')
-      .insert({
-        user_id: data.userId,
-        project_id: data.projectId || null,
-        job_id: data.jobId || null,
-        provider: data.provider,
-        operation: data.operation,
-        cost_cents: data.costCents,
-        tokens_used: data.tokensUsed || null,
-        duration_ms: data.durationMs || null,
-      });
+    const { data, error } = await db
+      .from('quotes')
+      .select('*')
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Erro ao registrar uso:', error);
-      return { success: false, error };
+      console.error('[Supabase] Erro ao listar orçamentos:', error);
+      return { success: false, data: [], error };
     }
-    return { success: true };
+
+    return {
+      success: true,
+      data: (data || []).map((row: Record<string, unknown>) => ({
+        id: row.id as string,
+        clientId: row.client_id as string,
+        serviceRequestId: row.service_request_id as string | undefined,
+        items:
+          typeof row.items === 'string' ? JSON.parse(row.items as string) : row.items,
+        totalValue: row.total_value as number,
+        status: row.status as Quote['status'],
+        validUntil: row.valid_until as string | undefined,
+        notes: row.notes as string | undefined,
+        createdAt: row.created_at as string,
+        updatedAt: row.updated_at as string,
+      })),
+    };
   },
 };

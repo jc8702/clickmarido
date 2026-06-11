@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Click Marido Marketing Studio | Geração de Conteúdo com IA',
-  description: 'Estúdio inteligente de criação e automação de marketing para a Click Marido Reparos Residenciais. Gere roteiros, storyboards e prompts de vídeo com IA.',
+  title: 'Click Marido CRM | Gestão de Clientes e Serviços',
+  description: 'Sistema de CRM para gerenciamento de clientes, serviços, orçamentos e atendimentos da Click Marido Reparos Residenciais.',
 };
 
 export default function RootLayout({

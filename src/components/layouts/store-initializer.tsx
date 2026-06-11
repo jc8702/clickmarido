@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useVideoStudioStore } from '@/modules/video-generator/store';
+import { ReactNode } from 'react';
 
-export function StoreInitializer({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    // Carrega dados iniciais do localStorage com segurança
-    useVideoStudioStore.getState().loadInitialData();
-  }, []);
-
+/**
+ * StoreInitializer — wrapper minimalista.
+ * O CRM store (useCrmStore) usa dados mock em memória por padrão,
+ * sem necessidade de inicialização explícita.
+ */
+export function StoreInitializer({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }

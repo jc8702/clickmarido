@@ -1,7 +1,7 @@
+// instrumentation.ts — Click Marido CRM
+// Workers do Video Studio foram removidos.
+// Arquivo mantido vazio para compatibilidade com Next.js instrumentation hook.
+
 export async function register() {
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
-    const { startWorkers } = await import('@/workers');
-    await startWorkers();
-    console.log('[Instrumentation] Workers registered');
-  }
+  // Sem workers no CRM
 }
