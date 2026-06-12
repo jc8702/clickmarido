@@ -6,8 +6,8 @@ import { Pool } from 'pg';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    // Tenta usar a DIRECT_URL primeiro, pois funciona sem PgBouncer
-    const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
+    // Usamos a DATABASE_URL que aponta para o Session Pooler (IPv4) no Render
+    const connectionString = process.env.DATABASE_URL;
     const pool = new Pool({ connectionString });
     const adapter = new PrismaPg(pool);
     super({ adapter });
