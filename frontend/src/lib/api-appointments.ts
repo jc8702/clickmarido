@@ -25,7 +25,7 @@ export const getAppointments = async (params?: {
   if (params?.technicianId) query.append('technicianId', params.technicianId);
 
   const res: any = await ApiClient.get(`/appointments?${query.toString()}`);
-  return res.data as Appointment[];
+  return res as Appointment[];
 };
 
 export const createAppointment = async (data: any) => {

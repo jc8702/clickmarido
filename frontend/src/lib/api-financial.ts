@@ -23,25 +23,25 @@ export interface FinancialSummary {
 
 export const getFinancialTransactions = async (companyId: string) => {
   const res: any = await ApiClient.get(`/financial?companyId=${companyId}`);
-  return res.data as FinancialTransaction[];
+  return res as FinancialTransaction[];
 };
 
 export const getFinancialSummary = async (companyId: string) => {
   const res: any = await ApiClient.get(`/financial/summary?companyId=${companyId}`);
-  return res.data as FinancialSummary;
+  return res as FinancialSummary;
 };
 
 export const createTransaction = async (data: Partial<FinancialTransaction>) => {
   const res: any = await ApiClient.post(`/financial`, data);
-  return res.data;
+  return res;
 };
 
 export const updateTransaction = async (id: string, data: Partial<FinancialTransaction>) => {
   const res: any = await ApiClient.put(`/financial/${id}`, data);
-  return res.data;
+  return res;
 };
 
 export const deleteTransaction = async (id: string) => {
   const res: any = await ApiClient.delete(`/financial/${id}`);
-  return res.data;
+  return res;
 };

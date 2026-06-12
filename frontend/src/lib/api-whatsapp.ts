@@ -28,30 +28,30 @@ export interface Message {
 
 export const getInstance = async (companyId: string) => {
   const res: any = await ApiClient.get(`/whatsapp/instance?companyId=${companyId}`);
-  return res.data as WhatsAppInstance;
+  return res as WhatsAppInstance;
 };
 
 export const connectInstance = async (companyId: string, webhookUrl: string) => {
   const res: any = await ApiClient.post(`/whatsapp/instance/connect`, { companyId, webhookUrl });
-  return res.data;
+  return res;
 };
 
 export const disconnectInstance = async (companyId: string) => {
   const res: any = await ApiClient.post(`/whatsapp/instance/disconnect`, { companyId });
-  return res.data;
+  return res;
 };
 
 export const getConversations = async (companyId: string) => {
   const res: any = await ApiClient.get(`/whatsapp/conversations?companyId=${companyId}`);
-  return res.data as Conversation[];
+  return res as Conversation[];
 };
 
 export const getMessages = async (conversationId: string) => {
   const res: any = await ApiClient.get(`/whatsapp/conversations/${conversationId}/messages`);
-  return res.data as Message[];
+  return res as Message[];
 };
 
 export const sendMessage = async (conversationId: string, text: string) => {
   const res: any = await ApiClient.post(`/whatsapp/conversations/${conversationId}/send`, { text });
-  return res.data;
+  return res;
 };

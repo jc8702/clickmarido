@@ -19,15 +19,15 @@ export interface FollowUp {
 
 export const getFollowUps = async () => {
   const res: any = await ApiClient.get('/follow-ups');
-  return res.data as FollowUp[];
+  return res as FollowUp[];
 };
 
 export const syncFollowUps = async () => {
   const res: any = await ApiClient.post('/follow-ups/sync');
-  return res.data;
+  return res;
 };
 
 export const triggerCronManually = async () => {
   const res: any = await ApiClient.post('/follow-ups/trigger');
-  return res.data;
+  return res;
 };

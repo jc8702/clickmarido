@@ -16,20 +16,20 @@ export interface Warranty {
 
 export const getWarranties = async () => {
   const res: any = await ApiClient.get('/warranties');
-  return res.data as Warranty[];
+  return res as Warranty[];
 };
 
 export const createWarranty = async (data: Partial<Warranty>) => {
   const res: any = await ApiClient.post('/warranties', data);
-  return res.data as Warranty;
+  return res as Warranty;
 };
 
 export const updateWarrantyStatus = async (id: string, status: string) => {
   const res: any = await ApiClient.patch(`/warranties/${id}/status`, { status });
-  return res.data as Warranty;
+  return res as Warranty;
 };
 
 export const deleteWarranty = async (id: string) => {
   const res: any = await ApiClient.delete(`/warranties/${id}`);
-  return res.data;
+  return res;
 };
