@@ -1,12 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './core/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Configura um prefixo global para as rotas da API (ex: http://localhost:3001/api/...)
   app.setGlobalPrefix('api');
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   // Habilita validação de dados globalmente para DTOs
   app.useGlobalPipes(
@@ -29,3 +31,4 @@ async function bootstrap() {
   console.log(`🚀 Click Marido API rodando em: http://localhost:${port}/api`);
 }
 bootstrap();
+
