@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Query, Req } from '@nestjs/common';
 import { FinancialService } from './financial.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
@@ -35,5 +35,15 @@ export class FinancialController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.financialService.remove(id);
+  }
+
+  @Post(':id/generate-pix')
+  generatePix(@Param('id') id: string) {
+    return this.financialService.generatePix(id);
+  }
+
+  @Post('webhook/mercadopago')
+  async handleWebhook(@Req() req: any, @Body() body: any) {
+    return this.financialService.handleWebhook(req, body);
   }
 }

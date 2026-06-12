@@ -62,7 +62,7 @@ export function Topbar() {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 md:px-6 transition-colors duration-200">
+    <header className="flex h-16 items-center justify-between border-b border-[var(--border)] px-4 md:px-6 transition-colors duration-200" style={{ background: 'color-mix(in srgb, var(--card) 80%, transparent)', backdropFilter: 'blur(12px)' }}>
       {/* Lado Esquerdo: Menu Mobile + Breadcrumb */}
       <div className="flex items-center gap-4">
         <button

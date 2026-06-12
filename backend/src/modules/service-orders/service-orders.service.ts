@@ -123,6 +123,19 @@ export class ServiceOrdersService {
     });
   }
 
+  async updateStatus(id: string, status: string) {
+    // Validar status permitidos
+    const validStatuses = ['Pendente', 'Agendado', 'Em Andamento', 'Aguardando Peça', 'Concluído', 'Cancelado'];
+    if (!validStatuses.includes(status)) {
+      throw new BadRequestException('Status inválido');
+    }
+
+    return this.prisma.serviceOrder.update({
+      where: { id },
+      data: { status },
+    });
+  }
+
   async finishOrder(id: string, signatureBase64: string) {
     return this.prisma.serviceOrder.update({
       where: { id },

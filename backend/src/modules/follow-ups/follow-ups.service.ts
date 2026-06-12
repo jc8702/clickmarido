@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
+import { EmailService } from '../../core/email/email.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { differenceInDays } from 'date-fns';
 
@@ -11,6 +12,7 @@ export class FollowUpsService {
   constructor(
     private prisma: PrismaService,
     private whatsappService: WhatsappService,
+    private emailService: EmailService,
   ) {}
 
   // Busca inicial ou sincronização: Criar FollowUp para OS concluídas que ainda não tenham.
@@ -60,43 +62,56 @@ export class FollowUpsService {
       const completionDate = f.serviceOrder.updatedAt; // Data de conclusão (simplificação)
       const daysDiff = differenceInDays(today, completionDate);
 
-      // Auxiliar de envio
-      const triggerWhatsApp = async (text: string) => {
+      // Auxiliar de envio (WhatsApp + Fallback Email)
+      const triggerComms = async (text: string, subject: string) => {
+        let sentWhatsapp = false;
         try {
-          // Busca a conversation pra mandar via WhatsappService
           const conversation = await this.prisma.conversation.findFirst({
             where: { clientId: f.clientId, companyId: f.companyId },
             orderBy: { lastMessageAt: 'desc' }
           });
           if (conversation) {
             await this.whatsappService.sendMessage(conversation.id, text);
+            sentWhatsapp = true;
           }
         } catch (e) {
-          this.logger.error(`Falha no envio para o Client ${f.clientId}: ${e.message}`);
+          this.logger.error(`Falha no envio WA para o Client ${f.clientId}: ${e.message}`);
+        }
+
+        if (!sentWhatsapp && f.client.email) {
+          try {
+            await this.emailService.sendEmail(
+              f.client.email,
+              subject,
+              `<p>${text.replace(/\n/g, '<br>')}</p>`,
+            );
+          } catch (e) {
+            this.logger.error(`Falha no envio Email para o Client ${f.clientId}: ${e.message}`);
+          }
         }
       };
 
       // Disparo 1 Dia
       if (daysDiff >= 1 && !f.sent1Day) {
-        await triggerWhatsApp(`Olá ${f.client.name}, aqui é da equipe Click Marido! O serviço recente foi concluído. Como você avaliaria o nosso atendimento de 1 a 10?`);
+        await triggerComms(`Olá ${f.client.name}, aqui é da equipe Click Marido! O serviço recente foi concluído. Como você avaliaria o nosso atendimento de 1 a 10?`, 'Pesquisa de Satisfação - Click Marido');
         await this.prisma.followUp.update({ where: { id: f.id }, data: { sent1Day: true, sent1DayAt: new Date() } });
       }
       
       // Disparo 7 Dias
       else if (daysDiff >= 7 && !f.sent7Days) {
-        await triggerWhatsApp(`Oi ${f.client.name}! Faz uma semana desde o nosso serviço. Está tudo funcionando perfeitamente? Qualquer dúvida estamos à disposição!`);
+        await triggerComms(`Oi ${f.client.name}! Faz uma semana desde o nosso serviço. Está tudo funcionando perfeitamente? Qualquer dúvida estamos à disposição!`, 'Acompanhamento do Serviço - Click Marido');
         await this.prisma.followUp.update({ where: { id: f.id }, data: { sent7Days: true, sent7DaysAt: new Date() } });
       }
       
       // Disparo 30 Dias
       else if (daysDiff >= 30 && !f.sent30Days) {
-        await triggerWhatsApp(`Olá ${f.client.name}! Sabia que clientes Click Marido ganham descontos indicando amigos? Se você gostou do nosso trabalho, nos indique!`);
+        await triggerComms(`Olá ${f.client.name}! Sabia que clientes Click Marido ganham descontos indicando amigos? Se você gostou do nosso trabalho, nos indique!`, 'Indique e Ganhe - Click Marido');
         await this.prisma.followUp.update({ where: { id: f.id }, data: { sent30Days: true, sent30DaysAt: new Date() } });
       }
 
       // Disparo 90 Dias
       else if (daysDiff >= 90 && !f.sent90Days) {
-        await triggerWhatsApp(`Olá ${f.client.name}! Já se passaram 3 meses desde a nossa última visita. Que tal agendar uma manutenção preventiva? Prevenir é sempre melhor e mais barato!`);
+        await triggerComms(`Olá ${f.client.name}! Já se passaram 3 meses desde a nossa última visita. Que tal agendar uma manutenção preventiva? Prevenir é sempre melhor e mais barato!`, 'Manutenção Preventiva - Click Marido');
         await this.prisma.followUp.update({ where: { id: f.id }, data: { sent90Days: true, sent90DaysAt: new Date() } });
       }
     }

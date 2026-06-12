@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import * as xlsx from 'xlsx';
 
 @Injectable()
 export class ReportsService {
@@ -8,22 +9,22 @@ export class ReportsService {
   constructor(private prisma: PrismaService) {}
 
   async getExecutiveDashboard(companyId: string) {
-    const totalLeads = await this.prisma.client.count({ where: { companyId } });
-    const quotes = await this.prisma.quote.findMany({ where: { companyId } });
+    const totalLeads = await this.prisma.client.count({ where: { companyId, deletedAt: null } });
+    const quotes = await this.prisma.quote.findMany({ where: { companyId, deletedAt: null } });
     const totalQuotes = quotes.length;
     const approvedQuotes = quotes.filter(q => q.status === 'Aprovado').length;
     const conversionRate = totalQuotes > 0 ? (approvedQuotes / totalQuotes) * 100 : 0;
-    const completedOrders = await this.prisma.serviceOrder.count({ where: { companyId, status: 'Concluído' } });
+    const completedOrders = await this.prisma.serviceOrder.count({ where: { companyId, status: 'Concluído', deletedAt: null } });
     
-    const incomes = await this.prisma.financialTransaction.findMany({ where: { companyId, type: 'RECEITA' } });
+    const incomes = await this.prisma.financialTransaction.findMany({ where: { companyId, type: 'RECEITA', deletedAt: null } });
     const totalRevenue = incomes.reduce((acc: number, curr: any) => acc + curr.value, 0);
 
-    const expenses = await this.prisma.financialTransaction.findMany({ where: { companyId, type: 'DESPESA' } });
+    const expenses = await this.prisma.financialTransaction.findMany({ where: { companyId, type: 'DESPESA', deletedAt: null } });
     const totalExpense = expenses.reduce((acc: number, curr: any) => acc + curr.value, 0);
 
     const totalProfit = totalRevenue - totalExpense;
 
-    const activeTechs = await this.prisma.technician.count({ where: { companyId, status: 'Ativo' } });
+    const activeTechs = await this.prisma.technician.count({ where: { companyId, status: 'Ativo', deletedAt: null } });
     const activeWarranties = await this.prisma.warranty.count({ where: { companyId, status: 'ACTIVE' } });
 
     return {
@@ -39,23 +40,23 @@ export class ReportsService {
   }
 
   async getCommercialReport(companyId: string) {
-    const quotes = await this.prisma.quote.findMany({ where: { companyId } });
+    const quotes = await this.prisma.quote.findMany({ where: { companyId, deletedAt: null } });
     const totalQuotes = quotes.length;
     const approvedQuotes = quotes.filter(q => q.status === 'Aprovado').length;
     const conversionRate = totalQuotes > 0 ? (approvedQuotes / totalQuotes) * 100 : 0;
 
     const incomes = await this.prisma.financialTransaction.findMany({ 
-      where: { companyId, type: 'RECEITA' } 
+      where: { companyId, type: 'RECEITA', deletedAt: null } 
     });
     const totalRevenue = incomes.reduce((acc: number, curr: any) => acc + curr.value, 0);
 
     const completedOrders = await this.prisma.serviceOrder.count({
-      where: { companyId, status: 'Concluído' }
+      where: { companyId, status: 'Concluído', deletedAt: null }
     });
     const ticketMedio = completedOrders > 0 ? totalRevenue / completedOrders : 0;
 
     const servicesOrders = await this.prisma.serviceOrder.findMany({
-      where: { companyId, status: 'Concluído' },
+      where: { companyId, status: 'Concluído', deletedAt: null },
       include: { services: true }
     });
     
@@ -83,7 +84,7 @@ export class ReportsService {
 
   async getOperationalReport(companyId: string) {
     const orders = await this.prisma.serviceOrder.findMany({
-      where: { companyId, status: 'Concluído' },
+      where: { companyId, status: 'Concluído', deletedAt: null },
       include: { technician: true }
     });
 
@@ -113,7 +114,7 @@ export class ReportsService {
 
   async getFinancialReport(companyId: string) {
     const transactions = await this.prisma.financialTransaction.findMany({
-      where: { companyId },
+      where: { companyId, deletedAt: null },
       orderBy: { transactionDate: 'asc' }
     });
 
@@ -146,5 +147,30 @@ export class ReportsService {
       netProfit: totalIncome - totalExpense,
       chartData: Object.values(monthlyData)
     };
+  }
+
+  async exportFinancialExcel(companyId: string): Promise<Buffer> {
+    const transactions = await this.prisma.financialTransaction.findMany({
+      where: { companyId, deletedAt: null },
+      orderBy: { transactionDate: 'desc' }
+    });
+
+    const data = transactions.map(tx => ({
+      ID: tx.id,
+      Tipo: tx.type,
+      Categoria: tx.category,
+      Valor: tx.value,
+      Descricao: tx.description || '',
+      Data: new Date(tx.transactionDate).toLocaleDateString('pt-BR'),
+      Status: tx.status,
+    }));
+
+    const worksheet = xlsx.utils.json_to_sheet(data);
+    const workbook = xlsx.utils.book_new();
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Financeiro');
+    
+    // Escreve como buffer
+    const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    return buffer;
   }
 }

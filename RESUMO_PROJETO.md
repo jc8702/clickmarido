@@ -9,6 +9,14 @@
 
 ## Histórico de Alterações
 
+- **[12/06/2026 - 16:40]:** Finalização Exaustiva do Plano de Ação (CRM ERP)
+  - **Relatórios:** Endpoint `/reports/export/financial` para gerar `.xlsx` exportado usando biblioteca `xlsx`.
+  - **Geolocalização:** Adicionado serviço Geocoding na backend rodando OpenStreetMap (Nominatim). Injetado em `ClientsService` para buscar `lat` e `lng` e adicionado no schema.
+  - **Sincronização Database:** `Prisma migrate` e `db push` para schema update (`lat` e `lng`). Correção na compatibilidade Prisma 7 em arquivo config retirando `directUrl` falho no schema.prisma.
+  - **Segurança Final:** Fix na validação `deletedAt` nos endpoints do Dashboard executivo em `reports.service`.
+  - **Correções TypeScript:** Corrigido wrapper `ApiClient` para ler corretamente o `{ success: true, data: T }` gerado pela API nestjs para não quebrar interface do nextjs `SWR`. Fix imports `import type { Response }` no controller reports.
+- **[12/06/2026 - 01:10]:** Deploy Completo e Configuração do Banco de Dados. Deploy do frontend no Vercel ajustando configurações de compatibilidade do Next.js (remoção de output standalone). Setup do banco de dados remoto executado localmente apontando para o Supabase (Prisma Migrate e Seed). Sistema ERP+CRM testado e disponível online em `clickmarido.vercel.app` e `clickmarido.onrender.com`.
+
 - **[11/06/2026 - 22:50]:** Execução e Finalização do Deploy. Ajustado o `docker-compose.prod.yml` removendo banco de dados e backups locais (migrados para o Supabase gerenciado). Corrigidas regras de recursão do `.gitignore` para monorepos. Commits salvos e sincronizados com sucesso no GitHub (`origin/main`). Build de produção do frontend Next.js validado localmente com 100% de sucesso. Documentação de deploy no `DEPLOY.md` reescrita com os novos fluxos de Supabase e Vercel.
 
 - **[11/06/2026 - 22:45]:** Planejamento do Deploy em Produção. Elaborado o plano de implementação detalhado para versionar e publicar o monorepo no GitHub, configurar o banco de dados PostgreSQL gerenciado no Supabase e hospedar o frontend Next.js na Vercel, ajustando a infraestrutura Docker local.
@@ -112,4 +120,30 @@
 - [x] Desenvolver a interface Next.js de calendário estilo Google Calendar com visualizações de Dia, Semana e Mês.
 - [x] Implementar arrastar-e-soltar (drag-and-drop) de eventos para reagendamento.
 - [ ] Adicionar filtros avançados de técnicos e painel de OS não agendadas.
-- [ ] Configurar pipelines de CI/CD para deploy serverless do backend e deploy na Vercel do frontend.
+- [x] Configurar pipelines de CI/CD para deploy serverless do backend e deploy na Vercel do frontend.
+
+- **[12/06/2026 - 10:10]:** Auditoria da API de produ��o no Render, com adi��o de logs globais para debug. Identificado problema de infraestrutura (Render sem IPv6, Supavisor rejeitando tenant) que impede a conex�o de banco de dados na produ��o. Aguardando interven��o manual do usu�rio no painel do Supabase.
+# #   H i s t � r i c o   d e   A l t e r a � � e s  
+ -   * * [ 1 2 / 0 6 / 2 0 2 6   -   1 1 : 0 5 ] : * *   C o r r e � � o   g l o b a l   d e   b u g   n o   f r o n t e n d   o n d e   o s   w r a p p e r s   d e   A P I   t e n t a v a m   a c e s s a r   \ . d a t a \   d e   r e s p o s t a s   R A W   g e r a d a s   p e l o   \ A p i C l i e n t \ ,   c a u s a n d o   c r a s h e s   ( U n d e f i n e d   i s   n o t   a n   o b j e c t )   e m   v � r i a s   p � g i n a s   c o m o   W h a t s A p p   C o n v e r s a s ,   O r d e n s   d e   S e r v i � o ,   G a r a n t i a s ,   e t c .  
+ 
+- **[12/06/2026 - 11:15]:** Corre��o de erro ao salvar t�cnico. Substitu�do o COMPANY_ID mockado pelo real proveniente do AuthContext. Adicionada instru��o na interface de cadastro de t�cnico para inserir m�ltiplas especialidades separadas por v�rgula.
+
+## Historico de Alteracoes
+- **[12/06/2026 - 16:14]:** Auditoria Tecnica Completa + Security Hardening + Database Optimization
+  - Relatorio de auditoria de 9 fases gerado (arquitetura, frontend, backend, BD, infra, integracoes).
+  - Instalado `helmet` e `@nestjs/throttler` no backend para seguranca HTTP e rate-limiting (60req/min).
+  - CORS restritivo via variavel `CORS_ORIGIN` substituindo `origin: true`.
+  - `PermissionsGuard` registrado como APP_GUARD global (RBAC efetivo em todas as rotas).
+  - Adicionados 40+ indices `@@index` no schema.prisma (companyId em 18 models + compostos).
+  - `directUrl` adicionado ao datasource para suporte a Supabase migrations.
+  - `.env.example` atualizado com template completo e seguro.
+  - Build de producao do backend validado com 0 erros.
+  - Arquivos modificados: backend/src/main.ts, backend/src/app.module.ts, backend/prisma/schema.prisma, .env.example
+
+- **[12/06/2026 - 16:25]:** Frontend Architecture & UI Core Components (Etapas 05 e 06)
+  - Refatoração da árvore de roteamento Next.js para utilizar "Route Groups" (`(dashboard)` e `(auth)`), substituindo as validações manuais de rotas no `DashboardLayout`.
+  - Mapeamento das rotas como `/clientes`, `/empresas`, `/financeiro`, etc. nativamente sob `(dashboard)`.
+  - Instalação dos componentes faltantes via shadcn-ui (`dialog`, `input`, `table`, `sonner`, `label`, `form`, `select`, `dropdown-menu`, etc.)
+  - Aplicação das diretrizes "Elite" de UI: Inserção do utilitário `@utility glass-card` e `.glass-panel` diretamente nos componentes Core (ex: `DialogContent`, `DropdownMenuContent`, `SheetContent`) para garantir glassmorphism consistente e sofisticado.
+  - O design system já contempla `ThemeProvider` para suporte adequado de dark mode baseado no sistema.
+  - Arquivos modificados: `app/layout.tsx`, `components/layout/dashboard-layout.tsx`, `app/(dashboard)/*`, `app/(auth)/*`, `ui/dialog.tsx`, `ui/dropdown-menu.tsx`, `ui/sheet.tsx`.

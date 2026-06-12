@@ -4,9 +4,14 @@ import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { CreateHistoryDto } from './dto/create-history.dto';
 
+import { GeolocationService } from '../../core/geolocation/geolocation.service';
+
 @Injectable()
 export class ClientsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly geolocationService: GeolocationService,
+  ) {}
 
   async create(createClientDto: CreateClientDto, companyId: string, userId?: string) {
     const { name, cpf, phone, whatsapp, email, address, cep, city, leadSource, notes } = createClientDto;
@@ -30,6 +35,17 @@ export class ClientsService {
 
     // Cria o cliente e o histórico inicial em uma transação
     const client = await this.prisma.$transaction(async (tx) => {
+      let lat = null;
+      let lng = null;
+
+      if (address) {
+        const coords = await this.geolocationService.geocodeAddress(address, city);
+        if (coords) {
+          lat = coords.lat;
+          lng = coords.lng;
+        }
+      }
+
       const createdClient = await tx.client.create({
         data: {
           name,
@@ -43,6 +59,8 @@ export class ClientsService {
           leadSource,
           notes,
           companyId,
+          lat,
+          lng,
         },
       });
 
@@ -160,9 +178,22 @@ export class ClientsService {
     }
 
     const updatedClient = await this.prisma.$transaction(async (tx) => {
+      let lat = client.lat;
+      let lng = client.lng;
+
+      if (updateClientDto.address && updateClientDto.address !== client.address) {
+        const coords = await this.geolocationService.geocodeAddress(updateClientDto.address, updateClientDto.city || client.city || undefined);
+        if (coords) {
+          lat = coords.lat;
+          lng = coords.lng;
+        }
+      }
+
+      const dataToUpdate = { ...updateClientDto, lat, lng };
+
       const dbClient = await tx.client.update({
         where: { id },
-        data: updateClientDto,
+        data: dataToUpdate,
       });
 
       await tx.clientHistory.create({

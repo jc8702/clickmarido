@@ -1,11 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { MercadoPagoConfig, Payment } from 'mercadopago';
 
 @Injectable()
 export class FinancialService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(FinancialService.name);
+  private client: MercadoPagoConfig;
+
+  constructor(private readonly prisma: PrismaService) {
+    this.client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || 'TEST-dummy-token' });
+  }
 
   async create(dto: CreateTransactionDto) {
     return this.prisma.financialTransaction.create({
@@ -88,5 +94,62 @@ export class FinancialService {
       pendingToReceive,
       pendingToPay,
     };
+  }
+
+  async generatePix(id: string) {
+    const tx = await this.findOne(id);
+    if (tx.type !== 'RECEITA') throw new BadRequestException('Apenas receitas podem gerar cobrança Pix.');
+    if (tx.status === 'PAGO') throw new BadRequestException('A transação já está paga.');
+
+    try {
+      const payment = new Payment(this.client);
+      const response = await payment.create({
+        body: {
+          transaction_amount: tx.value,
+          description: tx.description || 'Cobrança Click Marido',
+          payment_method_id: 'pix',
+          payer: {
+            email: 'cliente@exemplo.com', // No MVP, pode ser fixo ou pegar do Cliente via relacionamento
+          },
+          external_reference: tx.id, // O ID da transação no nosso sistema
+        }
+      });
+
+      // Salva ou atualiza a transação para manter a referência (opcional no MVP)
+      return {
+        qr_code: response.point_of_interaction?.transaction_data?.qr_code,
+        qr_code_base64: response.point_of_interaction?.transaction_data?.qr_code_base64,
+        ticket_url: response.point_of_interaction?.transaction_data?.ticket_url,
+      };
+    } catch (error) {
+      this.logger.error('Erro ao gerar Pix no Mercado Pago', error);
+      throw new BadRequestException('Não foi possível gerar a cobrança Pix.');
+    }
+  }
+
+  async handleWebhook(req: any, body: any) {
+    this.logger.log('Recebido webhook do Mercado Pago', JSON.stringify(body));
+    
+    if (body.type === 'payment' && body.data?.id) {
+      try {
+        const payment = new Payment(this.client);
+        const paymentData = await payment.get({ id: body.data.id });
+        
+        if (paymentData.status === 'approved' && paymentData.external_reference) {
+          const txId = paymentData.external_reference;
+          await this.prisma.financialTransaction.update({
+            where: { id: txId },
+            data: {
+              status: 'PAGO',
+              paidAt: new Date(),
+            }
+          });
+          this.logger.log(`Transação ${txId} marcada como PAGO via Webhook.`);
+        }
+      } catch (error) {
+        this.logger.error('Erro ao processar webhook de pagamento', error);
+      }
+    }
+    return { success: true };
   }
 }

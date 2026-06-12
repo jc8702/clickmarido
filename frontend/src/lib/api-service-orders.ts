@@ -45,6 +45,11 @@ export const finishServiceOrder = async (id: string, signature: string) => {
   return res;
 };
 
+export const updateOrderStatus = async (id: string, status: string) => {
+  const res: any = await ApiClient.post(`/service-orders/${id}/status`, { status });
+  return res;
+};
+
 export const addPhoto = async (id: string, url: string, type: 'antes' | 'depois') => {
   const res: any = await ApiClient.post(`/service-orders/${id}/photos`, { url, type });
   return res;

@@ -1,4 +1,5 @@
-import { Controller, Get, UseGuards, BadRequestException, Request } from '@nestjs/common';
+import { Controller, Get, UseGuards, BadRequestException, Request, Res } from '@nestjs/common';
+import type { Response } from 'express';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from '../../core/auth/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
@@ -35,5 +36,21 @@ export class ReportsController {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) throw new BadRequestException('Empresa não encontrada');
     return this.reportsService.getFinancialReport(companyId);
+  }
+
+  @Get('export/financial')
+  async exportFinancial(@Res() res: Response) {
+    const companyId = CompanyContext.getCompanyId();
+    if (!companyId) throw new BadRequestException('Empresa não encontrada');
+    
+    const buffer = await this.reportsService.exportFinancialExcel(companyId);
+    
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="relatorio-financeiro.xlsx"',
+      'Content-Length': buffer.length,
+    });
+
+    res.end(buffer);
   }
 }

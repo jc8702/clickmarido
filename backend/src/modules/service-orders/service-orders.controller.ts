@@ -37,6 +37,11 @@ export class ServiceOrdersController {
     return this.osService.finishOrder(id, signature);
   }
 
+  @Post(':id/status')
+  updateStatus(@Param('id') id: string, @Body('status') status: string) {
+    return this.osService.updateStatus(id, status);
+  }
+
   @Post(':id/photos')
   addPhoto(@Param('id') id: string, @Body('url') url: string, @Body('type') type: 'antes' | 'depois') {
     return this.osService.addPhoto(id, url, type);

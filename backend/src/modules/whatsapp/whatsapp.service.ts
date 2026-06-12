@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { EvolutionApiProvider } from './evolution-api.provider';
+import { AiService } from '../ai/ai.service';
 
 @Injectable()
 export class WhatsappService {
@@ -9,6 +10,7 @@ export class WhatsappService {
   constructor(
     private prisma: PrismaService,
     private evolution: EvolutionApiProvider,
+    private aiService: AiService,
   ) {}
 
   // INSTANCE MANAGEMENT
@@ -151,6 +153,30 @@ export class WhatsappService {
             read: fromMe,
           },
         });
+
+        // Trigger Auto-Reply IA se for de cliente e o chatbot estiver "ativo"
+        // No MVP: responder automaticamente com IA se a mensagem tiver "?" ou "orçamento"
+        if (!fromMe && (textContent.toLowerCase().includes('?') || textContent.toLowerCase().includes('orçamento'))) {
+          try {
+            // Pega as ultimas 5 mensagens para contexto
+            const history = await this.prisma.message.findMany({
+              where: { conversationId: conversation.id },
+              orderBy: { timestamp: 'desc' },
+              take: 5,
+            });
+            const chatHistory = history.reverse().map(m => `${m.fromMe ? 'Atendente' : 'Cliente'}: ${m.content}`);
+            
+            const summary = await this.aiService.summarizeConversation(chatHistory);
+            
+            const prompt = `Aja como o assistente virtual da Click Marido. O resumo da conversa até agora é: "${summary.summary}". O cliente acabou de dizer: "${textContent}". Dê uma resposta curta, educada, e peça para ele aguardar um técnico ou pergunte como podemos ajudar com o reparo.`;
+            const result = await this.aiService['flashModel'].generateContent(prompt);
+            const aiReply = result.response.text();
+            
+            await this.sendMessage(conversation.id, aiReply);
+          } catch (e) {
+            this.logger.error('Erro na resposta automatica via IA', e);
+          }
+        }
       }
     }
   }
@@ -193,5 +219,38 @@ export class WhatsappService {
     // O webhook vai receber o trigger fromMe = true e vai persistir no banco de dados. 
     // Por enquanto retornamos true
     return { success: true, result };
+  }
+
+  // AUTOMATIONS
+  async sendQuoteNotification(companyId: string, clientPhone: string, quoteId: string, totalAmount: number) {
+    const instance = await this.getInstance(companyId);
+    if (!instance) {
+      this.logger.warn(`No WhatsApp instance for company ${companyId}`);
+      return;
+    }
+
+    const message = `Olá! Seu orçamento #${quoteId} da Click Marido está pronto.\nValor total: R$ ${totalAmount}\nResponda esta mensagem se quiser aprovar ou tirar dúvidas!`;
+    await this.sendMessage(instance.instanceId, clientPhone, message);
+  }
+
+  async sendOsNotification(companyId: string, clientPhone: string, osNumber: number, status: string) {
+    const instance = await this.getInstance(companyId);
+    if (!instance) {
+      this.logger.warn(`No WhatsApp instance for company ${companyId}`);
+      return;
+    }
+
+    const message = `Olá! A sua Ordem de Serviço #${osNumber} teve o status atualizado para: ${status}.\nQualquer dúvida, estamos à disposição. Equipe Click Marido.`;
+    await this.sendMessage(instance.instanceId, clientPhone, message);
+  }
+
+  async sendServiceOrderUpdate(companyId: string, clientPhone: string, orderId: string, status: string) {
+    const instance = await this.getCompanyInstance(companyId);
+    if (instance.status !== 'CONNECTED') return;
+
+    const number = clientPhone.replace(/\D/g, '');
+    const message = `Sua Ordem de Serviço #${orderId} foi atualizada para o status: *${status}*.\nQualquer dúvida, estamos à disposição.`;
+    
+    await this.evolution.sendText(instance.instanceId, `${number}@s.whatsapp.net`, message);
   }
 }

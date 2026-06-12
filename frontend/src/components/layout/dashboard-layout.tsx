@@ -30,17 +30,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   // Controle para desktop (recolher/colapsar sidebar)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Verifica se é uma rota de autenticação
-  const isAuthRoute = ["/login", "/esqueci-senha", "/recuperar-senha"].includes(pathname);
-
-  // Se for uma rota de autenticação, renderiza o conteúdo cru sem Sidebar/Topbar
-  if (isAuthRoute) {
-    return (
-      <div className="min-h-screen w-screen bg-background text-foreground transition-colors duration-200">
-        {children}
-      </div>
-    );
-  }
+  // A renderização condicional por rota foi removida.
+  // Agora o App Router usa (dashboard)/layout.tsx para este componente
+  // e (auth)/layout.tsx para rotas limpas.
 
   return (
     <LayoutContext.Provider

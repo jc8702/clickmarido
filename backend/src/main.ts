@@ -1,10 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './core/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Headers de segurança HTTP (XSS, Clickjacking, MIME sniffing, etc.)
+  app.use(helmet());
 
   // Configura um prefixo global para as rotas da API (ex: http://localhost:3001/api/...)
   app.setGlobalPrefix('api');
@@ -19,9 +23,12 @@ async function bootstrap() {
     }),
   );
 
-  // Habilita CORS para permitir que o frontend (Next.js) consuma a API
+  // CORS restritivo — apenas domínios autorizados via variável de ambiente
+  const corsOrigin = process.env.CORS_ORIGIN;
   app.enableCors({
-    origin: true, // Em produção, deve ser substituído pela URL específica do frontend
+    origin: corsOrigin
+      ? corsOrigin.split(',').map((o) => o.trim())
+      : ['http://localhost:3000'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });

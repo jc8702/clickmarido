@@ -61,7 +61,14 @@ export class ApiClient {
       return {} as T;
     }
 
-    return response.json() as Promise<T>;
+    const json = await response.json();
+    
+    // Se a resposta seguir o padrão novo do backend com TransformInterceptor { success, data }
+    if (json && typeof json === 'object' && 'success' in json && 'data' in json) {
+      return json.data as T;
+    }
+
+    return json as T;
   }
 
   static get<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {

@@ -11,10 +11,14 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
+  Res,
+  NotFoundException,
 } from '@nestjs/common';
 import { QuotesService } from './quotes.service';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { UpdateQuoteDto } from './dto/update-quote.dto';
+import { PdfService } from '../../core/pdf/pdf.service';
+import type { Response } from 'express';
 import { JwtAuthGuard } from '../../core/auth/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
@@ -23,7 +27,10 @@ import { CompanyContext } from '../../common/company/company.context';
 @Controller('quotes')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class QuotesController {
-  constructor(private readonly quotesService: QuotesService) {}
+  constructor(
+    private readonly quotesService: QuotesService,
+    private readonly pdfService: PdfService
+  ) {}
 
   @Post()
   @RequirePermissions('*', 'quote:create')
@@ -96,5 +103,28 @@ export class QuotesController {
       throw new BadRequestException('Não foi possível identificar a empresa no contexto.');
     }
     return this.quotesService.remove(id, companyId);
+  }
+
+  @Get(':id/pdf')
+  @RequirePermissions('*', 'quote:read')
+  async getPdf(@Param('id') id: string, @Res() res: Response) {
+    const companyId = CompanyContext.getCompanyId();
+    if (!companyId) {
+      throw new BadRequestException('Não foi possível identificar a empresa no contexto.');
+    }
+
+    const quoteResult = await this.quotesService.findOne(id, companyId);
+    if (!quoteResult || !quoteResult.success) throw new NotFoundException('Orçamento não encontrado');
+    
+    const quoteData = quoteResult.data;
+    const buffer = await this.pdfService.generateQuotePdf(quoteData);
+    
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename=orcamento-${quoteData.id}.pdf`,
+      'Content-Length': buffer.length,
+    });
+    
+    res.end(buffer);
   }
 }

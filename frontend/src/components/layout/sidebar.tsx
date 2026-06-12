@@ -14,18 +14,15 @@ import {
   ChevronLeft, 
   ChevronRight, 
   X,
-  ShieldCheck,
   Building,
   UserCheck,
   CalendarDays,
   HardHat,
   ClipboardList,
-  Coins,
   Package,
   MessageSquare,
   DollarSign,
   Shield,
-  ClipboardCheck,
   HeartHandshake,
   BarChart3,
 } from "lucide-react";
@@ -60,7 +57,6 @@ export function Sidebar() {
     setSidebarCollapsed 
   } = useLayout();
 
-  // Filtra as opções do menu conforme as permissões do usuário autenticado
   const filteredMenuItems = menuItems.filter((item) => {
     if (!item.permission) return true;
     if (!user) return false;
@@ -69,50 +65,47 @@ export function Sidebar() {
 
   return (
     <>
-      {/* OVERLAY PARA MOBILE: Clica para fechar a sidebar no celular */}
+      {/* OVERLAY MOBILE */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-zinc-900/60 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* SIDEBAR CONTAINER */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex flex-col bg-zinc-900 text-zinc-100 border-r border-zinc-800 transition-all duration-300 ease-in-out md:static",
-          // Largura no Mobile
+          "fixed inset-y-0 left-0 z-50 flex flex-col glass-panel border-r border-[var(--border)] transition-all duration-300 ease-in-out md:static",
           sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full w-64 md:translate-x-0",
-          // Largura no Desktop (Colapsado vs Expandido)
           sidebarCollapsed ? "md:w-20" : "md:w-64"
         )}
+        style={{ background: 'color-mix(in srgb, var(--card) 80%, transparent)' }}
       >
-        {/* HEADER / LOGO */}
-        <div className="flex h-16 items-center justify-between px-4 border-b border-zinc-800">
+        {/* LOGO */}
+        <div className="flex h-16 items-center justify-between px-4 border-b border-[var(--border)]">
           <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg select-none">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-zinc-950 font-black shadow-md shadow-amber-500/20">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] font-black shadow-md shrink-0"
+              style={{ boxShadow: '0 4px 14px color-mix(in srgb, var(--primary) 30%, transparent)' }}
+            >
               CM
             </span>
-            <span
-              className={cn(
-                "transition-all duration-300 font-semibold tracking-wide truncate",
-                sidebarCollapsed ? "md:opacity-0 md:w-0" : "opacity-100"
-              )}
-            >
-              Click <span className="text-amber-500">Marido</span>
+            <span className={cn(
+              "transition-all duration-300 font-semibold tracking-wide truncate text-[var(--foreground)]",
+              sidebarCollapsed ? "md:opacity-0 md:w-0" : "opacity-100"
+            )}>
+              Click <span style={{ color: 'var(--primary)' }}>Marido</span>
             </span>
           </Link>
 
-          {/* Botão de Fechar no Mobile */}
           <button
-            className="rounded-lg p-1.5 hover:bg-zinc-800 md:hidden"
+            className="rounded-lg p-1.5 hover:bg-[var(--border)] md:hidden text-[var(--foreground)]"
             onClick={() => setSidebarOpen(false)}
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* NAVEGAÇÃO / LINKS */}
+        {/* NAV */}
         <nav className="flex-1 space-y-1.5 px-3 py-4 overflow-y-auto">
           {filteredMenuItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -123,27 +116,30 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 relative group",
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 relative group",
                   isActive
-                    ? "bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/10"
-                    : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60"
+                    ? "text-[var(--primary-foreground)] shadow-md"
+                    : "text-[var(--foreground)]/60 hover:text-[var(--foreground)] hover:bg-[var(--border)]/60"
                 )}
-                onClick={() => setSidebarOpen(false)} // Fecha no mobile ao clicar
+                style={isActive ? {
+                  background: 'var(--primary)',
+                  boxShadow: '0 4px 14px color-mix(in srgb, var(--primary) 20%, transparent)',
+                } : {}}
+                onClick={() => setSidebarOpen(false)}
               >
-                <Icon className={cn("h-5 w-5 shrink-0", isActive ? "text-zinc-950" : "text-zinc-400 group-hover:text-zinc-200")} />
+                <Icon className={cn("h-5 w-5 shrink-0", isActive ? "text-[var(--primary-foreground)]" : "")} />
                 
-                <span
-                  className={cn(
-                    "transition-all duration-300 truncate",
-                    sidebarCollapsed ? "md:opacity-0 md:w-0" : "opacity-100"
-                  )}
-                >
+                <span className={cn(
+                  "transition-all duration-300 truncate",
+                  sidebarCollapsed ? "md:opacity-0 md:w-0" : "opacity-100"
+                )}>
                   {item.label}
                 </span>
 
-                {/* Tooltip elegante quando colapsado no desktop */}
                 {sidebarCollapsed && (
-                  <div className="absolute left-16 hidden rounded bg-zinc-950 border border-zinc-800 px-2 py-1 text-xs text-zinc-100 shadow-md group-hover:md:block z-50">
+                  <div className="absolute left-16 hidden rounded-lg border border-[var(--border)] px-2 py-1 text-xs shadow-md group-hover:md:block z-50"
+                    style={{ background: 'var(--card)', color: 'var(--foreground)' }}
+                  >
                     {item.label}
                   </div>
                 )}
@@ -152,11 +148,11 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* FOOTER DA SIDEBAR (BOTÃO DE toggle) */}
-        <div className="p-3 border-t border-zinc-800 hidden md:block">
+        {/* FOOTER TOGGLE */}
+        <div className="p-3 border-t border-[var(--border)] hidden md:block">
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="flex w-full items-center justify-center rounded-lg py-2 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60 transition-colors"
+            className="flex w-full items-center justify-center rounded-xl py-2 transition-colors text-[var(--foreground)]/50 hover:text-[var(--foreground)] hover:bg-[var(--border)]/60"
             title={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
           >
             {sidebarCollapsed ? (

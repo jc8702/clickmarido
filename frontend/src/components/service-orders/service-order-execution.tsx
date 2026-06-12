@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ServiceOrder, addPhoto, addChecklistItem, toggleChecklistItem, finishServiceOrder } from '@/lib/api-service-orders';
+import { ServiceOrder, addPhoto, addChecklistItem, toggleChecklistItem, finishServiceOrder, updateOrderStatus } from '@/lib/api-service-orders';
 
 interface ExecutionProps {
   os: ServiceOrder;
@@ -23,6 +23,11 @@ export function ServiceOrderExecution({ os, onUpdate }: ExecutionProps) {
       onUpdate();
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleStatusChange = async (status: string) => {
+    await updateOrderStatus(os.id, status);
+    onUpdate();
   };
 
   const handleAddChecklist = async () => {
@@ -66,7 +71,19 @@ export function ServiceOrderExecution({ os, onUpdate }: ExecutionProps) {
           <p><strong>OS Número:</strong> #{os.number}</p>
           <p><strong>Cliente:</strong> {os.client?.name}</p>
           <p><strong>Técnico Atribuído:</strong> {os.technician?.name || 'Pendente'}</p>
-          <p><strong>Status:</strong> {os.status}</p>
+          <div className="flex items-center gap-2">
+            <strong>Status:</strong>
+            <select 
+              value={os.status}
+              onChange={(e) => handleStatusChange(e.target.value)}
+              className="border rounded p-1 bg-background text-sm"
+              disabled={os.status === 'Concluído' || os.status === 'Cancelado'}
+            >
+              {['Pendente', 'Agendado', 'Em Andamento', 'Aguardando Peça', 'Concluído', 'Cancelado'].map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
           <p><strong>Valor Total:</strong> R$ {os.totalValue.toFixed(2)}</p>
           <hr />
           <h4 className="font-bold">Serviços</h4>

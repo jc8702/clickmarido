@@ -6,6 +6,8 @@ import { TechniciansTable } from '@/components/technicians/technicians-table';
 import { TechnicianForm } from '@/components/technicians/technician-form';
 import { TechnicianAnalytics } from '@/components/technicians/technician-analytics';
 import { useAuth } from '@/contexts/auth-context';
+import { PageHeader } from '@/components/layout/page-header';
+import { HardHat, Plus } from 'lucide-react';
 
 export default function TecnicosPage() {
   const { company } = useAuth();
@@ -64,18 +66,21 @@ export default function TecnicosPage() {
   };
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Técnicos</h2>
-        {!showForm && (
-          <button 
-            onClick={handleAddNew}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md font-medium shadow"
-          >
-            + Novo Técnico
-          </button>
-        )}
-      </div>
+    <div className="p-8 lg:p-12 max-w-7xl mx-auto space-y-10 animate-in-fade">
+      <PageHeader
+        title="Técnicos"
+        subtitle="Equipe técnica operacional e ranking de performance."
+        icon={<HardHat className="w-8 h-8" />}
+        breadcrumbs={[{ label: 'Técnicos' }]}
+        actions={!showForm ? [
+          {
+            label: "Novo Técnico",
+            icon: <Plus className="w-5 h-5" />,
+            onClick: handleAddNew,
+            className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg",
+          }
+        ] : []}
+      />
 
       {showForm ? (
         <div className="max-w-2xl">

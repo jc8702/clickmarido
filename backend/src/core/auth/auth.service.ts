@@ -1,10 +1,12 @@
 import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { EmailService } from '../email/email.service';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 
@@ -13,6 +15,8 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   // Gera o hash SHA-256 para salvar tokens no banco com segurança
@@ -218,19 +222,26 @@ export class AuthService {
       },
     });
 
-    // Simulação do envio de e-mail registrando-o como um AppLog no banco de dados
-    const resetLink = `http://localhost:3000/recuperar-senha?token=${resetToken}`;
+    // Envia o e-mail via Resend
+    const resetLink = `${this.configService.get('FRONTEND_URL') || 'http://localhost:3000'}/recuperar-senha?token=${resetToken}`;
+    
+    // Log para auditoria
     await this.prisma.appLog.create({
       data: {
         level: 'INFO',
         context: 'AuthService.forgotPassword',
-        message: `Simulação de e-mail de recuperação de senha enviado para ${email}. Link: ${resetLink}`,
+        message: `E-mail de recuperação de senha enviado para ${email}.`,
         companyId: user.companyId,
       },
     });
 
-    console.log(`\n📬 [E-MAIL SIMULADO] Redefinição de senha para: ${email}`);
-    console.log(`🔗 Link de redefinição: ${resetLink}\n`);
+    try {
+      await this.emailService.sendPasswordReset(email, resetLink);
+      console.log(`\n📬 [E-MAIL] Redefinição de senha enviada para: ${email}`);
+    } catch (error) {
+      console.error(`Erro ao enviar e-mail para ${email}:`, error);
+      // Retorna sucesso para evitar enumeração de erro
+    }
 
     return { success: true };
   }
