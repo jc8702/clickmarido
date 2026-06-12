@@ -54,8 +54,8 @@ export function TechnicianForm({ initialData, companyId, onSuccess, onCancel }: 
         <input required type="text" name="phone" value={formData.phone} onChange={handleChange} className="w-full border rounded p-2 bg-background text-foreground" />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Especialidade (Ex: Elétrica)</label>
-        <input type="text" name="specialty" value={formData.specialty} onChange={handleChange} className="w-full border rounded p-2 bg-background text-foreground" />
+        <label className="block text-sm font-medium mb-1">Especialidades (Separe por vírgulas para múltiplas)</label>
+        <input type="text" name="specialty" value={formData.specialty} onChange={handleChange} placeholder="Ex: Elétrica, Hidráulica, Ar Condicionado" className="w-full border rounded p-2 bg-background text-foreground" />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">Status</label>

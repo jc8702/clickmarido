@@ -5,11 +5,10 @@ import { Technician, getTechnicians, getTechnicianRanking, deleteTechnician } fr
 import { TechniciansTable } from '@/components/technicians/technicians-table';
 import { TechnicianForm } from '@/components/technicians/technician-form';
 import { TechnicianAnalytics } from '@/components/technicians/technician-analytics';
-
-// Mock COMPANY ID by now since context is not globally provided in this snippet
-const COMPANY_ID = "6fb48ab0-08ab-49bd-9eab-57dd4f923ff1";
+import { useAuth } from '@/contexts/auth-context';
 
 export default function TecnicosPage() {
+  const { company } = useAuth();
   const [technicians, setTechnicians] = useState<Technician[]>([]);
   const [ranking, setRanking] = useState<Technician[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,11 +17,12 @@ export default function TecnicosPage() {
   const [editingTech, setEditingTech] = useState<Technician | null>(null);
 
   const fetchData = async () => {
+    if (!company) return;
     setLoading(true);
     try {
       const [techData, rankData] = await Promise.all([
-        getTechnicians(COMPANY_ID),
-        getTechnicianRanking(COMPANY_ID)
+        getTechnicians(company.id),
+        getTechnicianRanking(company.id)
       ]);
       setTechnicians(techData);
       setRanking(rankData);
@@ -34,8 +34,10 @@ export default function TecnicosPage() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (company) {
+      fetchData();
+    }
+  }, [company]);
 
   const handleAddNew = () => {
     setEditingTech(null);
@@ -78,7 +80,7 @@ export default function TecnicosPage() {
       {showForm ? (
         <div className="max-w-2xl">
           <TechnicianForm 
-            companyId={COMPANY_ID} 
+            companyId={company?.id || ''} 
             initialData={editingTech} 
             onSuccess={handleFormSuccess} 
             onCancel={() => setShowForm(false)} 
