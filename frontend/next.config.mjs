@@ -1,4 +1,7 @@
-const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://clickmarido-api.onrender.com';
+const isProd = process.env.NODE_ENV === 'production';
+const backendUrl = isProd 
+  ? 'https://clickmarido.onrender.com' 
+  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
