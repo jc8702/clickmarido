@@ -1,0 +1,83 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AppModule = void 0;
+const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
+const core_1 = require("@nestjs/core");
+const app_controller_1 = require("./app.controller");
+const app_service_1 = require("./app.service");
+const prisma_module_1 = require("./core/prisma/prisma.module");
+const auth_module_1 = require("./core/auth/auth.module");
+const companies_module_1 = require("./modules/companies/companies.module");
+const users_module_1 = require("./modules/users/users.module");
+const clients_module_1 = require("./modules/clients/clients.module");
+const services_module_1 = require("./modules/services/services.module");
+const quotes_module_1 = require("./modules/quotes/quotes.module");
+const technicians_module_1 = require("./modules/technicians/technicians.module");
+const service_orders_module_1 = require("./modules/service-orders/service-orders.module");
+const financial_module_1 = require("./modules/financial/financial.module");
+const materials_module_1 = require("./modules/materials/materials.module");
+const whatsapp_module_1 = require("./modules/whatsapp/whatsapp.module");
+const warranties_module_1 = require("./modules/warranties/warranties.module");
+const follow_ups_module_1 = require("./modules/follow-ups/follow-ups.module");
+const reports_module_1 = require("./modules/reports/reports.module");
+const schedule_1 = require("@nestjs/schedule");
+const company_middleware_1 = require("./common/company/company.middleware");
+const logging_interceptor_1 = require("./common/interceptors/logging.interceptor");
+const audit_interceptor_1 = require("./common/interceptors/audit.interceptor");
+const appointments_module_1 = require("./modules/appointments/appointments.module");
+const ai_module_1 = require("./modules/ai/ai.module");
+let AppModule = class AppModule {
+    configure(consumer) {
+        consumer
+            .apply(company_middleware_1.CompanyMiddleware)
+            .forRoutes({ path: '*', method: common_1.RequestMethod.ALL });
+    }
+};
+exports.AppModule = AppModule;
+exports.AppModule = AppModule = __decorate([
+    (0, common_1.Module)({
+        imports: [
+            config_1.ConfigModule.forRoot({
+                isGlobal: true,
+            }),
+            prisma_module_1.PrismaModule,
+            auth_module_1.AuthModule,
+            companies_module_1.CompaniesModule,
+            users_module_1.UsersModule,
+            clients_module_1.ClientsModule,
+            services_module_1.ServicesModule,
+            quotes_module_1.QuotesModule,
+            technicians_module_1.TechniciansModule,
+            service_orders_module_1.ServiceOrdersModule,
+            financial_module_1.FinancialModule,
+            materials_module_1.MaterialsModule,
+            appointments_module_1.AppointmentsModule,
+            whatsapp_module_1.WhatsappModule,
+            warranties_module_1.WarrantiesModule,
+            follow_ups_module_1.FollowUpsModule,
+            reports_module_1.ReportsModule,
+            ai_module_1.AiModule,
+            schedule_1.ScheduleModule.forRoot(),
+        ],
+        controllers: [app_controller_1.AppController],
+        providers: [
+            app_service_1.AppService,
+            {
+                provide: core_1.APP_INTERCEPTOR,
+                useClass: logging_interceptor_1.LoggingInterceptor,
+            },
+            {
+                provide: core_1.APP_INTERCEPTOR,
+                useClass: audit_interceptor_1.AuditInterceptor,
+            },
+        ],
+    })
+], AppModule);
+//# sourceMappingURL=app.module.js.map
