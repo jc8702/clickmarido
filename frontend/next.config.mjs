@@ -1,7 +1,7 @@
-const isProd = process.env.NODE_ENV === 'production';
-const backendUrl = isProd 
-  ? 'https://clickmarido.onrender.com' 
-  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
+const rawBackendUrl = process.env.NEXT_PUBLIC_API_URL || '';
+const backendUrl = rawBackendUrl && !rawBackendUrl.includes('vercel.app')
+  ? rawBackendUrl
+  : 'https://clickmarido.onrender.com';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
