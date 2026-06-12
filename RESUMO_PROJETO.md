@@ -3,11 +3,16 @@
 ## Informações Gerais
 - **Status Atual:** ✅ Deploy em produção configurado com sucesso (GitHub, Vercel e Supabase).
 - **Objetivo Central:** Plataforma ERP + CRM SaaS multiempresa para gerenciamento de clientes, serviços, orçamentos, auditoria e permissões.
-- **Última Atualização:** 2026-06-11 22:50
+- **Última Atualização:** 2026-06-12 18:40
 
 ---
 
 ## Histórico de Alterações
+
+- **[12/06/2026 - 18:40]:** Resolução de Erro HTTP 404 e Melhoria de Resiliência de Conexão
+  - **Frontend:** Configuração de regras de `rewrites` no `next.config.mjs` para redirecionar chamadas de API de `/api/*` localmente no Next.js para o backend real hospedado no Render (`https://clickmarido-api.onrender.com`), resolvendo problemas de 404 na Vercel e eliminando CORS.
+  - **Backend:** Adicionada captura de erro com `try/catch` no bootstrap da conexão de banco no `PrismaService` do NestJS (`onModuleInit()`), permitindo que a API suba mesmo se a conexão inicial com o Supabase falhar temporariamente por instabilidade ou restrição de rede (como problemas no pooler Supavisor).
+  - Arquivos modificados: `frontend/next.config.mjs`, `backend/src/core/prisma/prisma.service.ts`
 
 - **[12/06/2026 - 16:40]:** Finalização Exaustiva do Plano de Ação (CRM ERP)
   - **Relatórios:** Endpoint `/reports/export/financial` para gerar `.xlsx` exportado usando biblioteca `xlsx`.

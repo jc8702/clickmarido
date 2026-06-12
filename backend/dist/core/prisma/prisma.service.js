@@ -22,10 +22,23 @@ let PrismaService = class PrismaService extends client_1.PrismaClient {
         super({ adapter });
     }
     async onModuleInit() {
-        await this.$connect();
+        try {
+            await this.$connect();
+            console.log('✅ Conexão com o banco de dados inicializada com sucesso.');
+        }
+        catch (error) {
+            console.error('⚠️ Falha ao conectar ao banco de dados na inicialização do modulo Prisma:');
+            console.error(error);
+            console.warn('⚠️ A aplicação continuará executando, mas as consultas ao banco falharão até que a conexão seja restabelecida.');
+        }
     }
     async onModuleDestroy() {
-        await this.$disconnect();
+        try {
+            await this.$disconnect();
+        }
+        catch (error) {
+            console.error('Erro ao desconectar do banco de dados:', error);
+        }
     }
 };
 exports.PrismaService = PrismaService;
