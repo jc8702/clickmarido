@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import type { Response } from 'express';
 import { ReportsService } from './reports.service';
 export declare class ReportsController {
     private readonly reportsService;

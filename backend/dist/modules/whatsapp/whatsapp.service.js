@@ -189,23 +189,25 @@ let WhatsappService = WhatsappService_1 = class WhatsappService {
         const result = await this.evolution.sendText(conversation.instance.instanceId, conversation.contactNumber, text);
         return { success: true, result };
     }
-    async sendQuoteNotification(companyId, clientPhone, quoteId, totalAmount) {
+    async sendMessageToNumber(companyId, phone, text) {
         const instance = await this.getCompanyInstance(companyId);
-        if (instance.status !== 'CONNECTED') {
-            this.logger.warn(`Instância do WhatsApp não conectada para a empresa ${companyId}`);
+        if (!instance || instance.status !== 'CONNECTED' && instance.status !== 'QR_CODE')
             return;
-        }
-        const number = clientPhone.replace(/\D/g, '');
+        const number = phone.replace(/\D/g, '');
+        const jid = `${number}@s.whatsapp.net`;
+        return this.evolution.sendText(instance.instanceId, jid, text);
+    }
+    async sendQuoteNotification(companyId, clientPhone, quoteId, totalAmount) {
         const message = `Olá! Seu orçamento #${quoteId} da Click Marido está pronto.\nValor total: R$ ${totalAmount}\nResponda esta mensagem se quiser aprovar ou tirar dúvidas!`;
-        await this.evolution.sendText(instance.instanceId, `${number}@s.whatsapp.net`, message);
+        await this.sendMessageToNumber(companyId, clientPhone, message);
+    }
+    async sendOsNotification(companyId, clientPhone, osNumber, status) {
+        const message = `Olá! A sua Ordem de Serviço #${osNumber} teve o status atualizado para: ${status}.\nQualquer dúvida, estamos à disposição. Equipe Click Marido.`;
+        await this.sendMessageToNumber(companyId, clientPhone, message);
     }
     async sendServiceOrderUpdate(companyId, clientPhone, orderId, status) {
-        const instance = await this.getCompanyInstance(companyId);
-        if (instance.status !== 'CONNECTED')
-            return;
-        const number = clientPhone.replace(/\D/g, '');
         const message = `Sua Ordem de Serviço #${orderId} foi atualizada para o status: *${status}*.\nQualquer dúvida, estamos à disposição.`;
-        await this.evolution.sendText(instance.instanceId, `${number}@s.whatsapp.net`, message);
+        await this.sendMessageToNumber(companyId, clientPhone, message);
     }
 };
 exports.WhatsappService = WhatsappService;

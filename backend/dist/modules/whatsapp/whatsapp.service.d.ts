@@ -58,6 +58,8 @@ export declare class WhatsappService {
         success: boolean;
         result: any;
     }>;
+    sendMessageToNumber(companyId: string, phone: string, text: string): Promise<any>;
     sendQuoteNotification(companyId: string, clientPhone: string, quoteId: string, totalAmount: number): Promise<void>;
+    sendOsNotification(companyId: string, clientPhone: string, osNumber: number, status: string): Promise<void>;
     sendServiceOrderUpdate(companyId: string, clientPhone: string, orderId: string, status: string): Promise<void>;
 }

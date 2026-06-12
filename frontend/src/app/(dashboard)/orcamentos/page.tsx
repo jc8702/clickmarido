@@ -358,7 +358,8 @@ export default function OrcamentosPage() {
 
   // WhatsApp Share Link
   const handleShareWhatsApp = (quote: Quote) => {
-    const text = `Olá, ${quote.client.name}! Segue o link do seu orçamento de número #${quote.number} da Click Marido no valor total de *${formatCurrency(quote.totalValue)}*. Para visualizar os detalhes ou aprovar com assinatura digital, acesse a nossa plataforma.\n\nFicamos no aguardo de sua aprovação!`;
+    const publicLink = `${window.location.origin}/q/${quote.id}`;
+    const text = `Olá, ${quote.client.name}! Segue o link do seu orçamento de número #${quote.number} da Click Marido no valor total de *${formatCurrency(quote.totalValue)}*. Para visualizar os detalhes ou aprovar com assinatura digital, acesse a nossa plataforma: ${publicLink}\n\nFicamos no aguardo de sua aprovação!`;
     const encodedText = encodeURIComponent(text);
     const cleanPhone = quote.client.whatsapp || quote.client.phone;
     const formattedPhone = cleanPhone.replace(/\D/g, '');

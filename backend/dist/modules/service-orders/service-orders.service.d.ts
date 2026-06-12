@@ -35,6 +35,8 @@ export declare class ServiceOrdersService {
         quoteId: string | null;
         technicianId: string | null;
         observations: string | null;
+        clientRating: number | null;
+        clientReview: string | null;
     }>;
     findAll(companyId: string): Promise<({
         client: {
@@ -85,6 +87,8 @@ export declare class ServiceOrdersService {
         quoteId: string | null;
         technicianId: string | null;
         observations: string | null;
+        clientRating: number | null;
+        clientReview: string | null;
     })[]>;
     findOne(id: string): Promise<{
         client: {
@@ -163,6 +167,8 @@ export declare class ServiceOrdersService {
         quoteId: string | null;
         technicianId: string | null;
         observations: string | null;
+        clientRating: number | null;
+        clientReview: string | null;
     }>;
     generateFromQuote(quoteId: string): Promise<{
         number: number;
@@ -179,6 +185,8 @@ export declare class ServiceOrdersService {
         quoteId: string | null;
         technicianId: string | null;
         observations: string | null;
+        clientRating: number | null;
+        clientReview: string | null;
     }>;
     update(id: string, dto: UpdateServiceOrderDto): Promise<{
         number: number;
@@ -195,6 +203,8 @@ export declare class ServiceOrdersService {
         quoteId: string | null;
         technicianId: string | null;
         observations: string | null;
+        clientRating: number | null;
+        clientReview: string | null;
     }>;
     updateStatus(id: string, status: string): Promise<{
         number: number;
@@ -211,6 +221,8 @@ export declare class ServiceOrdersService {
         quoteId: string | null;
         technicianId: string | null;
         observations: string | null;
+        clientRating: number | null;
+        clientReview: string | null;
     }>;
     finishOrder(id: string, signatureBase64: string): Promise<{
         number: number;
@@ -227,6 +239,8 @@ export declare class ServiceOrdersService {
         quoteId: string | null;
         technicianId: string | null;
         observations: string | null;
+        clientRating: number | null;
+        clientReview: string | null;
     }>;
     addPhoto(id: string, url: string, type: 'antes' | 'depois'): Promise<{
         id: string;
@@ -246,5 +260,35 @@ export declare class ServiceOrdersService {
         serviceOrderId: string;
         item: string;
         checked: boolean;
+    }>;
+    findPublicOrder(id: string): Promise<{
+        company: {
+            name: string;
+            phone: string | null;
+        };
+        technician: {
+            name: string;
+            phone: string;
+        } | null;
+    } & {
+        number: number;
+        id: string;
+        scheduledAt: Date | null;
+        deletedAt: Date | null;
+        companyId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        clientId: string;
+        status: string;
+        signature: string | null;
+        totalValue: number;
+        quoteId: string | null;
+        technicianId: string | null;
+        observations: string | null;
+        clientRating: number | null;
+        clientReview: string | null;
+    }>;
+    saveClientRating(id: string, rating: number, review?: string): Promise<{
+        success: boolean;
     }>;
 }

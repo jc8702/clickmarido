@@ -28,6 +28,15 @@ let FinancialController = class FinancialController {
     getSummary(companyId) {
         return this.financialService.getSummary(companyId);
     }
+    getDre(companyId, month, year) {
+        const m = month ? parseInt(month, 10) : new Date().getMonth() + 1;
+        const y = year ? parseInt(year, 10) : new Date().getFullYear();
+        return this.financialService.getDre(companyId, m, y);
+    }
+    getProjection(companyId, days) {
+        const d = days ? parseInt(days, 10) : 30;
+        return this.financialService.getCashFlowProjection(companyId, d);
+    }
     findAll(companyId) {
         return this.financialService.findAll(companyId);
     }
@@ -62,6 +71,23 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], FinancialController.prototype, "getSummary", null);
+__decorate([
+    (0, common_1.Get)('dre'),
+    __param(0, (0, common_1.Query)('companyId')),
+    __param(1, (0, common_1.Query)('month')),
+    __param(2, (0, common_1.Query)('year')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", void 0)
+], FinancialController.prototype, "getDre", null);
+__decorate([
+    (0, common_1.Get)('projection'),
+    __param(0, (0, common_1.Query)('companyId')),
+    __param(1, (0, common_1.Query)('days')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], FinancialController.prototype, "getProjection", null);
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, common_1.Query)('companyId')),

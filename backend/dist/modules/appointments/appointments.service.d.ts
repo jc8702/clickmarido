@@ -66,6 +66,8 @@ export declare class AppointmentsService {
                 quoteId: string | null;
                 technicianId: string | null;
                 observations: string | null;
+                clientRating: number | null;
+                clientReview: string | null;
             } | null;
         } & {
             id: string;
@@ -158,6 +160,8 @@ export declare class AppointmentsService {
                 quoteId: string | null;
                 technicianId: string | null;
                 observations: string | null;
+                clientRating: number | null;
+                clientReview: string | null;
             } | null;
         } & {
             id: string;
@@ -237,6 +241,8 @@ export declare class AppointmentsService {
                 quoteId: string | null;
                 technicianId: string | null;
                 observations: string | null;
+                clientRating: number | null;
+                clientReview: string | null;
             } | null;
         } & {
             id: string;

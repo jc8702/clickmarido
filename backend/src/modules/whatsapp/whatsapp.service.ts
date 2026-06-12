@@ -221,36 +221,28 @@ export class WhatsappService {
     return { success: true, result };
   }
 
+  async sendMessageToNumber(companyId: string, phone: string, text: string) {
+    const instance = await this.getCompanyInstance(companyId);
+    if (!instance || instance.status !== 'CONNECTED' && instance.status !== 'QR_CODE') return; // QR_CODE is technically not connected but we'll try
+
+    const number = phone.replace(/\D/g, '');
+    const jid = `${number}@s.whatsapp.net`;
+    return this.evolution.sendText(instance.instanceId, jid, text);
+  }
+
   // AUTOMATIONS
   async sendQuoteNotification(companyId: string, clientPhone: string, quoteId: string, totalAmount: number) {
-    const instance = await this.getInstance(companyId);
-    if (!instance) {
-      this.logger.warn(`No WhatsApp instance for company ${companyId}`);
-      return;
-    }
-
     const message = `Olá! Seu orçamento #${quoteId} da Click Marido está pronto.\nValor total: R$ ${totalAmount}\nResponda esta mensagem se quiser aprovar ou tirar dúvidas!`;
-    await this.sendMessage(instance.instanceId, clientPhone, message);
+    await this.sendMessageToNumber(companyId, clientPhone, message);
   }
 
   async sendOsNotification(companyId: string, clientPhone: string, osNumber: number, status: string) {
-    const instance = await this.getInstance(companyId);
-    if (!instance) {
-      this.logger.warn(`No WhatsApp instance for company ${companyId}`);
-      return;
-    }
-
     const message = `Olá! A sua Ordem de Serviço #${osNumber} teve o status atualizado para: ${status}.\nQualquer dúvida, estamos à disposição. Equipe Click Marido.`;
-    await this.sendMessage(instance.instanceId, clientPhone, message);
+    await this.sendMessageToNumber(companyId, clientPhone, message);
   }
 
   async sendServiceOrderUpdate(companyId: string, clientPhone: string, orderId: string, status: string) {
-    const instance = await this.getCompanyInstance(companyId);
-    if (instance.status !== 'CONNECTED') return;
-
-    const number = clientPhone.replace(/\D/g, '');
     const message = `Sua Ordem de Serviço #${orderId} foi atualizada para o status: *${status}*.\nQualquer dúvida, estamos à disposição.`;
-    
-    await this.evolution.sendText(instance.instanceId, `${number}@s.whatsapp.net`, message);
+    await this.sendMessageToNumber(companyId, clientPhone, message);
   }
 }

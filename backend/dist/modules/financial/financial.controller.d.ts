@@ -26,6 +26,20 @@ export declare class FinancialController {
         pendingToReceive: number;
         pendingToPay: number;
     }>;
+    getDre(companyId: string, month: string, year: string): Promise<{
+        period: string;
+        grossRevenue: number;
+        revenuesByCategory: Record<string, number>;
+        totalExpenses: number;
+        expensesByCategory: Record<string, number>;
+        netIncome: number;
+    }>;
+    getProjection(companyId: string, days: string): Promise<{
+        balance: number;
+        toReceive: number;
+        toPay: number;
+        date: string;
+    }[]>;
     findAll(companyId: string): Promise<{
         id: string;
         deletedAt: Date | null;

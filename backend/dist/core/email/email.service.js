@@ -47,6 +47,23 @@ let EmailService = EmailService_1 = class EmailService {
     `;
         return this.sendEmail(to, 'Redefinição de Senha - Click Marido', html);
     }
+    async sendWelcomeEmail(to, name) {
+        const html = `
+      <h1>Bem-vindo à Click Marido, ${name}!</h1>
+      <p>Sua conta foi criada com sucesso.</p>
+      <p>Acesse o sistema e comece a gerenciar seus serviços com facilidade.</p>
+    `;
+        return this.sendEmail(to, 'Bem-vindo(a) à Click Marido!', html);
+    }
+    async sendOsCompletedEmail(to, clientName, osNumber) {
+        const html = `
+      <h1>Serviço Concluído!</h1>
+      <p>Olá, ${clientName}!</p>
+      <p>A Ordem de Serviço <strong>#${osNumber}</strong> foi concluída com sucesso pelo nosso técnico.</p>
+      <p>Agradecemos a preferência.</p>
+    `;
+        return this.sendEmail(to, `Sua OS #${osNumber} foi concluída`, html);
+    }
 };
 exports.EmailService = EmailService;
 exports.EmailService = EmailService = EmailService_1 = __decorate([

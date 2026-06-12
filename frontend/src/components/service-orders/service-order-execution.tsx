@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ServiceOrder, addPhoto, addChecklistItem, toggleChecklistItem, finishServiceOrder, updateOrderStatus } from '@/lib/api-service-orders';
+import { Send } from 'lucide-react';
 
 interface ExecutionProps {
   os: ServiceOrder;
@@ -151,6 +152,21 @@ export function ServiceOrderExecution({ os, onUpdate }: ExecutionProps) {
               <h3 className="font-bold text-xl">OS Concluída!</h3>
               <p>Esta OS já foi finalizada e assinada.</p>
               {os.signature && <img src={os.signature} alt="Assinatura" className="mx-auto mt-4 w-32 border bg-white" />}
+              <div className="mt-6 border-t border-green-200 pt-4">
+                <button 
+                  onClick={() => {
+                    const link = `${window.location.origin}/os/${os.id}/rate`;
+                    const text = `Olá, ${os.client?.name}! Sua Ordem de Serviço #${os.number} foi concluída com sucesso. Por favor, avalie o atendimento do nosso técnico através deste link: ${link}`;
+                    const phone = (os.client as any)?.whatsapp || (os.client as any)?.phone || '';
+                    const cleanPhone = phone.replace(/\D/g, '');
+                    window.open(`https://api.whatsapp.com/send?phone=55${cleanPhone}&text=${encodeURIComponent(text)}`, '_blank');
+                  }}
+                  className="bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-700 transition flex items-center justify-center gap-2 mx-auto"
+                >
+                  <Send className="w-4 h-4" />
+                  Solicitar Avaliação pelo WhatsApp
+                </button>
+              </div>
             </div>
           ) : (
             <div>

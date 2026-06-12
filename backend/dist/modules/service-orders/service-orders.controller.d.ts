@@ -35,6 +35,8 @@ export declare class ServiceOrdersController {
         quoteId: string | null;
         technicianId: string | null;
         observations: string | null;
+        clientRating: number | null;
+        clientReview: string | null;
     }>;
     generateFromQuote(quoteId: string): Promise<{
         number: number;
@@ -51,6 +53,8 @@ export declare class ServiceOrdersController {
         quoteId: string | null;
         technicianId: string | null;
         observations: string | null;
+        clientRating: number | null;
+        clientReview: string | null;
     }>;
     findAll(companyId: string): Promise<({
         client: {
@@ -101,6 +105,8 @@ export declare class ServiceOrdersController {
         quoteId: string | null;
         technicianId: string | null;
         observations: string | null;
+        clientRating: number | null;
+        clientReview: string | null;
     })[]>;
     findOne(id: string): Promise<{
         client: {
@@ -179,6 +185,8 @@ export declare class ServiceOrdersController {
         quoteId: string | null;
         technicianId: string | null;
         observations: string | null;
+        clientRating: number | null;
+        clientReview: string | null;
     }>;
     update(id: string, dto: UpdateServiceOrderDto): Promise<{
         number: number;
@@ -195,6 +203,8 @@ export declare class ServiceOrdersController {
         quoteId: string | null;
         technicianId: string | null;
         observations: string | null;
+        clientRating: number | null;
+        clientReview: string | null;
     }>;
     finishOrder(id: string, signature: string): Promise<{
         number: number;
@@ -211,6 +221,8 @@ export declare class ServiceOrdersController {
         quoteId: string | null;
         technicianId: string | null;
         observations: string | null;
+        clientRating: number | null;
+        clientReview: string | null;
     }>;
     updateStatus(id: string, status: string): Promise<{
         number: number;
@@ -227,6 +239,8 @@ export declare class ServiceOrdersController {
         quoteId: string | null;
         technicianId: string | null;
         observations: string | null;
+        clientRating: number | null;
+        clientReview: string | null;
     }>;
     addPhoto(id: string, url: string, type: 'antes' | 'depois'): Promise<{
         id: string;

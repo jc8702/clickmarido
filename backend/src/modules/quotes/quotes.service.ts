@@ -190,6 +190,48 @@ export class QuotesService {
     };
   }
 
+  async findPublicQuote(id: string) {
+    const quote = await this.prisma.quote.findFirst({
+      where: { id, deletedAt: null },
+      include: {
+        company: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            cnpj: true,
+          }
+        },
+        client: {
+          select: {
+            name: true,
+            email: true,
+            cpf: true,
+          }
+        },
+        services: {
+          include: {
+            service: {
+              select: {
+                name: true,
+                description: true,
+              }
+            },
+          },
+        },
+      },
+    });
+
+    if (!quote) {
+      throw new NotFoundException('Orçamento não encontrado ou link expirado.');
+    }
+
+    return {
+      success: true,
+      data: quote,
+    };
+  }
+
   async update(id: string, updateQuoteDto: UpdateQuoteDto, companyId: string) {
     const existingQuote = await this.prisma.quote.findFirst({
       where: { id, companyId, deletedAt: null },
@@ -335,6 +377,34 @@ export class QuotesService {
     return {
       success: true,
       data: updatedQuote,
+    };
+  }
+
+  async savePublicSignature(id: string, signatureBase64: string) {
+    const existingQuote = await this.prisma.quote.findFirst({
+      where: { id, deletedAt: null },
+    });
+
+    if (!existingQuote) {
+      throw new NotFoundException('Orçamento não encontrado.');
+    }
+
+    if (existingQuote.status === 'Aprovado') {
+      throw new BadRequestException('Orçamento já foi aprovado anteriormente.');
+    }
+
+    const updatedQuote = await this.prisma.quote.update({
+      where: { id },
+      data: {
+        signature: signatureBase64,
+        signedAt: new Date(),
+        status: 'Aprovado',
+      },
+    });
+
+    return {
+      success: true,
+      data: { id: updatedQuote.id, status: updatedQuote.status },
     };
   }
 

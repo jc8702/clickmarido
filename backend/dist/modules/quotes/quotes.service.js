@@ -165,6 +165,45 @@ let QuotesService = class QuotesService {
             data: quote,
         };
     }
+    async findPublicQuote(id) {
+        const quote = await this.prisma.quote.findFirst({
+            where: { id, deletedAt: null },
+            include: {
+                company: {
+                    select: {
+                        id: true,
+                        name: true,
+                        phone: true,
+                        cnpj: true,
+                    }
+                },
+                client: {
+                    select: {
+                        name: true,
+                        email: true,
+                        cpf: true,
+                    }
+                },
+                services: {
+                    include: {
+                        service: {
+                            select: {
+                                name: true,
+                                description: true,
+                            }
+                        },
+                    },
+                },
+            },
+        });
+        if (!quote) {
+            throw new common_1.NotFoundException('Orçamento não encontrado ou link expirado.');
+        }
+        return {
+            success: true,
+            data: quote,
+        };
+    }
     async update(id, updateQuoteDto, companyId) {
         const existingQuote = await this.prisma.quote.findFirst({
             where: { id, companyId, deletedAt: null },
@@ -278,6 +317,29 @@ let QuotesService = class QuotesService {
         return {
             success: true,
             data: updatedQuote,
+        };
+    }
+    async savePublicSignature(id, signatureBase64) {
+        const existingQuote = await this.prisma.quote.findFirst({
+            where: { id, deletedAt: null },
+        });
+        if (!existingQuote) {
+            throw new common_1.NotFoundException('Orçamento não encontrado.');
+        }
+        if (existingQuote.status === 'Aprovado') {
+            throw new common_1.BadRequestException('Orçamento já foi aprovado anteriormente.');
+        }
+        const updatedQuote = await this.prisma.quote.update({
+            where: { id },
+            data: {
+                signature: signatureBase64,
+                signedAt: new Date(),
+                status: 'Aprovado',
+            },
+        });
+        return {
+            success: true,
+            data: { id: updatedQuote.id, status: updatedQuote.status },
         };
     }
     async remove(id, companyId) {

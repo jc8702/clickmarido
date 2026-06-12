@@ -23,14 +23,14 @@ const localizer = dateFnsLocalizer({
 
 const DnDCalendar = withDragAndDrop(Calendar);
 
-export function CalendarView() {
+export function CalendarView({ technicianId }: { technicianId?: string }) {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getAppointments();
+      const data = await getAppointments({ technicianId });
       setEvents(
         data.map((app) => ({
           id: app.id,
@@ -46,7 +46,7 @@ export function CalendarView() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [technicianId]);
 
   useEffect(() => {
     fetchEvents();
@@ -78,7 +78,7 @@ export function CalendarView() {
     if (title) {
       // chamar API de create
       import('@/lib/api-appointments').then((m) => {
-        m.createAppointment({ title, startTime: start.toISOString(), endTime: end.toISOString() })
+        m.createAppointment({ title, startTime: start.toISOString(), endTime: end.toISOString(), technicianId })
           .then(() => fetchEvents())
           .catch((e) => alert(e.message));
       });

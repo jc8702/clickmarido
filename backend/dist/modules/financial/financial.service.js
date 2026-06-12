@@ -127,6 +127,78 @@ let FinancialService = FinancialService_1 = class FinancialService {
             throw new common_1.BadRequestException('Não foi possível gerar a cobrança Pix.');
         }
     }
+    async getDre(companyId, month, year) {
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+        const transactions = await this.prisma.financialTransaction.findMany({
+            where: {
+                companyId,
+                deletedAt: null,
+                status: 'PAGO',
+                paidAt: {
+                    gte: startDate,
+                    lte: endDate,
+                },
+            },
+        });
+        let grossRevenue = 0;
+        const expensesByCategory = {};
+        const revenuesByCategory = {};
+        let totalExpenses = 0;
+        transactions.forEach(tx => {
+            if (tx.type === 'RECEITA') {
+                grossRevenue += tx.value;
+                revenuesByCategory[tx.category] = (revenuesByCategory[tx.category] || 0) + tx.value;
+            }
+            else if (tx.type === 'DESPESA') {
+                totalExpenses += tx.value;
+                expensesByCategory[tx.category] = (expensesByCategory[tx.category] || 0) + tx.value;
+            }
+        });
+        return {
+            period: `${month.toString().padStart(2, '0')}/${year}`,
+            grossRevenue,
+            revenuesByCategory,
+            totalExpenses,
+            expensesByCategory,
+            netIncome: grossRevenue - totalExpenses,
+        };
+    }
+    async getCashFlowProjection(companyId, days = 30) {
+        const today = new Date();
+        const endDate = new Date();
+        endDate.setDate(today.getDate() + days);
+        const pendingTransactions = await this.prisma.financialTransaction.findMany({
+            where: {
+                companyId,
+                deletedAt: null,
+                status: 'PENDENTE',
+                dueDate: {
+                    gte: today,
+                    lte: endDate,
+                },
+            },
+            orderBy: { dueDate: 'asc' },
+        });
+        const projection = {};
+        pendingTransactions.forEach(tx => {
+            const dateStr = tx.dueDate?.toISOString().split('T')[0];
+            if (!dateStr)
+                return;
+            if (!projection[dateStr]) {
+                projection[dateStr] = { toReceive: 0, toPay: 0 };
+            }
+            if (tx.type === 'RECEITA')
+                projection[dateStr].toReceive += tx.value;
+            if (tx.type === 'DESPESA')
+                projection[dateStr].toPay += tx.value;
+        });
+        return Object.entries(projection).map(([date, values]) => ({
+            date,
+            ...values,
+            balance: values.toReceive - values.toPay,
+        }));
+    }
     async handleWebhook(req, body) {
         this.logger.log('Recebido webhook do Mercado Pago', JSON.stringify(body));
         if (body.type === 'payment' && body.data?.id) {

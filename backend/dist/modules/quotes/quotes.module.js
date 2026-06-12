@@ -10,14 +10,16 @@ exports.QuotesModule = void 0;
 const common_1 = require("@nestjs/common");
 const quotes_service_1 = require("./quotes.service");
 const quotes_controller_1 = require("./quotes.controller");
+const quotes_public_controller_1 = require("./quotes-public.controller");
 const prisma_module_1 = require("../../core/prisma/prisma.module");
+const pdf_module_1 = require("../../core/pdf/pdf.module");
 let QuotesModule = class QuotesModule {
 };
 exports.QuotesModule = QuotesModule;
 exports.QuotesModule = QuotesModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
-        controllers: [quotes_controller_1.QuotesController],
+        imports: [prisma_module_1.PrismaModule, pdf_module_1.PdfModule],
+        controllers: [quotes_controller_1.QuotesController, quotes_public_controller_1.QuotesPublicController],
         providers: [quotes_service_1.QuotesService],
         exports: [quotes_service_1.QuotesService],
     })

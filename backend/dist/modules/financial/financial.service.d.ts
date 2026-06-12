@@ -93,6 +93,20 @@ export declare class FinancialService {
         qr_code_base64: string | undefined;
         ticket_url: string | undefined;
     }>;
+    getDre(companyId: string, month: number, year: number): Promise<{
+        period: string;
+        grossRevenue: number;
+        revenuesByCategory: Record<string, number>;
+        totalExpenses: number;
+        expensesByCategory: Record<string, number>;
+        netIncome: number;
+    }>;
+    getCashFlowProjection(companyId: string, days?: number): Promise<{
+        balance: number;
+        toReceive: number;
+        toPay: number;
+        date: string;
+    }[]>;
     handleWebhook(req: any, body: any): Promise<{
         success: boolean;
     }>;

@@ -17,6 +17,26 @@ export class FinancialController {
     return this.financialService.getSummary(companyId);
   }
 
+  @Get('dre')
+  getDre(
+    @Query('companyId') companyId: string,
+    @Query('month') month: string,
+    @Query('year') year: string,
+  ) {
+    const m = month ? parseInt(month, 10) : new Date().getMonth() + 1;
+    const y = year ? parseInt(year, 10) : new Date().getFullYear();
+    return this.financialService.getDre(companyId, m, y);
+  }
+
+  @Get('projection')
+  getProjection(
+    @Query('companyId') companyId: string,
+    @Query('days') days: string,
+  ) {
+    const d = days ? parseInt(days, 10) : 30;
+    return this.financialService.getCashFlowProjection(companyId, d);
+  }
+
   @Get()
   findAll(@Query('companyId') companyId: string) {
     return this.financialService.findAll(companyId);

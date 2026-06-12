@@ -345,6 +345,8 @@ model ServiceOrder {
   status       String                  @default("Pendente")
   observations String?
   signature    String?
+  clientRating Int?
+  clientReview String?
   deletedAt    DateTime?
   createdAt    DateTime                @default(now())
   updatedAt    DateTime                @updatedAt

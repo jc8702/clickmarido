@@ -70,6 +70,8 @@ export declare class WarrantiesService {
             quoteId: string | null;
             technicianId: string | null;
             observations: string | null;
+            clientRating: number | null;
+            clientReview: string | null;
         };
     } & {
         id: string;

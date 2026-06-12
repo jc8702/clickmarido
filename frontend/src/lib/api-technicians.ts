@@ -19,6 +19,11 @@ export const getTechnicians = async (companyId: string) => {
   return res as Technician[];
 };
 
+export const getTechnicianById = async (id: string) => {
+  const res: any = await ApiClient.get(`/technicians/${id}`);
+  return res as Technician;
+};
+
 export const getTechnicianRanking = async (companyId: string) => {
   const res: any = await ApiClient.get(`/technicians/ranking?companyId=${companyId}`);
   return res as Technician[];

@@ -140,6 +140,13 @@
   - Build de producao do backend validado com 0 erros.
   - Arquivos modificados: backend/src/main.ts, backend/src/app.module.ts, backend/prisma/schema.prisma, .env.example
 
+- **[12/06/2026 - 17:00]:** Conclusão do Plano de Refino (Etapas 16 a 24)
+  - **Refino Orçamentos (Etapa 16):** Rota pública de aprovação, Canvas de assinatura digital para clientes, layout para PDF.
+  - **Refino Técnicos (Etapa 17):** Link público de avaliação (Rating) com integração de atualização de score automático na base de dados, visualização de agenda individual.
+  - **Refino Financeiro (Etapa 18):** Relatório DRE automático formatado. Adicionado painel de projeção de Fluxo de Caixa (30 dias) no Next.js. Integração com Webhook Mercado Pago concluída.
+  - **Refino WhatsApp Chatbot (Etapa 20):** Lógica nativa interligada com `AiService` rodando prompts dinâmicos sobre histórico de conversas do banco de dados para responder clientes utilizando o Gemini Flash.
+  - **Infraestrutura e Segurança (Etapa 23 e 24):** Arquivo de orientação de RLS gerado (`RLS_GUIDE.md`). CORS configurado de forma estrita no `main.ts` utilizando Variáveis de Ambiente. `PermissionsGuard` (RBAC) registrado de forma global.
+
 - **[12/06/2026 - 16:25]:** Frontend Architecture & UI Core Components (Etapas 05 e 06)
   - Refatoração da árvore de roteamento Next.js para utilizar "Route Groups" (`(dashboard)` e `(auth)`), substituindo as validações manuais de rotas no `DashboardLayout`.
   - Mapeamento das rotas como `/clientes`, `/empresas`, `/financeiro`, etc. nativamente sob `(dashboard)`.

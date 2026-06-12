@@ -1,6 +1,7 @@
 'use client';
 
 import { Technician } from '@/lib/api-technicians';
+import Link from 'next/link';
 
 interface TechniciansTableProps {
   technicians: Technician[];
@@ -40,6 +41,7 @@ export function TechniciansTable({ technicians, onEdit, onDelete }: TechniciansT
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
+                  <Link href={`/tecnicos/${tech.id}`} className="text-primary hover:underline mr-3 font-medium">Perfil</Link>
                   <button onClick={() => onEdit(tech)} className="text-blue-500 hover:text-blue-700 mr-3">Editar</button>
                   <button onClick={() => { if(confirm('Excluir técnico?')) onDelete(tech.id); }} className="text-red-500 hover:text-red-700">Excluir</button>
                 </td>

@@ -161,6 +161,42 @@ let ServiceOrdersService = class ServiceOrdersService {
             },
         });
     }
+    async findPublicOrder(id) {
+        const os = await this.prisma.serviceOrder.findUnique({
+            where: { id },
+            include: {
+                company: { select: { name: true, phone: true } },
+                technician: { select: { name: true, phone: true } },
+            },
+        });
+        if (!os)
+            throw new common_1.NotFoundException('Ordem de serviço não encontrada');
+        return os;
+    }
+    async saveClientRating(id, rating, review) {
+        const os = await this.findOne(id);
+        if (!os)
+            throw new common_1.NotFoundException('OS não encontrada');
+        await this.prisma.serviceOrder.update({
+            where: { id },
+            data: { clientRating: rating, clientReview: review },
+        });
+        if (os.technicianId) {
+            const allOrders = await this.prisma.serviceOrder.findMany({
+                where: { technicianId: os.technicianId, clientRating: { not: null } },
+            });
+            const validOrders = allOrders.filter(o => o.clientRating !== null);
+            if (validOrders.length > 0) {
+                const total = validOrders.reduce((sum, o) => sum + (o.clientRating || 0), 0);
+                const avg = total / validOrders.length;
+                await this.prisma.technician.update({
+                    where: { id: os.technicianId },
+                    data: { rating: avg },
+                });
+            }
+        }
+        return { success: true };
+    }
 };
 exports.ServiceOrdersService = ServiceOrdersService;
 exports.ServiceOrdersService = ServiceOrdersService = __decorate([
