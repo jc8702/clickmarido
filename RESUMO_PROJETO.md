@@ -3,11 +3,17 @@
 ## Informações Gerais
 - **Status Atual:** ✅ Deploy em produção configurado com sucesso (GitHub, Vercel e Supabase).
 - **Objetivo Central:** Plataforma ERP + CRM SaaS multiempresa para gerenciamento de clientes, serviços, orçamentos, auditoria e permissões.
-- **Última Atualização:** 2026-06-12 18:40
+- **Última Atualização:** 2026-06-12 19:05
 
 ---
 
 ## Histórico de Alterações
+
+- **[12/06/2026 - 19:05]:** Ajuste do Roteamento do Dashboard e Prevenção de Erros de Autenticação
+  - **Frontend:** Mapeamento físico da página de dashboard de volta para `/dashboard/page.tsx` (sob o grupo `(dashboard)`), corrigindo o erro HTTP 404 e harmonizando o redirecionamento pós-autenticação.
+  - **next.config.mjs:** Adicionada regra inteligente para ignorar a variável `NEXT_PUBLIC_API_URL` caso ela contenha `vercel.app`, forçando o redirecionamento de produção à API do Render (`clickmarido.onrender.com`), o que corrige o erro HTTP 508.
+  - **Validação de Sucesso:** Testado login com credenciais de demonstração na URL de produção e confirmado redirecionamento e carregamento bem-sucedido dos dados do dashboard.
+  - Arquivos modificados/movidos: `frontend/src/app/(dashboard)/dashboard/page.tsx` (criado), `frontend/src/app/(dashboard)/page.tsx` (removido), `frontend/next.config.mjs` (ajustado).
 
 - **[12/06/2026 - 18:40]:** Resolução de Erro HTTP 404 e Melhoria de Resiliência de Conexão
   - **Frontend:** Configuração de regras de `rewrites` no `next.config.mjs` para redirecionar chamadas de API de `/api/*` localmente no Next.js para o backend real hospedado no Render (`https://clickmarido-api.onrender.com`), resolvendo problemas de 404 na Vercel e eliminando CORS.
