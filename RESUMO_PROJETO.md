@@ -1,13 +1,15 @@
 # RESUMO DE PROJETO: Click Marido ERP + CRM
 
 ## Informações Gerais
-- **Status Atual:** 📝 Planejamento de deploy em produção (GitHub, Vercel e Supabase) criado e aguardando aprovação.
+- **Status Atual:** ✅ Deploy em produção configurado com sucesso (GitHub, Vercel e Supabase).
 - **Objetivo Central:** Plataforma ERP + CRM SaaS multiempresa para gerenciamento de clientes, serviços, orçamentos, auditoria e permissões.
-- **Última Atualização:** 2026-06-11 22:45
+- **Última Atualização:** 2026-06-11 22:50
 
 ---
 
 ## Histórico de Alterações
+
+- **[11/06/2026 - 22:50]:** Execução e Finalização do Deploy. Ajustado o `docker-compose.prod.yml` removendo banco de dados e backups locais (migrados para o Supabase gerenciado). Corrigidas regras de recursão do `.gitignore` para monorepos. Commits salvos e sincronizados com sucesso no GitHub (`origin/main`). Build de produção do frontend Next.js validado localmente com 100% de sucesso. Documentação de deploy no `DEPLOY.md` reescrita com os novos fluxos de Supabase e Vercel.
 
 - **[11/06/2026 - 22:45]:** Planejamento do Deploy em Produção. Elaborado o plano de implementação detalhado para versionar e publicar o monorepo no GitHub, configurar o banco de dados PostgreSQL gerenciado no Supabase e hospedar o frontend Next.js na Vercel, ajustando a infraestrutura Docker local.
 

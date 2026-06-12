@@ -1,86 +1,109 @@
 # Guia de Deploy Click Marido (Produção) 🚀
 
-Este guia detalha o passo-a-passo para colocar o ecossistema **Click Marido** em produção usando o **Coolify** e **Docker Compose**.
+Este guia detalha o passo-a-passo para colocar o ecossistema **Click Marido** em produção utilizando uma arquitetura moderna, escalável e otimizada:
+* **GitHub**: Versionamento e CI/CD.
+* **Supabase**: Banco de dados PostgreSQL gerenciado na nuvem.
+* **Vercel**: Hospedagem otimizada para o frontend Next.js.
+* **Coolify/VPS**: Hospedagem persistente para o backend NestJS (necessário para persistência de WebSockets e tarefas background).
 
 ---
 
-## 🏗️ Requisitos do Servidor
-1. Uma VPS limpa (ex: Ubuntu 22.04 LTS, mínimo 2 Cores CPU, 4GB RAM) para suportar os containers e monitoramento.
-2. **Coolify** instalado no servidor. Instale executando o comando oficial na VPS:
-   ```bash
-   curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
-   ```
+## 💾 Passo 1: Configuração do Banco de Dados (Supabase)
 
----
+O Supabase será o nosso provedor PostgreSQL. Siga os passos:
 
-## ⚡ Passo 1: Configuração no Repositório Git
-Mantenha os arquivos `Dockerfile` em `./backend` e `./frontend` e o arquivo `docker-compose.prod.yml` na raiz do seu repositório git. O Coolify lerá diretamente essa estrutura.
+1. Crie uma conta no [Supabase](https://supabase.com) e inicie um novo projeto.
+2. Acesse as configurações do projeto em **Project Settings** → **Database**.
+3. Obtenha as strings de conexão:
+   - **Connection String (Pooler - Porta 6543)**: Utilizada pelo backend em tempo de execução para otimizar conexões.
+     - Exemplo: `postgresql://postgres.[username]:[password]@aws-0-sa-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true`
+     - Salve como a variável `DATABASE_URL`.
+   - **Connection String (Direct - Porta 5432)**: Utilizada pelo CLI do Prisma para rodar migrations e seed.
+     - Exemplo: `postgresql://postgres.[username]:[password]@aws-0-sa-east-1.pooler.supabase.com:5432/postgres`
+     - Salve como a variável `DIRECT_URL`.
 
----
+### Rodando as Migrations no Supabase
+Execute os comandos a partir da pasta `/backend` local:
+```bash
+cd backend
+# Defina temporariamente a variável DATABASE_URL apontando para a Conexão Direta (porta 5432) do Supabase
+# Exemplo Windows:
+$env:DATABASE_URL="sua_conexao_direta_porta_5432"
+# Exemplo Linux/macOS:
+export DATABASE_URL="sua_conexao_direta_porta_5432"
 
-## 🛠️ Passo 2: Criando o Projeto no Coolify
-1. Acesse o painel do seu Coolify (`http://<ip-do-servidor>:8000`).
-2. Clique em **Projects** → **Add New Project**.
-3. Crie um novo Environment (ex: `production`).
-4. Clique em **Add New Resource** → **Docker Compose**.
-5. Conecte sua conta do GitHub/Gitlab e escolha o repositório `clickmarido`.
-6. Defina a branch (ex: `main`) e o caminho para o arquivo Compose: `docker-compose.prod.yml`.
-7. Clique em **Save**.
+# Execute a migração para criar a estrutura das tabelas
+npx prisma migrate deploy
 
----
-
-## 🔑 Passo 3: Variáveis de Ambiente (Secrets)
-No painel do Coolify, acesse a aba **Environment Variables** do recurso Docker Compose que você criou e preencha as seguintes chaves de produção:
-
-| Variável | Valor Recomendado / Descrição |
-| :--- | :--- |
-| `POSTGRES_USER` | Usuário do banco de dados (ex: `clickmarido_prod`) |
-| `POSTGRES_PASSWORD` | Senha forte gerada para o banco de dados |
-| `POSTGRES_DB` | Nome da base de dados (ex: `clickmarido_db`) |
-| `JWT_SECRET` | Chave de segurança para criptografia dos tokens de sessão |
-| `JWT_EXPIRES_IN` | Tempo de expiração da sessão (ex: `1d`) |
-| `GEMINI_API_KEY` | Sua chave de produção obtida do Google AI Studio |
-| `EVOLUTION_API_URL` | URL de produção da Evolution API (WhatsApp gateway) |
-| `EVOLUTION_API_KEY` | Chave global da sua Evolution API |
-| `NEXT_PUBLIC_API_URL` | URL pública de saída do backend (ex: `https://api.clickmarido.com.br`) |
-
-*O Coolify irá expor automaticamente os serviços do Next.js (porta 3000) e do NestJS (porta 3001) criando proxies reversos de forma segura com SSL automatizado (Let's Encrypt).*
-
----
-
-## 💾 Passo 4: Backup do Banco de Dados
-Mapeamos dois sistemas de segurança para backups automáticos:
-
-### Opção A: Container db-backup (Integrado no Compose)
-O container `clickmarido-db-backup` é inicializado automaticamente e executa a rotina `@daily` (meia-noite). Ele gera dumps compactados em `.sql.gz` e armazena no volume `postgres_backups` retendo apenas os últimos 7 dias de backups para evitar estouro de disco.
-
-### Opção B: Cron Job no Host
-Para salvar backups fora da rede do Docker (segurança extra), você pode agendar o script `scripts/backup-db.sh` no crontab da VPS:
-1. Copie o script para o servidor.
-2. Dê permissão de execução: `chmod +x backup-db.sh`.
-3. Abra o crontab: `crontab -e`.
-4. Adicione a linha para rodar todo dia às 03:00 da manhã:
-   ```bash
-   0 3 * * * /caminho/para/backup-db.sh >> /var/log/clickmarido-backup.log 2>&1
-   ```
-
----
-
-## 📊 Passo 5: Monitoramento e Logs
-
-### Logs Centralizados
-Todos os containers foram configurados no `docker-compose.prod.yml` com limitação rígida de logs:
-```yaml
-logging:
-  driver: "json-file"
-  options:
-    max-size: "10m"
-    max-file: "3"
+# Popule o banco com as configurações de permissões e serviços padrão
+npx prisma db seed
 ```
-Isso garante que cada container grave no máximo 3 arquivos de 10MB de logs, impedindo que logs velhos ocupem todo o armazenamento do servidor.
 
-### Painel Grafana
-1. Mapeamos o Grafana para a porta `3002` do host da VPS. Acesse `http://<ip-do-servidor>:3002`.
-2. O usuário padrão é `admin` / `admin` (mude no primeiro login).
-3. Adicione o Prometheus como Data Source (`http://prometheus:9090`).
-4. Importe o painel do cAdvisor (ID do dashboard comum: `14282`) para monitorar o consumo de CPU, Memória RAM e Rede de cada container em tempo real.
+---
+
+## ⚡ Passo 2: Configuração no Repositório Git (GitHub)
+
+O monorepo está estruturado de forma que o Git ignore arquivos `.env` locais automaticamente para segurança.
+Para atualizar o repositório remoto:
+1. Adicione os arquivos ao Git:
+   ```bash
+   git add .
+   ```
+2. Faça o commit ignorando hooks locais se necessário:
+   ```bash
+   git commit -m "feat: setup deploy para Supabase, Vercel e GitHub" --no-verify
+   ```
+3. Envie para o GitHub:
+   ```bash
+   git push origin main
+   ```
+
+---
+
+## 🎨 Passo 3: Hospedagem do Frontend (Vercel)
+
+A Vercel é a plataforma padrão para o Next.js:
+
+1. Crie uma conta na [Vercel](https://vercel.com) e conecte sua conta do GitHub.
+2. Clique em **Add New Project** e selecione o repositório `clickmarido`.
+3. Configure os detalhes do projeto:
+   - **Root Directory**: `frontend` (crucial para monorepos).
+   - **Framework Preset**: `Next.js` (detectado automaticamente).
+4. Configure as **Environment Variables** (Variáveis de Ambiente) de produção:
+   - `NEXT_PUBLIC_API_URL`: URL pública do backend NestJS rodando na VPS (ex: `https://api.clickmarido.com.br`).
+   - `NEXT_PUBLIC_WS_URL`: URL pública de WebSockets do backend NestJS (ex: `https://api.clickmarido.com.br`).
+5. Clique em **Deploy**. A Vercel gerará automaticamente o build de produção e criará os certificados SSL (Let's Encrypt).
+
+---
+
+## 🏗️ Passo 4: Hospedagem do Backend (Coolify / VPS)
+
+Como o backend NestJS utiliza WebSockets para o chat do WhatsApp em tempo real e agendamentos cron, ele deve continuar rodando em um servidor com processos contínuos (VPS).
+
+1. Acesse o painel do seu Coolify (`http://<ip-do-servidor>:8000`).
+2. Vá em **Projects** → **Add New Resource** → **Docker Compose**.
+3. Selecione o repositório `clickmarido`, a branch `main` e aponte para o arquivo `docker-compose.prod.yml`.
+4. Mapeie as seguintes variáveis de ambiente (**Environment Variables**) no painel do Coolify:
+
+| Variável | Descrição / Valor Recomendado |
+| :--- | :--- |
+| `DATABASE_URL` | A string de conexão do Supabase **com Pooler** (porta 6543) |
+| `JWT_SECRET` | Chave secreta longa para criptografia dos tokens de sessão |
+| `JWT_EXPIRES_IN` | Tempo de expiração da sessão (ex: `1d`) |
+| `EVOLUTION_API_URL` | URL de produção do WhatsApp Gateway (Evolution API) |
+| `EVOLUTION_API_KEY` | Chave global da sua Evolution API |
+| `GEMINI_API_KEY` | Sua chave de produção obtida do Google AI Studio |
+| `NEXT_PUBLIC_API_URL` | URL pública onde a VPS expõe o backend (ex: `https://api.clickmarido.com.br`) |
+
+5. Clique em **Deploy**. O Coolify vai rodar o backend NestJS exposto na porta `3001` (com proxy reverso e SSL ativo) e a suíte local de monitoramento.
+
+---
+
+## 📊 Passo 5: Monitoramento de Infraestrutura
+
+A VPS local continuará rodando a suíte de monitoramento de performance leve:
+- **cAdvisor**: Coleta métricas de consumo de CPU, memória RAM e rede de cada container Docker.
+- **Prometheus**: Reúne as métricas do cAdvisor na porta `9090`.
+- **Grafana**: Painel visual de métricas na porta `3002`.
+
+Acesse o Grafana em `http://<ip-do-servidor>:3002`, adicione o Prometheus como Data Source (`http://prometheus:9090`) e importe o dashboard de containers do cAdvisor (ID `14282`) para monitorar a saúde da VPS de produção.
