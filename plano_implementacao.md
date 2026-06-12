@@ -1,72 +1,90 @@
-# Plano de Implementação: Áudio, Animação de Personagens e Timeline de Múltiplas Fotos
+# Plano de Melhoria Visual e Padronização de Temas (SaaS Elite)
 
-Este documento apresenta a especificação técnica e arquitetura recomendada para a implementação de geração automática de voz (TTS), sincronização labial (Lipsync) / animação e suporte expandido a múltiplas fotos mapeadas por cena.
-
----
-
-## 1. Arquitetura do Fluxo de Geração
-
-O fluxo de processamento será assíncrono e passará a seguir as seguintes etapas:
-
-```mermaid
-graph TD
-    A[Briefing do Usuário] --> B[Geração de Roteiro & Storyboard via Gemini]
-    B --> C[Geração de Voz/Áudio da Locução via ElevenLabs]
-    C --> D[Geração de Animação de Movimento via Google Veo 2.0]
-    D --> E[Sincronização Labial via Hedra / Wav2Lip]
-    E --> F[Composição de Mídias via FFmpeg backend]
-    F --> G[Reel UGC Finalizado .mp4]
-```
+Este documento apresenta o plano de implementação técnico para corrigir as inconsistências visuais e a falta de legibilidade no Click Marido ERP + CRM, padronizando os botões, os inputs e a conformidade de cores semânticas para Light e Dark Mode em todos os 5 temas dinâmicos.
 
 ---
 
-## 2. Configurações de API & Chaves Necessárias
+## 📸 Diagnóstico Visual (Baseado nas Imagens de Auditoria)
 
-Para ativar o sistema completo, as seguintes chaves de API e configurações devem ser fornecidas no arquivo `.env.local` na raiz do projeto:
-
-### A. Google Gemini / Veo API
-*   **Variável:** `GEMINI_API_KEY` (usada pelo `VeoProvider` para gerar movimentos de câmera e simulações na foto).
-*   **Onde obter:** [Google AI Studio](https://aistudio.google.com/).
-
-### B. ElevenLabs (Locução por Voz)
-*   **Variável:** `ELEVENLABS_API_KEY` (utilizada pelo `ElevenLabsProvider` para gerar a voz realista).
-*   **Onde obter:** Painel da [ElevenLabs](https://elevenlabs.io/).
-
-### C. Hedra API (Lipsync)
-*   **Variável:** `HEDRA_API_KEY` (utilizada pelo `HedraProvider` para animar a boca e as expressões faciais do personagem de acordo com o áudio gerado).
-*   **Onde obter:** Portal do Desenvolvedor da [Hedra](https://www.hedra.com/).
-
-### D. Supabase & Banco de Dados (Persistência e Armazenamento de Mídia)
-*   **Variáveis:**
-    *   `NEXT_PUBLIC_SUPABASE_URL`
-    *   `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-    *   `SUPABASE_SERVICE_ROLE_KEY`
-    *   `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET=project-images`
-*   **Configuração Necessária:** Criar um Bucket público chamado `project-images` no Supabase Storage com políticas de leitura pública e permissão de upload/escrita para usuários anon/autenticados.
+Analisando as capturas fornecidas, identificamos os seguintes problemas que comprometem a experiência de usuário:
+1. **Falta de Contraste (Invisibilidade em Modo Claro):**
+   * Títulos principais das páginas (como "Configurações", "Empresas", "Painel Executivo", "Relatórios e Das") usam a classe rígida `text-white`. Quando o fundo da página em Light Mode é claro (`bg-zinc-50`), esses títulos desaparecem totalmente.
+   * Vários textos secundários e metadados também perdem o contraste.
+2. **Cards e Elementos de Grid Rígidos (Hardcoded):**
+   * Cards de métricas, containers de tabelas e filtros estão estilizados de forma rígida com cores escuras fixas (ex: `bg-zinc-900`, `bg-zinc-950`, `border-zinc-800`).
+   * No Light Mode, isso faz com que os cards pretos flutuem sobre o fundo claro de forma desarmônica.
+3. **Despadronização de Botões:**
+   * Botões de ação primária (como "+ Nova Empresa") estão com cores rígidas e fixas (`bg-blue-600`), ignorando a identidade visual do tema ativo.
+   * O botão da aba Relatórios ("Comercial") é preto rígido, o que quebra a coerência estética no Light Mode.
 
 ---
 
-## 3. Alterações Propostas nos Arquivos
+## 🛠️ Levantamento de Skills Necessárias & Squad de Especialistas
 
-### 3.1 Interface do Usuário (Uploads Mapeados)
-*   **Arquivo:** [projects/[id]/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/src/app/projects/%5Bid%5D/page.tsx)
-*   **Alteração:** Modificar a aba "Imagens" para listar as 5 cenas geradas pelo Storyboard. Cada cena terá seu próprio botão de upload dedicado, permitindo que o usuário envie a imagem exata correspondente a cada parte da narrativa (evitando repetição automática).
+Para conduzir essa refatoração visual seguindo os mais altos padrões de design de produto (Elite SaaS), o seguinte Squad foi mapeado com base nas competências requeridas:
 
-### 3.2 Renderização Local e Composição FFMPEG
-*   **Arquivo:** [video-generator.ts](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/src/services/video/video-generator.ts)
-*   **Alteração:** Ajustar a função `generate()` para ler as imagens indexadas por cena de forma explícita e ler a URL do áudio de locução gerado (`project.audioUrl`), integrando-o ao stream de gravação.
-*   **Arquivo:** [video-compositor.ts](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/src/services/video/video-compositor.ts)
-*   **Alteração:** Ajustar os filtros do FFmpeg para sincronizar a trilha de música instrumental com a trilha de voz de locução gerada pelo ElevenLabs, aplicando uma redução automática de volume na música (ducking) enquanto a voz fala.
-
-### 3.3 Orquestração Assíncrona no Worker
-*   **Arquivo:** [workers/index.ts](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/src/workers/index.ts)
-*   **Alteração:** Implementar a lógica sequencial de chamadas de APIs no handler `handleVideoRender`, garantindo tratamento de erros e atualização dos estados na store do Zustand e no Supabase.
+1. **`tailwind-patterns` (Especialista em Tailwind v4)**: Necessário para a correta manipulação de variáveis CSS no arquivo de estilos central sob a nova estrutura e sintaxe v4 do Tailwind CSS, garantindo compilação limpa.
+2. **`ui-tokens` (Arquiteto de Design System)**: Responsável pela sincronização das variáveis do tema ativo com as variantes `dark` e `light` dinâmicas.
+3. **`ui-a11y` & `wcag-audit-patterns` (Engenheiro de Acessibilidade)**: Responsável por garantir conformidade de contraste (WCAG AA) em todos os temas e modos de visualização, eliminando textos invisíveis.
+4. **`design-spells` & `gpt-taste` (Especialista em UI/UX Premium)**: Responsável pelo polimento das micro-interações, transições suaves nos botões, glassmorphism e design coerente com o padrão internacional de aplicativos SaaS.
 
 ---
 
-## 4. Plano de Validação
+## 🎨 Proposta de Padronização de Cores Semânticas
 
-1.  **Geração Isolada de Áudio:** Testar a rota de API local de geração de TTS com textos curtos e vozes em português.
-2.  **Processamento da Imagem no Veo:** Enviar uma imagem do Click Marido para a API do Veo 2.0 e garantir que retorne um vídeo com movimento coerente.
-3.  **Execução do Lipsync:** Processar o vídeo gerado pelo Veo juntamente com o áudio do TTS na API do Hedra e validar a sincronização labial.
-4.  **Composição Final (FFmpeg):** Executar o script de montagem no servidor local para gerar o arquivo `.mp4` final contendo vídeo animado, narração por voz, legenda renderizada e música de fundo.
+Para resolver todos os problemas de contraste, substituiremos as classes de cores estáticas por tokens semânticos baseados nas variáveis CSS ativas de cada tema:
+
+| Elemento | De (Rígido) | Para (Semântico) | Comportamento Light / Dark |
+| :--- | :--- | :--- | :--- |
+| **Fundo de Tela** | `bg-zinc-50` / `bg-zinc-900` | `bg-background` | Claro no Light, Escuro no Dark |
+| **Títulos Principais** | `text-white` / `text-zinc-900` | `text-foreground` | Escuro no Light, Claro no Dark |
+| **Subtítulos/Metadata**| `text-zinc-500` / `text-zinc-400` | `text-muted-foreground` | Tons cinza ajustados de forma reativa |
+| **Cards de Conteúdo**  | `bg-zinc-950` / `bg-zinc-900` | `glass-card` / `bg-card` | Fundo translúcido reativo com blur |
+| **Bordas** | `border-zinc-800` | `border-border` | Bordas suaves ajustadas ao tema |
+| **Inputs/Filtros** | `bg-zinc-900 border-zinc-800`| `bg-input/40 border-border`| Translúcidos e responsivos ao foco |
+| **Botões Primários** | `bg-blue-600` / `bg-zinc-900` | `bg-primary text-primary-foreground`| Cor de marca correspondente ao tema ativo |
+
+---
+
+## 🚀 Hoja de Ruta de Alterações Propostas
+
+### Fase 1: Ajuste do CSS e Variáveis de Tema (Design Tokens)
+* **[globals.css](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/app/globals.css):**
+  * Ajustar as propriedades do seletor `:root` e `.dark` para garantir que `--foreground`, `--background`, `--card` e `--border` tenham o comportamento esperado de contraste.
+  * Certificar que a variante `@custom-variant dark (&:where(.dark, .dark *));` esteja ativa para forçar o Tailwind v4 a responder à classe `.dark` inserida no HTML.
+
+### Fase 2: Componentização Core
+* **[dashboard-layout.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/components/layout/dashboard-layout.tsx):**
+  * Atualizar o background do elemento `<main>` para usar `bg-background` de forma que responda dinamicamente às mudanças do `next-themes`.
+* **[page-header.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/components/layout/page-header.tsx):**
+  * Substituir a classe `text-white` por `text-foreground` e `border-zinc-900` por `border-border`.
+
+### Fase 3: Higienização de Telas
+* **[dashboard/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/app/(dashboard)/dashboard/page.tsx):**
+  * Substituir o fundo dos cards de métricas por `glass-card` ou `bg-card`, a borda por `border-border/50` e o texto dos valores por `text-foreground`.
+  * Atualizar as cores de destaque e botões da timeline e painéis para variáveis semânticas.
+* **[empresas/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/app/(dashboard)/empresas/page.tsx):**
+  * Remover classes de cores fixas `text-white` dos cabeçalhos.
+  * Atualizar a barra de filtros para usar `bg-input/20 border-border` no lugar de backgrounds pretos rígidos.
+  * Ajustar o botão de "Nova Empresa" para usar a classe do design system `bg-primary hover:bg-primary/90 text-primary-foreground`.
+* **[relatorios/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/app/(dashboard)/relatorios/page.tsx):**
+  * Corrigir a cor do título principal e subtexto.
+  * Substituir os fundos pretos rígidos dos cards analíticos por `bg-card border-border`.
+  * Tornar o botão de abas semântico (`bg-primary` se ativo ou `variant="outline"`).
+* **[settings/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/app/(dashboard)/settings/page.tsx):**
+  * Higienizar os cards de visualização de temas.
+  * Garantir legibilidade perfeita no seletor de "Aparência".
+
+---
+
+## 🧪 Plano de Verificação Visual
+
+1. **Modo Claro (Light Mode):**
+   * Verificar se todos os títulos das páginas estão visíveis e legíveis (em cinza escuro ou preto).
+   * Validar se os cards possuem fundo claro correspondente ao tema.
+   * Certificar que as bordas dos inputs não desaparecem contra o fundo.
+2. **Modo Escuro (Dark Mode):**
+   * Garantir que as fontes fiquem brancas ou cinza claro.
+   * Confirmar se o fundo geral se torna escuro.
+3. **Alternância Dinâmica de Temas:**
+   * Testar a mudança de cor de marca (Arctic, Cyber, Warm, Corporate, Purple) no seletor de Aparência e verificar se os botões primários mudam de cor dinamicamente em ambas as variantes (light/dark).

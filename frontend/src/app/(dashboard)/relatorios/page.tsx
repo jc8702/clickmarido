@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { getCommercialReport, getOperationalReport, getFinancialReport, CommercialReport, OperationalReport, FinancialReport } from '@/lib/api-reports';
 import { BarChart3, TrendingUp, Users, DollarSign, Wallet, Percent, FileText } from 'lucide-react';
+import { PageHeader } from '@/components/layout/page-header';
 
 const COLORS = ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899'];
 
@@ -43,13 +44,13 @@ export default function RelatoriosPage() {
   }
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Relatórios e Dashboards</h2>
-          <p className="text-muted-foreground">Visão consolidada da operação, comercial e financeiro.</p>
-        </div>
-      </div>
+    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 animate-in-fade">
+      <PageHeader
+        title="Relatórios e Dashboards"
+        subtitle="Visão consolidada da operação, comercial e financeiro."
+        icon={<BarChart3 className="w-8 h-8" />}
+        iconBg="bg-primary/10 text-primary"
+      />
 
       {/* Tabs */}
       <div className="flex space-x-1 bg-muted p-1 rounded-md max-w-md">
@@ -77,36 +78,36 @@ export default function RelatoriosPage() {
       {activeTab === 'commercial' && commercial && (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="bg-card border rounded-lg p-6 shadow-sm">
+            <div className="glass-card border-border/50 rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between pb-2">
                 <h3 className="tracking-tight text-sm font-medium text-muted-foreground">Conversão (Orçamentos)</h3>
                 <Percent className="w-4 h-4 text-emerald-500" />
               </div>
-              <div className="text-3xl font-bold">{commercial.conversionRate}%</div>
+              <div className="text-3xl font-extrabold text-foreground tracking-tight">{commercial.conversionRate}%</div>
               <p className="text-xs text-muted-foreground mt-1">{commercial.approvedQuotes} de {commercial.totalQuotes} orçamentos viraram OS</p>
             </div>
             
-            <div className="bg-card border rounded-lg p-6 shadow-sm">
+            <div className="glass-card border-border/50 rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between pb-2">
                 <h3 className="tracking-tight text-sm font-medium text-muted-foreground">Ticket Médio</h3>
                 <Wallet className="w-4 h-4 text-emerald-500" />
               </div>
-              <div className="text-3xl font-bold">R$ {commercial.ticketMedio.toFixed(2)}</div>
+              <div className="text-3xl font-extrabold text-foreground tracking-tight">R$ {commercial.ticketMedio.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground mt-1">Baseado em {commercial.completedOrders} ordens concluídas</p>
             </div>
 
-            <div className="bg-card border rounded-lg p-6 shadow-sm">
+            <div className="glass-card border-border/50 rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between pb-2">
                 <h3 className="tracking-tight text-sm font-medium text-muted-foreground">Serviços Vendidos</h3>
                 <FileText className="w-4 h-4 text-emerald-500" />
               </div>
-              <div className="text-3xl font-bold">{commercial.topServices.reduce((a, b) => a + b.value, 0)}</div>
+              <div className="text-3xl font-extrabold text-foreground tracking-tight">{commercial.topServices.reduce((a, b) => a + b.value, 0)}</div>
               <p className="text-xs text-muted-foreground mt-1">Total de itens faturados (Top 5)</p>
             </div>
           </div>
 
-          <div className="bg-card border rounded-lg p-6 shadow-sm">
-            <h3 className="font-semibold mb-6">Top 5 Serviços Mais Vendidos</h3>
+          <div className="glass-card border-border/50 rounded-2xl p-6 shadow-sm">
+            <h3 className="font-bold text-foreground mb-6">Top 5 Serviços Mais Vendidos</h3>
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={commercial.topServices}>
@@ -114,7 +115,7 @@ export default function RelatoriosPage() {
                   <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis fontSize={12} tickLine={false} axisLine={false} />
                   <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '8px' }} />
-                  <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="value" fill="var(--primary)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -126,19 +127,19 @@ export default function RelatoriosPage() {
       {activeTab === 'operational' && operational && (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="bg-card border rounded-lg p-6 shadow-sm">
+            <div className="glass-card border-border/50 rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between pb-2">
                 <h3 className="tracking-tight text-sm font-medium text-muted-foreground">Tempo Médio de Conclusão</h3>
                 <BarChart3 className="w-4 h-4 text-blue-500" />
               </div>
-              <div className="text-3xl font-bold">{operational.avgTimeDays} dias</div>
+              <div className="text-3xl font-extrabold text-foreground tracking-tight">{operational.avgTimeDays} dias</div>
               <p className="text-xs text-muted-foreground mt-1">Média entre a criação e conclusão da OS</p>
             </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="bg-card border rounded-lg p-6 shadow-sm">
-              <h3 className="font-semibold mb-6">Produtividade por Técnico (OS Concluídas)</h3>
+            <div className="glass-card border-border/50 rounded-2xl p-6 shadow-sm">
+              <h3 className="font-bold text-foreground mb-6">Produtividade por Técnico (OS Concluídas)</h3>
               <div className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -169,39 +170,39 @@ export default function RelatoriosPage() {
       {activeTab === 'financial' && financial && (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="bg-card border rounded-lg p-6 shadow-sm">
+            <div className="glass-card border-border/50 rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between pb-2">
                 <h3 className="tracking-tight text-sm font-medium text-muted-foreground">Receita Bruta</h3>
               </div>
-              <div className="text-3xl font-bold text-emerald-500">R$ {financial.totalIncome.toFixed(2)}</div>
+              <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 tracking-tight">R$ {financial.totalIncome.toFixed(2)}</div>
             </div>
             
-            <div className="bg-card border rounded-lg p-6 shadow-sm">
+            <div className="glass-card border-border/50 rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between pb-2">
                 <h3 className="tracking-tight text-sm font-medium text-muted-foreground">Despesas</h3>
               </div>
-              <div className="text-3xl font-bold text-red-500">R$ {financial.totalExpense.toFixed(2)}</div>
+              <div className="text-3xl font-extrabold text-red-600 dark:text-red-400 tracking-tight">R$ {financial.totalExpense.toFixed(2)}</div>
             </div>
 
-            <div className="bg-card border rounded-lg p-6 shadow-sm">
+            <div className="glass-card border-border/50 rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between pb-2">
                 <h3 className="tracking-tight text-sm font-medium text-muted-foreground">Lucro Líquido</h3>
               </div>
-              <div className={`text-3xl font-bold ${financial.netProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              <div className={`text-3xl font-extrabold tracking-tight ${financial.netProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
                 R$ {financial.netProfit.toFixed(2)}
               </div>
             </div>
           </div>
 
-          <div className="bg-card border rounded-lg p-6 shadow-sm">
-            <h3 className="font-semibold mb-6">DRE Mensal - Receitas vs Despesas</h3>
+          <div className="glass-card border-border/50 rounded-2xl p-6 shadow-sm">
+            <h3 className="font-bold text-foreground mb-6">DRE Mensal - Receitas vs Despesas</h3>
             <div className="h-[350px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={financial.chartData}>
                   <defs>
                     <linearGradient id="colorReceita" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
                     </linearGradient>
                     <linearGradient id="colorDespesa" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
@@ -213,7 +214,7 @@ export default function RelatoriosPage() {
                   <YAxis fontSize={12} tickLine={false} axisLine={false} />
                   <RechartsTooltip contentStyle={{ borderRadius: '8px' }} />
                   <Legend />
-                  <Area type="monotone" dataKey="receita" name="Receitas" stroke="#10b981" fillOpacity={1} fill="url(#colorReceita)" />
+                  <Area type="monotone" dataKey="receita" name="Receitas" stroke="var(--primary)" fillOpacity={1} fill="url(#colorReceita)" />
                   <Area type="monotone" dataKey="despesa" name="Despesas" stroke="#ef4444" fillOpacity={1} fill="url(#colorDespesa)" />
                 </AreaChart>
               </ResponsiveContainer>

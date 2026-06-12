@@ -9,6 +9,18 @@
 
 ## Histórico de Alterações
 
+- **[12/06/2026 - 19:25]:** Execução de Melhorias Visuais, Levantamento de Skills e Padronização de Temas (SaaS Elite)
+  - **Mapeamento de Skills:** Identificadas as competências necessárias (`tailwind-patterns`, `ui-tokens`, `ui-a11y`, `wcag-audit-patterns`, `design-spells`, `gpt-taste`) para a refatoração visual.
+  - **Desenho e Planejamento:** Criados os arquivos de plano de melhorias (`plano_implementacao.md`) e o backlog de tarefas de interface (`tarefas.md`).
+  - **Execução Visual:**
+    * **page-header.tsx:** Substituídos títulos fixos `text-white` por `text-foreground` e bordas `border-zinc-900` por `border-border`, solucionando a invisibilidade em Light Mode.
+    * **dashboard/page.tsx:** Substituídos backgrounds rígidos e bordas escuras fixas por `glass-card`, `border-border/50` e `text-foreground`. Mapeados os botões inferiores para a cor primária dinâmica (`bg-primary`).
+    * **empresas/page.tsx:** Removidas classes fixas `text-white` dos cabeçalhos, adaptados os filtros e inputs para `bg-input/40` e `border-border`, e mapeado o botão "+ Nova Empresa" para `bg-primary` dinâmico.
+    * **relatorios/page.tsx:** Substituído o cabeçalho rígido pelo componente `PageHeader`, integrados os cards com `glass-card`, e conectados os gráficos de barras e de área à cor primária dinâmica (`var(--primary)`).
+    * **settings/page.tsx:** Higienizados os cards de escolha de temas e chaves API com `glass-card` e classes semânticas.
+  - **Validação:** Realizado build de produção do frontend Next.js com 100% de sucesso (`Compiled successfully` em Turbopack).
+  - Arquivos modificados: `frontend/src/components/layout/page-header.tsx`, `frontend/src/app/(dashboard)/dashboard/page.tsx`, `frontend/src/app/(dashboard)/empresas/page.tsx`, `frontend/src/app/(dashboard)/relatorios/page.tsx`, `frontend/src/app/(dashboard)/settings/page.tsx`, `plano_implementacao.md`, `tarefas.md`, `RESUMO_PROJETO.md`.
+
 - **[12/06/2026 - 19:05]:** Ajuste do Roteamento do Dashboard e Prevenção de Erros de Autenticação
   - **Frontend:** Mapeamento físico da página de dashboard de volta para `/dashboard/page.tsx` (sob o grupo `(dashboard)`), corrigindo o erro HTTP 404 e harmonizando o redirecionamento pós-autenticação.
   - **next.config.mjs:** Adicionada regra inteligente para ignorar a variável `NEXT_PUBLIC_API_URL` caso ela contenha `vercel.app`, forçando o redirecionamento de produção à API do Render (`clickmarido.onrender.com`), o que corrige o erro HTTP 508.

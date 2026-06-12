@@ -1,28 +1,20 @@
-# Backlog de Tarefas: Click Marido Marketing Studio
+# Backlog de Tarefas: Melhorias Visuais e Padronização de Temas
 
-Este documento contém o backlog detalhado de tarefas necessárias para implementar o sistema de locução automática por voz, animação/lipsync de personagens, e suporte a múltiplos uploads de fotos mapeadas a cenas específicas.
+Este backlog detalha as etapas de implementação para a higienização visual do Click Marido ERP + CRM, resolvendo os problemas de contraste e aplicando o design semântico e dinâmico.
 
-## 🛠️ Grupo 1: Configurações e Infraestrutura
-- [x] **Tarefa 1.1:** Configurar chaves no arquivo `.env.local` (ElevenLabs configurado com a chave real, Supabase Storage e desativação do Redis para usar Supabase Queue).
-- [x] **Tarefa 1.2:** Estender a página de Configurações ([settings/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/src/app/settings/page.tsx)) para suportar a gravação das chaves de ElevenLabs no `localStorage` como fallback.
-- [x] **Tarefa 1.3:** Configurar o bucket público `project-images` no Supabase Storage para uploads de assets de voz e vídeo.
+## 🎨 Grupo 1: Configuração do Design Tokens (Fundação)
+- [x] **Tarefa 1.1:** Ajustar e validar variáveis CSS de cores semânticas sob `:root` e `.dark` no [globals.css](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/app/globals.css).
+- [x] **Tarefa 1.2:** Configurar variante `@custom-variant dark` no Tailwind v4 para respeitar a classe `.dark` injetada pelo `next-themes`.
+- [x] **Tarefa 1.3:** Atualizar o layout principal [dashboard-layout.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/components/layout/dashboard-layout.tsx) para aplicar `bg-background` semântico no container `<main>`.
 
-## 🎙️ Grupo 2: Geração de Áudio (Locução TTS)
-- [x] **Tarefa 2.1:** Implementar a lógica de integração no `elevenlabs-provider.ts` para converter o roteiro gerado em áudio de alta qualidade em português.
-- [x] **Tarefa 2.2:** Criar uma rota de API backend `/api/tts` para gerar o áudio a partir do texto do roteiro de cada cena.
-- [x] **Tarefa 2.3:** Salvar o arquivo de áudio gerado no Supabase Storage e associar a URL resultante ao projeto no banco de dados.
+## ⚙️ Grupo 2: Higienização de Componentes e Telas (Estrutura)
+- [x] **Tarefa 2.1:** Ajustar o cabeçalho global [page-header.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/components/layout/page-header.tsx) para usar `text-foreground` e `border-border`, corrigindo a invisibilidade dos títulos no Light Mode.
+- [x] **Tarefa 2.2:** Refatorar a página do Dashboard executivo ([dashboard/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/app/(dashboard)/dashboard/page.tsx)), substituindo backgrounds pretos rígidos e textos fixos por classes semânticas (`bg-card`, `border-border/50`, `text-foreground`).
+- [x] **Tarefa 2.3:** Refatorar a página de Empresas ([empresas/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/app/(dashboard)/empresas/page.tsx)), aplicando cores semânticas aos filtros, inputs e mapeando o botão "+ Nova Empresa" para usar a cor primária dinâmica (`bg-primary`).
+- [x] **Tarefa 2.4:** Refatorar a página de Relatórios ([relatorios/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/app/(dashboard)/relatorios/page.tsx)), garantindo legibilidade no título e reatividade no botão comercial e nos cards de análise de vendas.
+- [x] **Tarefa 2.5:** Refatorar a página de Configurações ([settings/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/app/(dashboard)/settings/page.tsx)), limpando as classes rígidas dos cards de seleção de temas e garantindo que o Live Preview responda corretamente ao Light e Dark Mode.
 
-## 🎬 Grupo 3: Animação e Lipsync das Fotos (Provedor Gratuito)
-- [x] **Tarefa 3.1:** Implementar/Ativar o `VeoProvider` para gerar vídeos de movimento de 5 segundos com base na imagem estática de referência e no prompt do storyboard.
-- [x] **Tarefa 3.2:** Integrar a chamada de sincronização labial utilizando o `Wav2LipProvider` local/mockado na fila assíncrona, configurando o endpoint local do docker/colab (`http://localhost:8000`).
-- [x] **Tarefa 3.3:** Encadear estas chamadas na fila de processamento assíncrono (workers em [src/workers/index.ts](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/src/workers/index.ts)) via backend nativo do Supabase Queue.
-
-## 🖼️ Grupo 4: Interface do Usuário e Timeline (Múltiplas Fotos)
-- [x] **Tarefa 4.1:** Ajustar a UI de uploads em [projects/[id]/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/src/app/projects/%5Bid%5D/page.tsx) para que o usuário associe explicitamente cada imagem carregada a uma cena do storyboard (ex: Cena 1 a 5).
-- [x] **Tarefa 4.2:** Modificar o renderizador local em [video-generator.ts](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/src/services/video/video-generator.ts) para usar o mapeamento explícito das fotos carregadas correspondentes a cada cena, sem repetição circular genérica.
-- [x] **Tarefa 4.3:** Ajustar a renderização do FFmpeg no backend ([video-compositor.ts](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/src/services/video/video-compositor.ts)) para sincronizar e misturar os clipes de vídeo gerados pela IA com a voz narrada e a música de fundo.
-
-## 🚀 Grupo 5: Deploy e Publicação
-- [x] **Tarefa 5.1:** Commitar todas as correções de código de tipos TypeScript, JSX e o FFmpegGenerator local.
-- [x] **Tarefa 5.2:** Realizar o push da branch main para o repositório remoto no GitHub.
-- [x] **Tarefa 5.3:** Validar que o build de produção local compila perfeitamente sem erros, garantindo um deploy web suave na Vercel.
+## 🧪 Grupo 3: Validação Visual e Build
+- [x] **Tarefa 3.1:** Rodar o build de produção local (`npm run build` na pasta `frontend`) para garantir que nenhuma classe do Tailwind v4 cause quebras ou erros de compilação.
+- [x] **Tarefa 3.2:** Testar visualmente a interface simulando o modo Light e Dark em todos os 5 temas dinâmicos.
+- [x] **Tarefa 3.3:** Atualizar o arquivo [RESUMO_PROJETO.md](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/RESUMO_PROJETO.md) na raiz do projeto com o log das melhorias efetuadas.

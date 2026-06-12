@@ -48,27 +48,27 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        'flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-zinc-900 pb-8',
+        'flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-border pb-8',
         className
       )}
     >
       <div className="space-y-2">
         {/* Breadcrumbs */}
         {breadcrumbs && breadcrumbs.length > 0 && (
-          <nav className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-zinc-500 mb-1">
+          <nav className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">
             <Link href="/dashboard" className="hover:text-primary transition-colors flex items-center gap-1">
               <Home className="w-3 h-3" />
               Dashboard
             </Link>
             {breadcrumbs.map((crumb, idx) => (
               <React.Fragment key={idx}>
-                <ChevronRight className="w-3 h-3 text-zinc-700" />
+                <ChevronRight className="w-3 h-3 text-muted-foreground/60" />
                 {crumb.href ? (
                   <Link href={crumb.href} className="hover:text-primary transition-colors">
                     {crumb.label}
                   </Link>
                 ) : (
-                  <span className="text-zinc-400">{crumb.label}</span>
+                  <span className="text-muted-foreground/80">{crumb.label}</span>
                 )}
               </React.Fragment>
             ))}
@@ -86,7 +86,7 @@ export function PageHeader({
         )}
 
         {/* Título */}
-        <h1 className="text-4xl font-extrabold tracking-tight text-white flex items-center gap-4">
+        <h1 className="text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-4">
           {icon && (
             <div className={cn('p-2 rounded-2xl shrink-0', iconBg)}>
               {icon}
@@ -97,7 +97,7 @@ export function PageHeader({
 
         {/* Subtítulo */}
         {subtitle && (
-          <p className="text-zinc-400 font-medium">{subtitle}</p>
+          <p className="text-muted-foreground font-medium">{subtitle}</p>
         )}
       </div>
 

@@ -41,7 +41,7 @@ export default function DashboardPage() {
         subtitle="Visão de alto nível sobre funil de vendas, faturamento e qualidade técnica da empresa."
         icon={<TrendingUp className="w-8 h-8" />}
         iconBg="bg-accent/10 text-accent"
-        badge={{ label: "● Executivo em Tempo Real", className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" }}
+        badge={{ label: "● Executivo em Tempo Real", className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" }}
         actions={[
           {
             label: "Novo Lead",
@@ -54,7 +54,7 @@ export default function DashboardPage() {
             href: "/orcamentos",
             variant: "outline",
             icon: <FileText className="w-5 h-5" />,
-            className: "border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-white",
+            className: "border-border bg-input/40 hover:bg-input/80 text-foreground",
           },
         ]}
       />
@@ -72,26 +72,26 @@ export default function DashboardPage() {
         ) : (
           <>
             {[
-              { label: 'Total de Leads', value: stats.totalLeads, sub: 'CRM Pipeline', icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10' },
-              { label: 'Orçamentos Emitidos', value: stats.totalQuotes, sub: 'Propostas comerciais', icon: FileText, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-              { label: 'Taxa de Conversão', value: `${stats.conversionRate}%`, sub: 'Sucesso de vendas', icon: Percent, color: 'text-pink-400', bg: 'bg-pink-500/10' },
-              { label: 'Serviços Concluídos', value: stats.completedOrders, sub: 'Ordens finalizadas', icon: CheckCircle2, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
-              { label: 'Receita Total', value: formatCurrency(stats.totalRevenue), sub: 'Faturamento Bruto', icon: DollarSign, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-              { label: 'Lucro Líquido', value: formatCurrency(stats.totalProfit), sub: 'Receita - Despesa', icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-              { label: 'Técnicos Ativos', value: stats.activeTechs, sub: 'Capacidade operacional', icon: Wrench, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-              { label: 'Garantias Vigentes', value: stats.activeWarranties, sub: 'Monitoramento Pós-venda', icon: ShieldCheck, color: 'text-sky-400', bg: 'bg-sky-500/10' },
+              { label: 'Total de Leads', value: stats.totalLeads, sub: 'CRM Pipeline', icon: Users, color: 'text-purple-500 dark:text-purple-400', bg: 'bg-purple-500/10' },
+              { label: 'Orçamentos Emitidos', value: stats.totalQuotes, sub: 'Propostas comerciais', icon: FileText, color: 'text-blue-500 dark:text-blue-400', bg: 'bg-blue-500/10' },
+              { label: 'Taxa de Conversão', value: `${stats.conversionRate}%`, sub: 'Sucesso de vendas', icon: Percent, color: 'text-pink-500 dark:text-pink-400', bg: 'bg-pink-500/10' },
+              { label: 'Serviços Concluídos', value: stats.completedOrders, sub: 'Ordens finalizadas', icon: CheckCircle2, color: 'text-indigo-500 dark:text-indigo-400', bg: 'bg-indigo-500/10' },
+              { label: 'Receita Total', value: formatCurrency(stats.totalRevenue), sub: 'Faturamento Bruto', icon: DollarSign, color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-500/10' },
+              { label: 'Lucro Líquido', value: formatCurrency(stats.totalProfit), sub: 'Receita - Despesa', icon: TrendingUp, color: 'text-emerald-600 dark:text-emerald-500', bg: 'bg-emerald-500/10' },
+              { label: 'Técnicos Ativos', value: stats.activeTechs, sub: 'Capacidade operacional', icon: Wrench, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500/10' },
+              { label: 'Garantias Vigentes', value: stats.activeWarranties, sub: 'Monitoramento Pós-venda', icon: ShieldCheck, color: 'text-sky-600 dark:text-sky-400', bg: 'bg-sky-500/10' },
             ].map((kpi, idx) => (
-              <Card key={idx} className="group glass-card glow-hover border-zinc-200/50 dark:border-zinc-900/50 overflow-hidden relative">
+              <Card key={idx} className="group glass-card glow-hover border-border/50 overflow-hidden relative">
                 <div className={cn("absolute top-0 right-0 w-24 h-24 blur-[40px] opacity-20 transition-opacity group-hover:opacity-40", kpi.bg)} />
                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                  <CardTitle className="text-xs font-bold tracking-widest uppercase text-zinc-500 dark:text-zinc-400">{kpi.label}</CardTitle>
+                  <CardTitle className="text-xs font-bold tracking-widest uppercase text-muted-foreground">{kpi.label}</CardTitle>
                   <div className={cn("p-2 rounded-lg", kpi.bg)}>
                     <kpi.icon className={cn("h-4 w-4", kpi.color)} />
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight">{kpi.value}</div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2 font-medium">{kpi.sub}</p>
+                  <div className="text-3xl font-extrabold text-foreground tracking-tight">{kpi.value}</div>
+                  <p className="text-xs text-muted-foreground mt-2 font-medium">{kpi.sub}</p>
                 </CardContent>
               </Card>
             ))}
@@ -100,17 +100,17 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 mt-8 animate-in-slide" style={{ animationDelay: '0.2s' }}>
-          <Card className="glass-card flex flex-col justify-between overflow-hidden relative min-h-[200px] border-zinc-200/50 dark:border-zinc-900/50">
+          <Card className="glass-card flex flex-col justify-between overflow-hidden relative min-h-[200px] border-border/50">
             <CardContent className="p-8 relative z-10 flex flex-col h-full justify-between">
               <div>
-                <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 mb-4">Saúde Financeira</Badge>
+                <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border-emerald-500/20 mb-4">Saúde Financeira</Badge>
                 <h3 className="text-2xl font-bold">Relatório Completo</h3>
-                <p className="text-zinc-500 mt-2 max-w-sm">
+                <p className="text-muted-foreground mt-2 max-w-sm">
                   Analise o fluxo de caixa, as despesas corporativas e a margem de contribuição.
                 </p>
               </div>
               <Link href="/relatorios">
-                <Button className="w-fit mt-6 bg-emerald-600 hover:bg-emerald-700">Acessar Relatórios <ArrowRight className="w-4 h-4 ml-2" /></Button>
+                <Button className="w-fit mt-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg">Acessar Relatórios <ArrowRight className="w-4 h-4 ml-2" /></Button>
               </Link>
             </CardContent>
             <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none">
@@ -118,17 +118,17 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          <Card className="glass-card flex flex-col justify-between overflow-hidden relative min-h-[200px] border-zinc-200/50 dark:border-zinc-900/50">
+          <Card className="glass-card flex flex-col justify-between overflow-hidden relative min-h-[200px] border-border/50">
             <CardContent className="p-8 relative z-10 flex flex-col h-full justify-between">
               <div>
-                <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 mb-4">Pipeline de Vendas</Badge>
+                <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-500 border-blue-500/20 mb-4">Pipeline de Vendas</Badge>
                 <h3 className="text-2xl font-bold">Gerir Orçamentos</h3>
-                <p className="text-zinc-500 mt-2 max-w-sm">
+                <p className="text-muted-foreground mt-2 max-w-sm">
                   Acompanhe aprovações, envie cobranças e converta orçamentos em ordens ativas.
                 </p>
               </div>
               <Link href="/orcamentos">
-                <Button className="w-fit mt-6 bg-blue-600 hover:bg-blue-700">Ver Pipeline <ArrowRight className="w-4 h-4 ml-2" /></Button>
+                <Button className="w-fit mt-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg">Ver Pipeline <ArrowRight className="w-4 h-4 ml-2" /></Button>
               </Link>
             </CardContent>
             <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none">

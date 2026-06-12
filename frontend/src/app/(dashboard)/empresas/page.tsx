@@ -116,12 +116,12 @@ export default function EmpresasPage() {
         <div className="w-20 h-20 rounded-3xl bg-red-500/10 flex items-center justify-center mb-6 text-red-500">
           <ShieldAlert className="w-10 h-10" />
         </div>
-        <h3 className="text-2xl font-extrabold text-white tracking-tight">Acesso restrito</h3>
-        <p className="text-zinc-400 mt-2 max-w-sm font-medium">
+        <h3 className="text-2xl font-extrabold text-foreground tracking-tight">Acesso restrito</h3>
+        <p className="text-muted-foreground mt-2 max-w-sm font-medium">
           Apenas administradores globais têm permissão para acessar o painel de gerenciamento de empresas.
         </p>
         <Link href="/dashboard" className="mt-6">
-          <Button className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white font-bold h-11 px-6 rounded-xl">
+          <Button className="bg-input/40 border border-border hover:bg-input/80 text-foreground font-bold h-11 px-6 rounded-xl">
             Voltar ao Dashboard
           </Button>
         </Link>
@@ -225,27 +225,27 @@ export default function EmpresasPage() {
   return (
     <div className="p-8 lg:p-12 max-w-6xl mx-auto space-y-10 animate-in-fade">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-zinc-900 pb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-border pb-8">
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-zinc-500 mb-1">
-            <Link href="/dashboard" className="hover:text-blue-400 transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-widest">
+          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+            <Link href="/dashboard" className="hover:text-primary transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-widest">
               <ArrowLeft className="w-3 h-3" /> Dashboard
             </Link>
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-white flex items-center gap-4">
-            <div className="p-2 rounded-2xl bg-blue-500/10 text-blue-500">
+          <h1 className="text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-4">
+            <div className="p-2 rounded-2xl bg-primary/10 text-primary">
               <Building className="w-8 h-8" />
             </div>
             Empresas
           </h1>
-          <p className="text-zinc-400 font-medium">
-            Gerenciando <span className="text-white font-bold">{total}</span> empresas ativas no sistema
+          <p className="text-muted-foreground font-medium">
+            Gerenciando <span className="text-foreground font-bold">{total}</span> empresas ativas no sistema
           </p>
         </div>
         <div className="flex w-full md:w-auto gap-3">
           <Button 
             onClick={handleOpenCreateModal}
-            className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20 font-bold shrink-0 ml-auto md:ml-0"
+            className="h-11 px-6 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold shrink-0 ml-auto md:ml-0"
           >
             <Plus className="w-5 h-5 mr-2" />
             Nova Empresa
@@ -254,14 +254,14 @@ export default function EmpresasPage() {
       </div>
 
       {/* Filtros e Busca */}
-      <div className="grid gap-4 md:grid-cols-4 items-center bg-zinc-950/20 p-4 rounded-2xl border border-zinc-900/60 backdrop-blur-sm">
+      <div className="grid gap-4 md:grid-cols-4 items-center bg-input/10 p-4 rounded-2xl border border-border backdrop-blur-sm">
         <div className="relative md:col-span-2">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-11 pl-10 pr-4 rounded-xl bg-zinc-900/50 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
+            className="w-full h-11 pl-10 pr-4 rounded-xl bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
             placeholder="Nome ou CNPJ..."
           />
         </div>
@@ -273,7 +273,7 @@ export default function EmpresasPage() {
               setActiveFilter(e.target.value);
               setPage(1);
             }}
-            className="w-full h-11 px-4 rounded-xl bg-zinc-900/50 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all cursor-pointer"
+            className="w-full h-11 px-4 rounded-xl bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all cursor-pointer"
           >
             <option value="all">Todos os Status</option>
             <option value="active">Ativas</option>
@@ -289,7 +289,7 @@ export default function EmpresasPage() {
               setStateFilter(e.target.value.toUpperCase().slice(0, 2));
               setPage(1);
             }}
-            className="w-full h-11 px-4 rounded-xl bg-zinc-900/50 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all uppercase"
+            className="w-full h-11 px-4 rounded-xl bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all uppercase"
             placeholder="UF (Estado)..."
             maxLength={2}
           />
@@ -303,12 +303,12 @@ export default function EmpresasPage() {
           <span className="text-zinc-500 mt-4 font-semibold">Carregando empresas...</span>
         </div>
       ) : companies.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center p-24 text-center border-dashed border-zinc-800 glass-card">
-          <div className="w-20 h-20 rounded-full bg-zinc-900 flex items-center justify-center mb-6">
-            <Building className="w-10 h-10 text-zinc-700 opacity-50" />
+        <Card className="flex flex-col items-center justify-center p-24 text-center border-dashed border-border glass-card">
+          <div className="w-20 h-20 rounded-full bg-input/40 flex items-center justify-center mb-6">
+            <Building className="w-10 h-10 text-muted-foreground opacity-50" />
           </div>
-          <h3 className="text-xl font-bold text-zinc-300">Nenhuma empresa encontrada</h3>
-          <p className="text-zinc-500 mt-2 max-w-sm">
+          <h3 className="text-xl font-bold text-foreground/80">Nenhuma empresa encontrada</h3>
+          <p className="text-muted-foreground mt-2 max-w-sm">
             Tente ajustar os termos da busca ou adicione uma nova empresa.
           </p>
         </Card>
@@ -316,49 +316,49 @@ export default function EmpresasPage() {
         <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
             {companies.map((company, idx) => (
-              <Card key={company.id} className="group glass-card glow-hover border-zinc-900/50 animate-in-slide" style={{ animationDelay: `${idx * 0.05}s` }}>
+              <Card key={company.id} className="group glass-card glow-hover border-border/50 animate-in-slide" style={{ animationDelay: `${idx * 0.05}s` }}>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-5">
                       <div className="relative shrink-0">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-700/50 flex items-center justify-center text-lg font-black text-zinc-300 group-hover:glow-primary transition-all">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-input/60 to-input border border-border flex items-center justify-center text-lg font-black text-foreground/80 group-hover:glow-primary transition-all">
                           {company.name.split(' ').map((n) => n[0]).slice(0, 2).join('')}
                         </div>
-                        <div className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-zinc-950 rounded-full ${company.active ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                        <div className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-background rounded-full ${company.active ? 'bg-emerald-500' : 'bg-red-500'}`} />
                       </div>
                       <div className="space-y-3 min-w-0">
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-lg font-bold text-white tracking-tight truncate">{company.name}</h3>
+                            <h3 className="text-lg font-bold text-foreground tracking-tight truncate">{company.name}</h3>
                             <Badge variant={company.active ? 'success' : 'destructive'} className="text-[10px] font-black uppercase tracking-tighter px-1.5 py-0">
                               {company.active ? 'Ativa' : 'Inativa'}
                             </Badge>
                           </div>
-                          <p className="text-xs text-zinc-500 font-medium font-mono">Slug: {company.slug}</p>
+                          <p className="text-xs text-muted-foreground font-medium font-mono">Slug: {company.slug}</p>
                         </div>
                         
-                        <div className="grid gap-2 text-xs font-medium text-zinc-400">
+                        <div className="grid gap-2 text-xs font-medium text-muted-foreground">
                           {company.cnpj && (
                             <div className="flex items-center gap-2">
-                              <span className="text-zinc-600 font-bold uppercase tracking-wider text-[10px]">CNPJ:</span>
+                              <span className="text-muted-foreground/80 font-bold uppercase tracking-wider text-[10px]">CNPJ:</span>
                               <span className="font-mono">{company.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")}</span>
                             </div>
                           )}
                           {company.phone && (
                             <div className="flex items-center gap-2">
-                              <Phone className="w-3.5 h-3.5 text-zinc-500" />
+                              <Phone className="w-3.5 h-3.5 text-muted-foreground" />
                               {company.phone}
                             </div>
                           )}
                           {company.email && (
                             <div className="flex items-center gap-2">
-                              <Mail className="w-3.5 h-3.5 text-zinc-500" />
+                              <Mail className="w-3.5 h-3.5 text-muted-foreground" />
                               <span className="truncate">{company.email}</span>
                             </div>
                           )}
                           {(company.city || company.state) && (
                             <div className="flex items-center gap-2">
-                              <MapPin className="w-3.5 h-3.5 text-zinc-500" />
+                              <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
                               <span>{company.address ? `${company.address}, ` : ''}{company.city} - {company.state}</span>
                             </div>
                           )}
@@ -369,7 +369,7 @@ export default function EmpresasPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-10 w-10 rounded-xl text-zinc-500 hover:text-blue-400 hover:bg-blue-400/10 transition-all"
+                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
                         onClick={() => handleOpenEditModal(company)}
                       >
                         <Edit className="w-5 h-5" />
@@ -377,7 +377,7 @@ export default function EmpresasPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-10 w-10 rounded-xl text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
                         onClick={() => handleDelete(company.id)}
                       >
                         <Trash2 className="w-5 h-5" />
@@ -391,22 +391,22 @@ export default function EmpresasPage() {
 
           {/* Paginação */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-zinc-900 pt-6">
-              <span className="text-sm font-medium text-zinc-500">
-                Página <span className="text-white">{page}</span> de <span className="text-white">{totalPages}</span>
+            <div className="flex items-center justify-between border-t border-border pt-6">
+              <span className="text-sm font-medium text-muted-foreground">
+                Página <span className="text-foreground">{page}</span> de <span className="text-foreground">{totalPages}</span>
               </span>
               <div className="flex gap-2">
                 <Button
                   disabled={page === 1}
                   onClick={() => setPage(page - 1)}
-                  className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 disabled:opacity-50 text-white font-bold h-9 px-4 rounded-lg text-xs"
+                  className="bg-input/40 border border-border hover:bg-input/80 disabled:opacity-50 text-foreground font-bold h-9 px-4 rounded-lg text-xs"
                 >
                   Anterior
                 </Button>
                 <Button
                   disabled={page === totalPages}
                   onClick={() => setPage(page + 1)}
-                  className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 disabled:opacity-50 text-white font-bold h-9 px-4 rounded-lg text-xs"
+                  className="bg-input/40 border border-border hover:bg-input/80 disabled:opacity-50 text-foreground font-bold h-9 px-4 rounded-lg text-xs"
                 >
                   Próxima
                 </Button>
@@ -419,12 +419,12 @@ export default function EmpresasPage() {
       {/* Modal CRUD de Empresas */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in-fade">
-          <div className="relative w-full max-w-lg rounded-2xl bg-zinc-950 border border-zinc-900 shadow-2xl p-6 space-y-6">
+          <div className="relative w-full max-w-lg rounded-2xl bg-card border border-border shadow-2xl p-6 space-y-6">
             <div>
-              <h3 className="text-xl font-bold text-white tracking-tight">
+              <h3 className="text-xl font-bold text-foreground tracking-tight">
                 {selectedCompany ? 'Editar Empresa' : 'Adicionar Nova Empresa'}
               </h3>
-              <p className="text-zinc-500 text-xs mt-1">
+              <p className="text-muted-foreground text-xs mt-1">
                 {selectedCompany ? 'Edite as informações cadastrais da empresa.' : 'Preencha os dados abaixo para cadastrar.'}
               </p>
             </div>
@@ -439,97 +439,97 @@ export default function EmpresasPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1 md:col-span-2">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Nome da Empresa</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Nome da Empresa</label>
                   <input
                     type="text"
                     name="name"
                     required
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50"
+                    className="w-full h-10 px-3 rounded-lg bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Slug de Acesso</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Slug de Acesso</label>
                   <input
                     type="text"
                     name="slug"
                     required
                     value={formData.slug}
                     onChange={handleInputChange}
-                    className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 font-mono"
+                    className="w-full h-10 px-3 rounded-lg bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 font-mono"
                     placeholder="ex-empresa"
                     disabled={!!selectedCompany}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">CNPJ</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">CNPJ</label>
                   <input
                     type="text"
                     name="cnpj"
                     value={formData.cnpj}
                     onChange={handleInputChange}
-                    className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 font-mono"
+                    className="w-full h-10 px-3 rounded-lg bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 font-mono"
                     placeholder="Somente números"
                     maxLength={14}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Telefone</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Telefone</label>
                   <input
                     type="text"
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50"
+                    className="w-full h-10 px-3 rounded-lg bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
                     placeholder="(11) 99999-9999"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">E-mail</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">E-mail</label>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50"
+                    className="w-full h-10 px-3 rounded-lg bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
                   />
                 </div>
 
                 <div className="space-y-1 md:col-span-2">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Endereço Completo</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Endereço Completo</label>
                   <input
                     type="text"
                     name="address"
                     value={formData.address}
                     onChange={handleInputChange}
-                    className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50"
+                    className="w-full h-10 px-3 rounded-lg bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Cidade</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Cidade</label>
                   <input
                     type="text"
                     name="city"
                     value={formData.city}
                     onChange={handleInputChange}
-                    className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50"
+                    className="w-full h-10 px-3 rounded-lg bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Estado (UF)</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Estado (UF)</label>
                   <input
                     type="text"
                     name="state"
                     value={formData.state}
                     onChange={handleInputChange}
-                    className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 uppercase"
+                    className="w-full h-10 px-3 rounded-lg bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 uppercase"
                     maxLength={2}
                     placeholder="SP"
                   />
@@ -543,25 +543,25 @@ export default function EmpresasPage() {
                   name="active"
                   checked={formData.active}
                   onChange={(e) => setFormData((prev) => ({ ...prev, active: e.target.checked }))}
-                  className="rounded bg-zinc-900 border-zinc-800 text-blue-600 focus:ring-0 cursor-pointer w-4 h-4"
+                  className="rounded bg-input/40 border-border text-primary focus:ring-primary/20 cursor-pointer w-4 h-4"
                 />
-                <label htmlFor="active" className="text-xs font-bold text-zinc-300 uppercase tracking-wider cursor-pointer">
+                <label htmlFor="active" className="text-xs font-bold text-foreground/80 uppercase tracking-wider cursor-pointer">
                   Empresa Ativa e Operacional
                 </label>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-zinc-900">
+              <div className="flex justify-end gap-3 pt-4 border-t border-border">
                 <Button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white font-bold h-10 px-5 rounded-lg text-xs"
+                  className="bg-input/40 border border-border hover:bg-input/80 text-foreground font-bold h-10 px-5 rounded-lg text-xs"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={formLoading}
-                  className="bg-blue-600 hover:bg-blue-500 text-white font-bold h-10 px-5 rounded-lg text-xs disabled:opacity-50"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-10 px-5 rounded-lg text-xs disabled:opacity-50"
                 >
                   {formLoading ? 'Salvando...' : 'Salvar Empresa'}
                 </Button>

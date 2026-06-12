@@ -93,18 +93,18 @@ export default function SettingsPage() {
 
   return (
     <div className="p-8 lg:p-12 max-w-6xl mx-auto space-y-10 animate-in-fade">
-      <div className="border-b border-zinc-900 pb-8 space-y-2">
-        <h1 className="text-4xl font-extrabold tracking-tight text-white flex items-center gap-4">
+      <div className="border-b border-border pb-8 space-y-2">
+        <h1 className="text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-4">
           <div className="p-2 rounded-2xl bg-primary/10 text-primary">
             <Settings className="w-8 h-8" />
           </div>
           Configurações
         </h1>
-        <p className="text-zinc-500 font-medium">Gerencie a identidade visual e credenciais do sistema.</p>
+        <p className="text-muted-foreground font-medium">Gerencie a identidade visual e credenciais do sistema.</p>
       </div>
 
       <Tabs defaultValue="appearance" className="space-y-8">
-        <TabsList className="bg-zinc-950 border border-zinc-900 p-1 rounded-xl">
+        <TabsList className="bg-input/20 border border-border p-1 rounded-xl">
           <TabsTrigger value="appearance" className="gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-bold px-6">
             <Palette className="w-4 h-4" /> Aparência
           </TabsTrigger>
@@ -118,8 +118,8 @@ export default function SettingsPage() {
             <div className="lg:col-span-2 space-y-12">
               {/* Temas */}
               <section className="space-y-6">
-                <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                  <Monitor className="w-5 h-5 text-zinc-500" />
+                <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
+                  <Monitor className="w-5 h-5 text-muted-foreground" />
                   Temas do Sistema
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -130,14 +130,14 @@ export default function SettingsPage() {
                       className={cn(
                         "group relative p-4 rounded-2xl border transition-all duration-300 text-left",
                         theme === t.id 
-                          ? "bg-zinc-900 border-primary shadow-lg" 
-                          : "bg-zinc-950 border-zinc-900 hover:border-zinc-700"
+                          ? "bg-input/40 border-primary shadow-lg" 
+                          : "bg-card border-border hover:border-border/80"
                       )}
                     >
                       <div className={cn("w-full h-16 rounded-xl mb-3 opacity-70 group-hover:opacity-100 transition-opacity", t.preview)}>
                         <div className="w-full h-full glass-card" />
                       </div>
-                      <span className="text-xs font-bold text-zinc-300 block">{t.name}</span>
+                      <span className="text-xs font-bold text-foreground/80 block">{t.name}</span>
                       {theme === t.id && (
                         <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1 shadow-lg animate-in-fade">
                           <Check className="w-3 h-3" />
@@ -149,10 +149,10 @@ export default function SettingsPage() {
               </section>
 
               {/* Logo AI */}
-              <section className="space-y-6 p-8 rounded-3xl bg-zinc-900/30 border border-zinc-900/50 glass-panel">
+              <section className="space-y-6 p-8 rounded-3xl bg-input/10 border border-border/50 glass-panel">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                    <Layout className="w-5 h-5 text-zinc-500" />
+                  <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
+                    <Layout className="w-5 h-5 text-muted-foreground" />
                     Logo & Color Sync
                   </h2>
                   <Badge className="bg-primary/10 text-primary border-primary/20">Modo AI</Badge>
@@ -161,21 +161,21 @@ export default function SettingsPage() {
                 <div className="flex flex-col md:flex-row gap-8 items-center">
                   <div 
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-40 h-40 rounded-3xl border-2 border-dashed border-zinc-800 hover:border-primary/50 bg-zinc-950 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all group overflow-hidden shrink-0"
+                    className="w-40 h-40 rounded-3xl border-2 border-dashed border-border hover:border-primary/50 bg-input/40 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all group overflow-hidden shrink-0"
                   >
                     {logoUrl ? (
                       <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-4" />
                     ) : (
                       <>
-                        <Upload className="w-6 h-6 text-zinc-700 group-hover:text-primary" />
-                        <span className="text-[9px] font-bold text-zinc-600 uppercase">Subir Logo</span>
+                        <Upload className="w-6 h-6 text-muted-foreground group-hover:text-primary" />
+                        <span className="text-[9px] font-bold text-muted-foreground/80 uppercase">Subir Logo</span>
                       </>
                     )}
                     <input type="file" ref={fileInputRef} onChange={handleLogoUpload} className="hidden" accept="image/*" />
                   </div>
 
                   <div className="flex-1 space-y-4">
-                    <p className="text-sm text-zinc-400 leading-relaxed font-medium">
+                    <p className="text-sm text-muted-foreground leading-relaxed font-medium">
                       Suba sua logo para extrairmos automaticamente as cores da sua marca para botões, glows e indicadores.
                     </p>
                     <Button 
@@ -197,30 +197,30 @@ export default function SettingsPage() {
 
             {/* Preview */}
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                <MousePointer2 className="w-5 h-5 text-zinc-500" />
+              <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
+                <MousePointer2 className="w-5 h-5 text-muted-foreground" />
                 Live Preview
               </h2>
-              <Card className="glass-card border-zinc-900/50 overflow-hidden sticky top-8 p-6 space-y-8">
+              <Card className="glass-card border-border/50 overflow-hidden sticky top-8 p-6 space-y-8">
                 <div className="space-y-4">
-                  <div className="h-3 w-20 bg-zinc-800 rounded-full animate-pulse" />
+                  <div className="h-3 w-20 bg-input rounded-full animate-pulse" />
                   <div className="h-6 w-full bg-gradient-to-r from-primary to-accent/40 rounded-lg" />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
                   {[1, 2].map((i) => (
-                    <div key={i} className="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800 space-y-2 glow-hover">
+                    <div key={i} className="p-4 rounded-xl bg-input/40 border border-border space-y-2 glow-hover">
                       <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
                         <Users className="w-3 h-3 text-primary" />
                       </div>
-                      <div className="h-3 w-full bg-zinc-800 rounded" />
+                      <div className="h-3 w-full bg-input rounded" />
                     </div>
                   ))}
                 </div>
 
-                <div className="space-y-3 pt-4 border-t border-zinc-900">
+                <div className="space-y-3 pt-4 border-t border-border">
                   <Button className="w-full bg-primary h-9 rounded-lg text-primary-foreground font-bold text-xs uppercase">Botão Primário</Button>
-                  <Button variant="outline" className="w-full h-9 rounded-lg border-zinc-800 text-xs uppercase font-bold text-zinc-400">Secundário</Button>
+                  <Button variant="outline" className="w-full h-9 rounded-lg border-border bg-input/40 hover:bg-input/80 text-xs uppercase font-bold text-muted-foreground">Secundário</Button>
                 </div>
               </Card>
             </div>
@@ -228,11 +228,11 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="api" className="animate-in-slide space-y-6">
-          <Card className="border-amber-500/20 bg-amber-500/5 max-w-3xl">
+          <Card className="border-amber-500/20 bg-amber-500/10 max-w-3xl glass-card">
             <CardContent className="p-4 flex gap-3 items-start">
               <ShieldAlert className="w-5 h-5 text-amber-500 mt-0.5" />
               <div className="space-y-1">
-                <h4 className="text-sm font-bold text-amber-400 uppercase tracking-tighter">Armazenamento Local Seguro</h4>
+                <h4 className="text-sm font-bold text-amber-500 uppercase tracking-tighter">Armazenamento Local Seguro</h4>
                 <p className="text-xs text-amber-500/80 leading-relaxed">
                   Configurações salvas localmente para testes. Em produção, use as variáveis de ambiente.
                 </p>
@@ -241,50 +241,50 @@ export default function SettingsPage() {
           </Card>
 
           <div className="max-w-3xl space-y-6">
-            <Card className="border-zinc-900 bg-zinc-950">
+            <Card className="glass-card border-border/50">
               <CardHeader>
-                <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+                <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-blue-500" /> Google Gemini AI
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Gemini API Key</label>
+                  <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Gemini API Key</label>
                   <input
                     type="password"
                     value={keys.geminiKey}
                     onChange={(e) => handleKeyChange('geminiKey', e.target.value)}
-                    className="w-full h-11 px-4 rounded-xl bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="w-full h-11 px-4 rounded-xl bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
                     placeholder="AIza..."
                   />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-zinc-900 bg-zinc-950">
+            <Card className="glass-card border-border/50">
               <CardHeader>
-                <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+                <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
                   <Database className="w-5 h-5 text-emerald-500" /> Supabase Database
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Supabase URL</label>
+                    <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Supabase URL</label>
                     <input
                       type="text"
                       value={keys.supabaseUrl}
                       onChange={(e) => handleKeyChange('supabaseUrl', e.target.value)}
-                      className="w-full h-11 px-4 rounded-xl bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="w-full h-11 px-4 rounded-xl bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Anon Key</label>
+                    <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Anon Key</label>
                     <input
                       type="password"
                       value={keys.supabaseAnonKey}
                       onChange={(e) => handleKeyChange('supabaseAnonKey', e.target.value)}
-                      className="w-full h-11 px-4 rounded-xl bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="w-full h-11 px-4 rounded-xl bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
                     />
                   </div>
                 </div>
