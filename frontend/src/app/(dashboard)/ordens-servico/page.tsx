@@ -1,12 +1,46 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Component, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ClipboardList, Search, User, Calendar, Wrench, FileText, XCircle, CheckCircle2, Award } from 'lucide-react';
 import { ServiceOrder, getServiceOrders } from '@/lib/api-service-orders';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+
+class ErrorBoundary extends Component<{ children: React.ReactNode }> {
+  state = { hasError: false, error: null as Error | null };
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: Error, info: any) {
+    console.error('[ErrorBoundary] Crash na página OS:', error, info.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 max-w-6xl mx-auto space-y-6">
+          <Card className="p-8 border-rose-500/20 bg-rose-500/5">
+            <h2 className="text-lg font-bold text-rose-400 mb-2">Erro ao carregar ordens de serviço</h2>
+            <p className="text-sm text-zinc-400 mb-4">
+              Ocorreu um erro inesperado. Recarregue a página ou tente novamente.
+            </p>
+            <p className="text-xs text-zinc-600 font-mono bg-zinc-950 p-3 rounded-xl border border-zinc-900">
+              {this.state.error?.message || 'Erro desconhecido'}
+            </p>
+            <Button
+              onClick={() => window.location.reload()}
+              className="mt-4 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white font-bold h-9 px-4 rounded-xl text-xs"
+            >
+              Recarregar Página
+            </Button>
+          </Card>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function formatCurrency(value: number | null | undefined): string {
   if (value == null) return 'R$ 0,00';
@@ -33,7 +67,7 @@ function formatDateTime(dateString?: string | null): string {
   });
 }
 
-export default function OrdensServicoPage() {
+function OrdensServicoPageInner() {
 
   const [orders, setOrders] = useState<ServiceOrder[]>([]);
   const [total, setTotal] = useState(0);
@@ -57,9 +91,9 @@ export default function OrdensServicoPage() {
         search: search || undefined,
         status: statusFilter || undefined,
       });
-      setOrders(result.items);
-      setTotal(result.total);
-      setTotalPages(result.totalPages);
+      setOrders(result?.items ?? []);
+      setTotal(result?.total ?? 0);
+      setTotalPages(result?.totalPages ?? 1);
     } catch (e: any) {
       console.error('Erro ao buscar ordens de serviço:', e.message);
     } finally {
@@ -154,7 +188,7 @@ export default function OrdensServicoPage() {
             <div className="w-10 h-10 rounded-full border-4 border-violet-500/30 border-t-violet-500 animate-spin" />
             <p className="text-xs text-zinc-500 font-bold uppercase">Carregando ordens...</p>
           </div>
-        ) : orders.length === 0 ? (
+        ) : (orders ?? []).length === 0 ? (
           <Card className="flex flex-col items-center justify-center p-16 text-center border-dashed border-zinc-900 bg-zinc-950/20">
             <ClipboardList className="w-14 h-14 text-zinc-700 mb-4" />
             <h3 className="text-lg font-semibold text-zinc-300">Nenhuma ordem de serviço encontrada</h3>
@@ -431,5 +465,13 @@ export default function OrdensServicoPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function OrdensServicoPage() {
+  return (
+    <ErrorBoundary>
+      <OrdensServicoPageInner />
+    </ErrorBoundary>
   );
 }
