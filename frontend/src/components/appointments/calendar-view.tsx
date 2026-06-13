@@ -27,11 +27,12 @@ interface CalendarViewProps {
   events: any[];
   loading: boolean;
   onEventMove: (event: any, start: Date, end: Date) => Promise<void>;
-  onEventSave: (title: string, start: Date, end: Date) => Promise<void>;
+  onEventSave: (data: import('./event-dialog').EventDialogData) => Promise<void>;
 }
 
 export function CalendarView({ events, loading, onEventMove, onEventSave }: CalendarViewProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<any>(null);
 
   const moveEvent = async ({ event, start, end }: any) => {
@@ -39,31 +40,41 @@ export function CalendarView({ events, loading, onEventMove, onEventSave }: Cale
   };
 
   const handleSelectSlot = ({ start, end }: any) => {
-    setSelectedSlot({ start, end });
+    setSelectedSlot({ start, end, title: '', data: null });
+    setIsEditMode(false);
     setDialogOpen(true);
   };
 
-  const handleSaveEvent = async (title: string) => {
-    if (!selectedSlot) return;
-    const { start, end } = selectedSlot;
-    
-    await onEventSave(title, start, end);
+  const handleSelectEvent = (event: any) => {
+    setSelectedSlot({
+      title: event.title,
+      start: event.start,
+      end: event.end,
+      technicianId: event.resourceId,
+      data: event.data, // Pega o payload original salvo (contém ID etc)
+    });
+    setIsEditMode(true);
+    setDialogOpen(true);
+  };
+
+  const handleSaveEvent = async (data: import('./event-dialog').EventDialogData) => {
+    await onEventSave(data);
     setDialogOpen(false);
   };
 
   const eventStyleGetter = (event: any, start: Date, end: Date, isSelected: boolean) => {
     return {
       style: {
-        backgroundColor: 'var(--primary)',
-        borderRadius: '6px',
-        opacity: 0.9,
-        color: 'var(--primary-foreground)',
-        border: '0px',
+        backgroundColor: 'rgba(var(--primary-rgb, 15, 23, 42), 0.85)',
+        backdropFilter: 'blur(8px)',
+        borderRadius: '8px',
+        color: '#ffffff',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
         display: 'block',
-        padding: '2px 6px',
-        fontSize: '0.85rem',
+        padding: '3px 8px',
+        fontSize: '0.80rem',
         fontWeight: 500,
-        boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
       }
     };
   };
@@ -82,6 +93,7 @@ export function CalendarView({ events, loading, onEventMove, onEventSave }: Cale
         resizable
         selectable
         onSelectSlot={handleSelectSlot}
+        onSelectEvent={handleSelectEvent}
         defaultView={Views.WEEK}
         eventPropGetter={eventStyleGetter}
         messages={{
@@ -97,7 +109,9 @@ export function CalendarView({ events, loading, onEventMove, onEventSave }: Cale
       <EventDialog 
         open={dialogOpen} 
         onOpenChange={setDialogOpen} 
-        onSave={handleSaveEvent} 
+        onSave={handleSaveEvent}
+        defaultData={selectedSlot}
+        isEdit={isEditMode}
       />
     </div>
   );

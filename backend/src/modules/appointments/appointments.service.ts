@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { CreateAppointmentDto, UpdateAppointmentDto } from './dto/create-appointment.dto';
 
@@ -63,12 +63,7 @@ export class AppointmentsService {
         });
 
         if (conflicting) {
-          return {
-            success: false,
-            conflict: true,
-            message: `O técnico ${conflicting.technician?.name} possui um conflito com o compromisso "${conflicting.title}" neste período.`,
-            data: conflicting,
-          };
+          throw new ConflictException(`O técnico ${conflicting.technician?.name} possui um conflito com o compromisso "${conflicting.title}" neste período.`);
         }
       }
     }
@@ -263,12 +258,7 @@ export class AppointmentsService {
           });
 
           if (conflicting) {
-            return {
-              success: false,
-              conflict: true,
-              message: `O técnico ${conflicting.technician?.name} possui um conflito com o compromisso "${conflicting.title}" neste período.`,
-              data: conflicting,
-            };
+            throw new ConflictException(`O técnico ${conflicting.technician?.name} possui um conflito com o compromisso "${conflicting.title}" neste período.`);
           }
         }
       }

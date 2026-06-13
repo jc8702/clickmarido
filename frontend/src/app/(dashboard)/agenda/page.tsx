@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { CalendarView } from '@/components/appointments/calendar-view';
 import { SidebarTimeline } from '@/components/appointments/sidebar-timeline';
 import { getAppointments, updateAppointment, createAppointment } from '@/lib/api-appointments';
+import { toast } from 'sonner';
+import { EventDialogData } from '@/components/appointments/event-dialog';
 
 export default function AgendaPage() {
   const { data: session } = useSession();
@@ -44,64 +46,82 @@ export default function AgendaPage() {
     setEvents((prev) => prev.map((e) => (e.id === event.id ? updatedEvent : e)));
 
     try {
-      const res: any = await updateAppointment(event.id, {
+      await updateAppointment(event.id, {
         startTime: start.toISOString(),
         endTime: end.toISOString(),
       });
-      if (res.conflict) {
-        alert(res.message);
-        fetchEvents(); // rollback
-      }
-    } catch (error) {
+      toast.success('Horário do agendamento atualizado com sucesso.');
+    } catch (error: any) {
       console.error(error);
-      alert('Erro ao reagendar.');
-      fetchEvents();
+      toast.error(error.response?.data?.message || error.message || 'Erro ao reagendar.');
+      fetchEvents(); // rollback
     }
   };
 
-  const handleEventSave = async (title: string, start: Date, end: Date) => {
+  const handleEventSave = async (dialogData: EventDialogData) => {
+    const { title, start, end, data } = dialogData;
+    const isEdit = !!data?.id;
+
     try {
-      // 1. Cria localmente no Banco via API 
-      const newAppointment = await createAppointment({ 
-        title, 
-        startTime: start.toISOString(), 
-        endTime: end.toISOString()
-      });
+      let savedAppointment;
 
-      // 2. Envia para o Google Calendar via Server-Side API do Next.js
-      try {
-        await fetch('/api/calendar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title,
-            startTime: start.toISOString(),
-            endTime: end.toISOString()
-          })
+      if (isEdit) {
+        // Atualiza evento existente
+        savedAppointment = await updateAppointment(data.id, {
+          title,
+          startTime: start.toISOString(),
+          endTime: end.toISOString(),
         });
-      } catch (err) {
-        console.error('Erro ao integrar com Google Calendar:', err);
+        toast.success('Agendamento atualizado com sucesso.');
+      } else {
+        // Cria novo evento
+        savedAppointment = await createAppointment({ 
+          title, 
+          startTime: start.toISOString(), 
+          endTime: end.toISOString()
+        });
+        toast.success('Novo agendamento criado com sucesso.');
+
+        // Envia para o Google Calendar apenas se for novo (por enquanto)
+        try {
+          await fetch('/api/calendar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title,
+              startTime: start.toISOString(),
+              endTime: end.toISOString()
+            })
+          });
+        } catch (err) {
+          console.error('Erro ao integrar com Google Calendar:', err);
+        }
       }
 
-      // 3. Atualiza o estado local imediatamente com o retorno da API
-      if (newAppointment) {
-        setEvents((prev) => [
-          ...prev,
-          {
-            id: newAppointment.id || String(Math.random()),
-            title: newAppointment.title || title || 'Sem título',
-            start: new Date(newAppointment.startTime || start),
-            end: new Date(newAppointment.endTime || end),
-            resourceId: newAppointment.technicianId || undefined,
-            data: newAppointment,
+      // Atualiza o estado local imediatamente com o retorno da API
+      if (savedAppointment) {
+        setEvents((prev) => {
+          const newEvent = {
+            id: savedAppointment.id || data?.id || String(Math.random()),
+            title: savedAppointment.title || title || 'Sem título',
+            start: new Date(savedAppointment.startTime || start),
+            end: new Date(savedAppointment.endTime || end),
+            resourceId: savedAppointment.technicianId || undefined,
+            data: savedAppointment,
+          };
+          
+          if (isEdit) {
+            return prev.map(e => e.id === data.id ? newEvent : e);
           }
-        ]);
+          return [...prev, newEvent];
+        });
       }
 
-      // 4. E puxa os dados do servidor para garantir sincronia
+      // Puxa os dados do servidor para garantir sincronia final
       await fetchEvents();
     } catch (e: any) {
-      alert(e.message);
+      console.error(e);
+      toast.error(e.response?.data?.message || e.message || 'Erro ao processar o evento.');
     }
   };
 

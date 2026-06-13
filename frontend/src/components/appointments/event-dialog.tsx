@@ -1,28 +1,58 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CalendarDays, Clock, Video } from 'lucide-react';
+
+export interface EventDialogData {
+  title: string;
+  start: Date;
+  end: Date;
+  technicianId?: string;
+  data?: any;
+}
 
 interface EventDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (title: string, data: any) => void;
-  defaultTitle?: string;
+  onSave: (data: EventDialogData) => Promise<void>;
+  defaultData?: EventDialogData | null;
   isEdit?: boolean;
 }
 
-export function EventDialog({ open, onOpenChange, onSave, defaultTitle = '', isEdit = false }: EventDialogProps) {
-  const [title, setTitle] = useState(defaultTitle);
+// Utilitário para formatar datas no padrão do input datetime-local
+const toDateTimeLocal = (date: Date) => {
+  const d = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return d.toISOString().slice(0, 16);
+};
+
+export function EventDialog({ open, onOpenChange, onSave, defaultData = null, isEdit = false }: EventDialogProps) {
+  const [title, setTitle] = useState('');
+  const [start, setStart] = useState('');
+  const [end, setEnd] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Sincroniza estado com o payload default quando abre/muda
+  useEffect(() => {
+    if (open) {
+      setTitle(defaultData?.title || '');
+      setStart(defaultData?.start ? toDateTimeLocal(defaultData.start) : '');
+      setEnd(defaultData?.end ? toDateTimeLocal(defaultData.end) : '');
+    }
+  }, [open, defaultData]);
+
   const handleSave = async () => {
-    if (!title.trim()) return;
+    if (!title.trim() || !start || !end) return;
     setLoading(true);
     try {
-      await onSave(title, {});
+      await onSave({
+        title,
+        start: new Date(start),
+        end: new Date(end),
+        data: defaultData?.data,
+      });
       onOpenChange(false);
-      setTitle('');
     } finally {
       setLoading(false);
     }
@@ -30,32 +60,70 @@ export function EventDialog({ open, onOpenChange, onSave, defaultTitle = '', isE
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[450px] glass-panel border-muted/20">
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Editar Evento' : 'Novo Evento'}</DialogTitle>
+          <DialogTitle className="text-xl flex items-center gap-2">
+            <CalendarDays className="w-5 h-5 text-primary" />
+            {isEdit ? 'Editar Compromisso' : 'Novo Compromisso'}
+          </DialogTitle>
+          <DialogDescription>
+            {isEdit ? 'Atualize as informações do agendamento abaixo.' : 'Preencha os detalhes para agendar o serviço.'}
+          </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-5 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="title">Título do Evento</Label>
+            <Label htmlFor="title" className="text-sm font-medium">Título do Serviço</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex: Reunião de Alinhamento"
-              className="col-span-3"
+              placeholder="Ex: Manutenção Preventiva - Ar Condicionado"
+              className="col-span-3 transition-colors focus-visible:ring-primary/50"
             />
           </div>
-          <div className="grid gap-2">
-            <Button variant="outline" className="w-full justify-start text-left font-normal" disabled>
-              <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="start" className="text-sm font-medium flex items-center gap-1">
+                <Clock className="w-4 h-4 text-muted-foreground" />
+                Início
+              </Label>
+              <Input
+                id="start"
+                type="datetime-local"
+                value={start}
+                onChange={(e) => setStart(e.target.value)}
+                className="transition-colors focus-visible:ring-primary/50"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="end" className="text-sm font-medium flex items-center gap-1">
+                <Clock className="w-4 h-4 text-muted-foreground" />
+                Término
+              </Label>
+              <Input
+                id="end"
+                type="datetime-local"
+                value={end}
+                onChange={(e) => setEnd(e.target.value)}
+                className="transition-colors focus-visible:ring-primary/50"
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-2 pt-2 border-t border-border/50">
+            <Button variant="outline" className="w-full justify-start text-left font-normal border-dashed border-primary/20 hover:bg-primary/5 text-primary/80" disabled>
+              <Video className="mr-2 h-4 w-4" />
               Adicionar videoconferência do Google Meet
             </Button>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={loading || !title.trim()}>
-            {loading ? 'Salvando...' : 'Salvar'}
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="ghost" onClick={() => onOpenChange(false)} className="hover:bg-destructive/10 hover:text-destructive">
+            Cancelar
+          </Button>
+          <Button onClick={handleSave} disabled={loading || !title.trim() || !start || !end} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
+            {loading ? 'Salvando...' : (isEdit ? 'Atualizar Evento' : 'Salvar Evento')}
           </Button>
         </DialogFooter>
       </DialogContent>
