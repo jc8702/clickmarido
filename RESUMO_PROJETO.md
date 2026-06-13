@@ -9,6 +9,14 @@
 
 ## Histórico de Alterações
 
+- **[13/06/2026 - 16:00]:** Integração do Google Calendar OAuth 2.0 e Reestilização da Agenda
+  - Layout "Full Viewport" (100vh) aplicado à tela de Agenda com Sidebar de filtros.
+  - Substituição do `window.prompt` por `EventDialog` (Shadcn UI) para criação de eventos.
+  - Implementação inicial da rota `next-auth` com Google Provider para autenticação e escopo de eventos.
+  - Adição do botão de login integrado nativamente na header da Agenda.
+  - Criação do `google-calendar.ts` com base na API SDK `googleapis`.
+  - Correção na Vercel: criação do `.npmrc` com `legacy-peer-deps=true` para resolver conflito entre `next-auth` e `Next.js 16 (Canary)`.
+
 - **[13/06/2026 - 15:00]:** Execução e Refatoração Completa UX/UI (WCAG, Componentes, Dashboard) (Antigravity)
   - Refatorados os estados dos componentes `Button` e `Input` (Hover, Focus, Active).
   - Adicionadas propriedades de acessibilidade WCAG AA (ex: `aria-invalid`) em inputs para screen-readers.

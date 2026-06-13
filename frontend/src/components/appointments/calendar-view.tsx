@@ -86,13 +86,30 @@ export function CalendarView({ technicianId }: { technicianId?: string }) {
     
     try {
       const apiAppointments = await import('@/lib/api-appointments');
-      await apiAppointments.createAppointment({ 
+      const res = await apiAppointments.createAppointment({ 
         title, 
         startTime: start.toISOString(), 
         endTime: end.toISOString(), 
         technicianId 
       });
+
+      // Envia para o Google Calendar via Server-Side API do Next.js
+      try {
+        await fetch('/api/calendar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title,
+            startTime: start.toISOString(),
+            endTime: end.toISOString()
+          })
+        });
+      } catch (err) {
+        console.error('Erro ao integrar com Google Calendar:', err);
+      }
+
       fetchEvents();
+      setDialogOpen(false);
     } catch (e: any) {
       alert(e.message);
     }
