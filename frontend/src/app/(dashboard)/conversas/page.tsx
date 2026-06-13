@@ -88,8 +88,8 @@ export default function ConversasPage() {
     <div className="flex h-[calc(100vh-4rem)] p-4 md:p-6 gap-6">
       
       {/* SIDEBAR DE CONVERSAS */}
-      <div className="w-1/3 min-w-[300px] flex flex-col bg-card border rounded-xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b bg-muted/50">
+      <div className="w-1/3 min-w-[300px] flex flex-col glass-card border-border/50 rounded-xl shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-border/50 bg-muted/50">
           <h2 className="font-bold text-lg flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-emerald-500" /> WhatsApp
           </h2>
@@ -105,7 +105,7 @@ export default function ConversasPage() {
               <div 
                 key={chat.id} 
                 onClick={() => handleSelectChat(chat)}
-                className={`p-4 border-b cursor-pointer transition-colors hover:bg-muted/50 flex items-center gap-3 ${selectedChat?.id === chat.id ? 'bg-muted' : ''}`}
+                className={`p-4 border-b border-border/50 cursor-pointer transition-colors hover:bg-muted/50 flex items-center gap-3 ${selectedChat?.id === chat.id ? 'bg-muted' : ''}`}
               >
                 <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
                   <User className="w-6 h-6 text-emerald-500" />
@@ -129,11 +129,11 @@ export default function ConversasPage() {
       </div>
 
       {/* CHAT ATIVO */}
-      <div className="flex-1 flex flex-col bg-card border rounded-xl shadow-sm overflow-hidden">
+      <div className="flex-1 flex flex-col glass-card border-border/50 rounded-xl shadow-sm overflow-hidden">
         {selectedChat ? (
           <>
             {/* Header */}
-            <div className="p-4 border-b flex items-center gap-3 bg-muted/50">
+            <div className="p-4 border-b border-border/50 flex items-center gap-3 bg-muted/50">
               <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
                 <User className="w-5 h-5 text-emerald-500" />
               </div>
@@ -147,7 +147,7 @@ export default function ConversasPage() {
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-50/50 dark:bg-zinc-950/20">
               {messages.map(msg => (
                 <div key={msg.id} className={`flex ${msg.fromMe ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[70%] rounded-xl px-4 py-2 ${msg.fromMe ? 'bg-emerald-500 text-white rounded-tr-sm' : 'bg-background border shadow-sm rounded-tl-sm'}`}>
+                  <div className={`max-w-[70%] rounded-xl px-4 py-2 ${msg.fromMe ? 'bg-emerald-500 text-white rounded-tr-sm' : 'bg-background border border-border/50 shadow-sm rounded-tl-sm'}`}>
                     {msg.messageType === 'OTHER' ? (
                       <div className="italic text-sm opacity-80">[Mídia Recebida]</div>
                     ) : (
@@ -165,14 +165,14 @@ export default function ConversasPage() {
             </div>
 
             {/* Input */}
-            <div className="p-4 border-t bg-background">
+            <div className="p-4 border-t border-border/50 bg-background/50">
               <form onSubmit={handleSendMessage} className="flex gap-2">
                 <input 
                   type="text" 
                   value={inputText}
                   onChange={e => setInputText(e.target.value)}
                   placeholder="Digite uma mensagem..." 
-                  className="flex-1 border rounded-full px-4 py-2 bg-muted/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  className="flex-1 border border-border/50 rounded-full px-4 py-2 bg-muted/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 />
                 <button type="submit" disabled={!inputText.trim()} className="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 disabled:opacity-50 transition-colors">
                   <Send className="w-4 h-4 ml-1" />

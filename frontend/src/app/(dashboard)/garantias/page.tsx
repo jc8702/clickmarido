@@ -39,6 +39,20 @@ export default function GarantiasPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowModal(false);
+      }
+    };
+    if (showModal) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showModal]);
+
   const handleCreate = async (e: any) => {
     e.preventDefault();
     try {
@@ -83,9 +97,9 @@ export default function GarantiasPage() {
         </button>
       </div>
 
-      <div className="bg-card border rounded-lg overflow-x-auto shadow-sm">
+      <div className="glass-card border-border/50 rounded-lg overflow-x-auto shadow-sm">
         <table className="w-full text-sm text-left">
-          <thead className="bg-muted/50 border-b">
+          <thead className="bg-muted/50 border-b border-border/50">
             <tr>
               <th className="px-6 py-4 font-bold text-muted-foreground uppercase text-xs">Status</th>
               <th className="px-6 py-4 font-bold text-muted-foreground uppercase text-xs">Cliente</th>
@@ -105,7 +119,7 @@ export default function GarantiasPage() {
                 const visuals = getStatusVisuals(w);
                 const Icon = visuals.icon;
                 return (
-                  <tr key={w.id} className="border-b last:border-0 hover:bg-muted/30">
+                  <tr key={w.id} className="border-b border-border/50 last:border-0 hover:bg-muted/30">
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold text-xs ${visuals.color}`}>
                         <Icon className="w-3.5 h-3.5" /> {visuals.label}
@@ -135,8 +149,8 @@ export default function GarantiasPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card border rounded-lg shadow-xl w-full max-w-md p-6">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in-fade">
+          <div className="glass-card border border-border/50 rounded-2xl shadow-xl w-full max-w-md p-6">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold flex items-center gap-2"><Shield className="w-5 h-5 text-emerald-500" /> Registrar Garantia</h3>
               <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>

@@ -81,27 +81,27 @@ export default function PosVendaPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-4 mb-6">
-        <div className="bg-card border rounded-lg p-4">
+        <div className="glass-card border-border/50 rounded-lg p-4">
           <h3 className="font-semibold text-sm text-muted-foreground mb-1">1 Dia</h3>
           <p className="font-bold">Avaliação do Serviço</p>
         </div>
-        <div className="bg-card border rounded-lg p-4">
+        <div className="glass-card border-border/50 rounded-lg p-4">
           <h3 className="font-semibold text-sm text-muted-foreground mb-1">7 Dias</h3>
           <p className="font-bold">Pesquisa de Satisfação</p>
         </div>
-        <div className="bg-card border rounded-lg p-4">
+        <div className="glass-card border-border/50 rounded-lg p-4">
           <h3 className="font-semibold text-sm text-muted-foreground mb-1">30 Dias</h3>
           <p className="font-bold">Incentivo de Indicação</p>
         </div>
-        <div className="bg-card border rounded-lg p-4">
+        <div className="glass-card border-border/50 rounded-lg p-4">
           <h3 className="font-semibold text-sm text-muted-foreground mb-1">90 Dias</h3>
           <p className="font-bold">Oferta Nova Manutenção</p>
         </div>
       </div>
 
-      <div className="bg-card border rounded-lg overflow-x-auto shadow-sm">
+      <div className="glass-card border-border/50 rounded-lg overflow-x-auto shadow-sm">
         <table className="w-full text-sm text-left">
-          <thead className="bg-muted/50 border-b">
+          <thead className="bg-muted/50 border-b border-border/50">
             <tr>
               <th className="px-6 py-4 font-bold text-muted-foreground uppercase text-xs">Cliente</th>
               <th className="px-6 py-4 font-bold text-muted-foreground uppercase text-xs">OS e Conclusão</th>
@@ -120,7 +120,7 @@ export default function PosVendaPage() {
               followUps.map((f) => {
                 const completionDate = f.serviceOrder?.updatedAt;
                 return (
-                  <tr key={f.id} className="border-b last:border-0 hover:bg-muted/30">
+                  <tr key={f.id} className="border-b border-border/50 last:border-0 hover:bg-muted/30">
                     <td className="px-6 py-4">
                       <div className="font-medium flex items-center gap-2">
                         <Handshake className="w-4 h-4 text-emerald-500" /> {f.client?.name}

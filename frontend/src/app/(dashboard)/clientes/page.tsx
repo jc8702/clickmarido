@@ -131,6 +131,21 @@ export default function ClientesPage() {
     return () => clearTimeout(delayDebounce);
   }, [search]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsFormModalOpen(false);
+        setIsHistoryModalOpen(false);
+      }
+    };
+    if (isFormModalOpen || isHistoryModalOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFormModalOpen, isHistoryModalOpen]);
+
   // Abertura de Modais
   const handleOpenCreateModal = () => {
     setSelectedClient(null);
@@ -492,7 +507,7 @@ export default function ClientesPage() {
       {/* Modal CRUD de Clientes */}
       {isFormModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in-fade">
-          <div className="relative w-full max-w-xl rounded-2xl bg-zinc-950 border border-zinc-900 shadow-2xl p-6 space-y-6 max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full max-w-xl rounded-2xl glass-card border border-border/50 shadow-2xl p-6 space-y-6 max-h-[90vh] overflow-y-auto">
             <div>
               <h3 className="text-xl font-bold text-white tracking-tight">
                 {selectedClient ? 'Editar Cliente' : 'Adicionar Novo Cliente'}
@@ -661,9 +676,9 @@ export default function ClientesPage() {
       {/* Modal / Sidebar de Histórico (Timeline) */}
       {isHistoryModalOpen && historyClient && (
         <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/70 backdrop-blur-sm p-0 animate-in-fade">
-          <div className="relative w-full max-w-lg h-full bg-zinc-950 border-l border-zinc-900 shadow-2xl p-6 flex flex-col justify-between">
+          <div className="relative w-full max-w-lg h-full glass-card border-l border-border/50 shadow-2xl p-6 flex flex-col justify-between rounded-l-2xl">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-zinc-900 pb-4">
+            <div className="flex items-center justify-between border-b border-border/50 pb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
                   <History className="w-5 h-5" />
@@ -696,11 +711,11 @@ export default function ClientesPage() {
                   <span className="text-zinc-500 text-xs">Nenhum evento registrado.</span>
                 </div>
               ) : (
-                <div className="relative border-l border-zinc-900 ml-3 pl-6 space-y-6 py-2">
+                <div className="relative border-l border-border/50 ml-3 pl-6 space-y-6 py-2">
                   {historyItems.map((item) => (
                     <div key={item.id} className="relative">
                       {/* Timeline Dot */}
-                      <span className="absolute -left-[31px] top-1.5 flex h-2 w-2 rounded-full bg-zinc-800 ring-4 ring-zinc-950" />
+                      <span className="absolute -left-[31px] top-1.5 flex h-2 w-2 rounded-full bg-border ring-4 ring-background" />
                       
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -709,7 +724,7 @@ export default function ClientesPage() {
                           </span>
                           {getHistoryBadge(item.type)}
                           {item.createdBy && (
-                            <span className="text-[10px] text-zinc-400 font-bold bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">
+                            <span className="text-[10px] text-zinc-400 font-bold bg-muted px-1.5 py-0.5 rounded border border-border/50">
                               Por: {item.createdBy.name}
                             </span>
                           )}
@@ -725,7 +740,7 @@ export default function ClientesPage() {
             </div>
 
             {/* Nova Nota / Interação */}
-            <div className="border-t border-zinc-900 pt-4">
+            <div className="border-t border-border/50 pt-4">
               <form onSubmit={handleAddNote} className="space-y-3">
                 {noteError && (
                   <p className="text-[11px] text-red-500 font-medium">{noteError}</p>
@@ -735,7 +750,7 @@ export default function ClientesPage() {
                   <select
                     value={newNoteType}
                     onChange={(e) => setNewNoteType(e.target.value)}
-                    className="h-10 px-2 rounded-lg bg-zinc-900 border border-zinc-850 text-xs text-zinc-300 focus:outline-none cursor-pointer"
+                    className="h-10 px-2 rounded-lg bg-input/40 border border-border/50 text-xs text-zinc-300 focus:outline-none cursor-pointer"
                   >
                     <option value="NOTE">Anotação</option>
                     <option value="CALL">Ligação</option>
@@ -750,7 +765,7 @@ export default function ClientesPage() {
                       value={newNote}
                       onChange={(e) => setNewNote(e.target.value)}
                       placeholder="Registrar nova anotação rápida..."
-                      className="w-full h-10 pl-3 pr-10 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+                      className="w-full h-10 pl-3 pr-10 rounded-lg bg-input/40 border border-border/50 text-xs text-white focus:outline-none focus:ring-1 focus:ring-blue-500/50"
                     />
                     <button
                       type="submit"

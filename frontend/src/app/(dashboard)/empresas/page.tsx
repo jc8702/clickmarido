@@ -108,6 +108,20 @@ export default function EmpresasPage() {
     return () => clearTimeout(delayDebounce);
   }, [search]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsModalOpen(false);
+      }
+    };
+    if (isModalOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isModalOpen]);
+
   // Se o usuário não for do perfil Administrador, bloqueia o acesso
   const isAdmin = user?.roles.includes('Administrador');
   if (!isAdmin) {
@@ -419,7 +433,7 @@ export default function EmpresasPage() {
       {/* Modal CRUD de Empresas */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in-fade">
-          <div className="relative w-full max-w-lg rounded-2xl bg-card border border-border shadow-2xl p-6 space-y-6">
+          <div className="relative w-full max-w-lg rounded-2xl glass-card border border-border/50 shadow-2xl p-6 space-y-6">
             <div>
               <h3 className="text-xl font-bold text-foreground tracking-tight">
                 {selectedCompany ? 'Editar Empresa' : 'Adicionar Nova Empresa'}

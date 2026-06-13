@@ -86,7 +86,7 @@ export function CalendarView({ technicianId }: { technicianId?: string }) {
   };
 
   return (
-    <div className="h-[700px] w-full p-4 bg-background text-foreground rounded-lg border shadow-sm">
+    <div className="h-[700px] w-full p-4 bg-background text-foreground rounded-lg border border-border/50 shadow-sm">
       {loading && <p>Carregando agenda...</p>}
       <DnDCalendar
         localizer={localizer}

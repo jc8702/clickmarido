@@ -9,6 +9,17 @@
 
 ## Histórico de Alterações
 
+- **[12/06/2026 - 21:35]:** Auditoria Visual de Bordas e Tecla ESC nos Modais (Andru.ia)
+  - **Bordas Escuras:** Sobrescritas as bordas do `react-big-calendar` em `globals.css` e atualizados os contêineres e tabelas de Pós-Venda, Garantias e Conversas para usar classes semânticas `glass-card border-border/50` eliminando contornos claros.
+  - **Tecla ESC:** Implementado `useEffect` de escuta global da tecla `Escape` para fechar modais de agendamento, cadastro de garantias, cadastro de empresas, cadastro de clientes e drawer de histórico de clientes.
+  - Arquivos modificados: `frontend/src/app/globals.css`, `frontend/src/components/appointments/calendar-view.tsx`, `frontend/src/components/agenda/appointment-modal.tsx`, `frontend/src/app/(dashboard)/pos-venda/page.tsx`, `frontend/src/app/(dashboard)/garantias/page.tsx`, `frontend/src/app/(dashboard)/conversas/page.tsx`, `frontend/src/app/(dashboard)/empresas/page.tsx`, `frontend/src/app/(dashboard)/clientes/page.tsx`.
+
+- **[12/06/2026 - 19:45]:** Deploy Geral em Produção (GitHub, Vercel, Render e Supabase)
+  - **GitHub:** Alterações visuais comitadas e sincronizadas com a branch `main` (`git push` com bypass do Husky local).
+  - **Vercel:** Deploy do frontend finalizado e ativo com status **Ready** (URL: `clickmarido.vercel.app`) para o commit `636989c`.
+  - **Render:** Backend API verificado e ativo com status **Live** (URL: `clickmarido.onrender.com`).
+  - **Supabase:** Base de dados remota em produção verificada e saudável, sem migrações pendentes.
+
 - **[12/06/2026 - 19:25]:** Execução de Melhorias Visuais, Levantamento de Skills e Padronização de Temas (SaaS Elite)
   - **Mapeamento de Skills:** Identificadas as competências necessárias (`tailwind-patterns`, `ui-tokens`, `ui-a11y`, `wcag-audit-patterns`, `design-spells`, `gpt-taste`) para a refatoração visual.
   - **Desenho e Planejamento:** Criados os arquivos de plano de melhorias (`plano_implementacao.md`) e o backlog de tarefas de interface (`tarefas.md`).

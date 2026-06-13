@@ -250,3 +250,56 @@ html {
 @utility animate-success {
   animation: successPulse 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* React Big Calendar Overrides - Dark/Light Theme Integration */
+.rbc-calendar,
+.rbc-time-view,
+.rbc-time-header,
+.rbc-time-content,
+.rbc-month-view,
+.rbc-month-row,
+.rbc-header,
+.rbc-day-bg,
+.rbc-time-header-content,
+.rbc-time-gutter,
+.rbc-timeslot-group,
+.rbc-day-slot .rbc-time-slot,
+.rbc-agenda-view table.rbc-agenda-table,
+.rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
+  border-color: color-mix(in srgb, var(--border) 40%, transparent) !important;
+}
+
+.rbc-time-header-content {
+  border-left: 1px solid color-mix(in srgb, var(--border) 40%, transparent) !important;
+}
+
+.rbc-toolbar button {
+  border-color: color-mix(in srgb, var(--border) 50%, transparent) !important;
+  color: var(--foreground) !important;
+  background-color: transparent !important;
+}
+
+.rbc-toolbar button:hover, 
+.rbc-toolbar button:active, 
+.rbc-toolbar button.rbc-active {
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+.rbc-today {
+  background-color: color-mix(in srgb, var(--primary) 8%, transparent) !important;
+}
+
+.rbc-show-more {
+  color: var(--primary) !important;
+  background-color: transparent !important;
+}
+
+.rbc-event {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  border: none !important;
+  border-radius: var(--radius-sm) !important;
+}
+
