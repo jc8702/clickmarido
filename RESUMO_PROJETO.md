@@ -9,6 +9,10 @@
 
 ## Histórico de Alterações
 
+- **[12/06/2026 - 22:27]:** Correção de Persistência e Higienização de Payloads (Andru.ia)
+  - **Clientes, Empresas e Técnicos:** Diagnosticado que strings vazias (`""`) de campos opcionais causavam falhas HTTP 400 no backend. Corrigido adicionando higienização ativa no `handleSubmit` do frontend, convertendo strings vazias em `null` para que passem nas validações do class-validator e sejam gravadas como nulas no banco.
+  - Arquivos modificados: `frontend/src/app/(dashboard)/clientes/page.tsx`, `frontend/src/app/(dashboard)/empresas/page.tsx`, `frontend/src/components/technicians/technician-form.tsx`.
+
 - **[12/06/2026 - 22:10]:** Auditoria de Bordas, Tecla ESC e Deploy em Produção (Andru.ia)
   - **Bordas Escuras:** Sobrescritas as bordas do `react-big-calendar` em `globals.css` e atualizados os contêineres e tabelas de Pós-Venda, Garantias e Conversas para usar classes semânticas `glass-card border-border/50` eliminando contornos claros.
   - **Tecla ESC:** Implementado `useEffect` de escuta global da tecla `Escape` para fechar modais de agendamento, cadastro de garantias, cadastro de empresas, cadastro de clientes e drawer de histórico de clientes.
