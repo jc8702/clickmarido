@@ -242,3 +242,5 @@
 - **[13/06/2026 - 11:30]**: Fase 05 Finalizada. Wireframes do Dashboard principal gerados e documentados. Cï¿½digo base React para componentes grï¿½ficos (LineChart, BarChart, Heatmap) construï¿½dos utilizando Recharts. Layout Mobile-first com reflow validado.
 
 - **[13/06/2026 - 11:33]**: Fase 06 Finalizada. Integraï¿½ï¿½o completa dos componentes e validaï¿½ï¿½o visual de layout. Testes responsivos efetuados e Guia de Manutenï¿½ï¿½o (Visual Guide) redigido com checklist de componentes e cores. Ciclo de Auditoria Visual e Design System concluï¿½do.
+
+- **[13/06/2026 - 16:40]**: Correção de bug no Frontend da Agenda onde novos eventos criados não apareciam na interface imediatamente devido a provável cache agressivo ou concorrência de fetch. Foi implementada atualização otimista/imediata do estado local (optimistic update) a partir do retorno da própria API para garantir a UX instantânea.

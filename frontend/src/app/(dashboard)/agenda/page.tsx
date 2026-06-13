@@ -62,7 +62,7 @@ export default function AgendaPage() {
   const handleEventSave = async (title: string, start: Date, end: Date) => {
     try {
       // 1. Cria localmente no Banco via API 
-      await createAppointment({ 
+      const newAppointment = await createAppointment({ 
         title, 
         startTime: start.toISOString(), 
         endTime: end.toISOString()
@@ -83,7 +83,22 @@ export default function AgendaPage() {
         console.error('Erro ao integrar com Google Calendar:', err);
       }
 
-      // 3. Atualiza os dados puxando com cache evitado do servidor
+      // 3. Atualiza o estado local imediatamente com o retorno da API
+      if (newAppointment) {
+        setEvents((prev) => [
+          ...prev,
+          {
+            id: newAppointment.id || String(Math.random()),
+            title: newAppointment.title || title || 'Sem título',
+            start: new Date(newAppointment.startTime || start),
+            end: new Date(newAppointment.endTime || end),
+            resourceId: newAppointment.technicianId || undefined,
+            data: newAppointment,
+          }
+        ]);
+      }
+
+      // 4. E puxa os dados do servidor para garantir sincronia
       await fetchEvents();
     } catch (e: any) {
       alert(e.message);
