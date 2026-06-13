@@ -8,6 +8,7 @@ import { ptBR } from 'date-fns/locale/pt-BR';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import { getAppointments, updateAppointment, Appointment } from '@/lib/api-appointments';
+import { EventDialog } from './event-dialog';
 
 const locales = {
   'pt-BR': ptBR,
@@ -26,6 +27,8 @@ const DnDCalendar = withDragAndDrop(Calendar);
 export function CalendarView({ technicianId }: { technicianId?: string }) {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<any>(null);
 
   const fetchEvents = useCallback(async () => {
     try {
@@ -73,33 +76,62 @@ export function CalendarView({ technicianId }: { technicianId?: string }) {
   };
 
   const handleSelectSlot = ({ start, end }: any) => {
-    // Para simplificar, abre prompt, num app real abriria modal.
-    const title = window.prompt('Novo agendamento:');
-    if (title) {
-      // chamar API de create
-      import('@/lib/api-appointments').then((m) => {
-        m.createAppointment({ title, startTime: start.toISOString(), endTime: end.toISOString(), technicianId })
-          .then(() => fetchEvents())
-          .catch((e) => alert(e.message));
+    setSelectedSlot({ start, end });
+    setDialogOpen(true);
+  };
+
+  const handleSaveEvent = async (title: string) => {
+    if (!selectedSlot) return;
+    const { start, end } = selectedSlot;
+    
+    try {
+      const apiAppointments = await import('@/lib/api-appointments');
+      await apiAppointments.createAppointment({ 
+        title, 
+        startTime: start.toISOString(), 
+        endTime: end.toISOString(), 
+        technicianId 
       });
+      fetchEvents();
+    } catch (e: any) {
+      alert(e.message);
     }
   };
 
+  const eventStyleGetter = (event: any, start: Date, end: Date, isSelected: boolean) => {
+    // Cores premium para espelhar o Google Calendar
+    return {
+      style: {
+        backgroundColor: 'var(--primary)',
+        borderRadius: '6px',
+        opacity: 0.9,
+        color: 'var(--primary-foreground)',
+        border: '0px',
+        display: 'block',
+        padding: '2px 6px',
+        fontSize: '0.85rem',
+        fontWeight: 500,
+        boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+      }
+    };
+  };
+
   return (
-    <div className="h-[700px] w-full p-4 bg-background text-foreground rounded-lg border border-border/50 shadow-sm">
-      {loading && <p>Carregando agenda...</p>}
+    <div className="h-full w-full bg-background text-foreground rounded-lg overflow-hidden flex flex-col relative">
+      {loading && <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 backdrop-blur-sm"><span className="text-primary font-medium">Sincronizando...</span></div>}
       <DnDCalendar
         localizer={localizer}
         events={events}
         startAccessor={(event) => (event as any).start}
         endAccessor={(event) => (event as any).end}
-        style={{ height: '100%', width: '100%' }}
+        style={{ height: '100%', width: '100%', minHeight: '600px' }}
         onEventDrop={moveEvent}
         onEventResize={moveEvent}
         resizable
         selectable
         onSelectSlot={handleSelectSlot}
         defaultView={Views.WEEK}
+        eventPropGetter={eventStyleGetter}
         messages={{
           next: 'Próximo',
           previous: 'Anterior',
@@ -109,6 +141,11 @@ export function CalendarView({ technicianId }: { technicianId?: string }) {
           day: 'Dia',
         }}
         culture="pt-BR"
+      />
+      <EventDialog 
+        open={dialogOpen} 
+        onOpenChange={setDialogOpen} 
+        onSave={handleSaveEvent} 
       />
     </div>
   );
