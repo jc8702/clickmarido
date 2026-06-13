@@ -1,13 +1,94 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { CalendarDays, Link } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CalendarView } from '@/components/appointments/calendar-view';
+import { SidebarTimeline } from '@/components/appointments/sidebar-timeline';
+import { getAppointments, updateAppointment, createAppointment } from '@/lib/api-appointments';
 
 export default function AgendaPage() {
   const { data: session } = useSession();
+  
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchEvents = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await getAppointments();
+      setEvents(
+        data.map((app) => ({
+          id: app.id,
+          title: app.title || 'Sem título',
+          start: new Date(app.startTime),
+          end: new Date(app.endTime),
+          resourceId: app.technicianId,
+          data: app,
+        }))
+      );
+    } catch (err) {
+      console.error('Erro ao carregar agendamentos:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
+
+  const handleEventMove = async (event: any, start: Date, end: Date) => {
+    const updatedEvent = { ...event, start, end };
+    setEvents((prev) => prev.map((e) => (e.id === event.id ? updatedEvent : e)));
+
+    try {
+      const res: any = await updateAppointment(event.id, {
+        startTime: start.toISOString(),
+        endTime: end.toISOString(),
+      });
+      if (res.conflict) {
+        alert(res.message);
+        fetchEvents(); // rollback
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao reagendar.');
+      fetchEvents();
+    }
+  };
+
+  const handleEventSave = async (title: string, start: Date, end: Date) => {
+    try {
+      // 1. Cria localmente no Banco via API 
+      await createAppointment({ 
+        title, 
+        startTime: start.toISOString(), 
+        endTime: end.toISOString()
+      });
+
+      // 2. Envia para o Google Calendar via Server-Side API do Next.js
+      try {
+        await fetch('/api/calendar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title,
+            startTime: start.toISOString(),
+            endTime: end.toISOString()
+          })
+        });
+      } catch (err) {
+        console.error('Erro ao integrar com Google Calendar:', err);
+      }
+
+      // 3. Atualiza os dados puxando com cache evitado do servidor
+      await fetchEvents();
+    } catch (e: any) {
+      alert(e.message);
+    }
+  };
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] bg-background">
@@ -41,17 +122,17 @@ export default function AgendaPage() {
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar Esquerda (Mini Calendário e Filtros) */}
-        <aside className="w-64 border-r bg-muted/20 p-4 hidden md:flex flex-col gap-6">
-          <div className="space-y-2">
-            <h3 className="font-medium text-sm text-muted-foreground">Filtros</h3>
-            <p className="text-xs text-muted-foreground">Em breve: seleção de técnicos e status</p>
-          </div>
-        </aside>
+        {/* Sidebar Esquerda (Timeline Inteligente) */}
+        <SidebarTimeline events={events} loading={loading} />
 
         {/* Grade do Calendário */}
         <main className="flex-1 overflow-auto p-4 md:p-6 bg-background">
-          <CalendarView />
+          <CalendarView 
+            events={events} 
+            loading={loading} 
+            onEventMove={handleEventMove} 
+            onEventSave={handleEventSave} 
+          />
         </main>
       </div>
     </div>

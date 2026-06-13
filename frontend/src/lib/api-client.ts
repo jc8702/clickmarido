@@ -46,6 +46,7 @@ export class ApiClient {
     }
 
     const response = await fetch(url, {
+      cache: 'no-store',
       ...restOptions,
       headers: this.getHeaders(headers),
     });

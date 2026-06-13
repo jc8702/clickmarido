@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
-import { getAppointments, updateAppointment, Appointment } from '@/lib/api-appointments';
 import { EventDialog } from './event-dialog';
 
 const locales = {
@@ -24,55 +23,19 @@ const localizer = dateFnsLocalizer({
 
 const DnDCalendar = withDragAndDrop(Calendar);
 
-export function CalendarView({ technicianId }: { technicianId?: string }) {
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+interface CalendarViewProps {
+  events: any[];
+  loading: boolean;
+  onEventMove: (event: any, start: Date, end: Date) => Promise<void>;
+  onEventSave: (title: string, start: Date, end: Date) => Promise<void>;
+}
+
+export function CalendarView({ events, loading, onEventMove, onEventSave }: CalendarViewProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<any>(null);
 
-  const fetchEvents = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await getAppointments({ technicianId });
-      setEvents(
-        data.map((app) => ({
-          id: app.id,
-          title: app.title || 'Sem título',
-          start: new Date(app.startTime),
-          end: new Date(app.endTime),
-          resourceId: app.technicianId,
-          data: app,
-        }))
-      );
-    } catch (err) {
-      console.error('Erro ao carregar agendamentos:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [technicianId]);
-
-  useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
-
   const moveEvent = async ({ event, start, end }: any) => {
-    const updatedEvent = { ...event, start, end };
-    setEvents((prev) => prev.map((e) => (e.id === event.id ? updatedEvent : e)));
-
-    try {
-      const res: any = await updateAppointment(event.id, {
-        startTime: start.toISOString(),
-        endTime: end.toISOString(),
-      });
-      if (res.conflict) {
-        alert(res.message);
-        fetchEvents(); // rollback
-      }
-    } catch (error) {
-      console.error(error);
-      alert('Erro ao reagendar.');
-      fetchEvents();
-    }
+    await onEventMove(event, start, end);
   };
 
   const handleSelectSlot = ({ start, end }: any) => {
@@ -84,39 +47,11 @@ export function CalendarView({ technicianId }: { technicianId?: string }) {
     if (!selectedSlot) return;
     const { start, end } = selectedSlot;
     
-    try {
-      const apiAppointments = await import('@/lib/api-appointments');
-      const res = await apiAppointments.createAppointment({ 
-        title, 
-        startTime: start.toISOString(), 
-        endTime: end.toISOString(), 
-        technicianId 
-      });
-
-      // Envia para o Google Calendar via Server-Side API do Next.js
-      try {
-        await fetch('/api/calendar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title,
-            startTime: start.toISOString(),
-            endTime: end.toISOString()
-          })
-        });
-      } catch (err) {
-        console.error('Erro ao integrar com Google Calendar:', err);
-      }
-
-      fetchEvents();
-      setDialogOpen(false);
-    } catch (e: any) {
-      alert(e.message);
-    }
+    await onEventSave(title, start, end);
+    setDialogOpen(false);
   };
 
   const eventStyleGetter = (event: any, start: Date, end: Date, isSelected: boolean) => {
-    // Cores premium para espelhar o Google Calendar
     return {
       style: {
         backgroundColor: 'var(--primary)',
