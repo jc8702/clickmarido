@@ -28,11 +28,18 @@ export function TechnicianForm({ initialData, companyId, onSuccess, onCancel }: 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    const payload = Object.fromEntries(
+      Object.entries(formData).map(([key, val]) => {
+        return [key, val === '' ? null : val];
+      })
+    );
+
     try {
       if (initialData) {
-        await updateTechnician(initialData.id, formData);
+        await updateTechnician(initialData.id, payload as any);
       } else {
-        await createTechnician({ ...formData, companyId, rating: 0 });
+        await createTechnician({ ...payload, companyId, rating: 0 } as any);
       }
       onSuccess();
     } catch (error) {

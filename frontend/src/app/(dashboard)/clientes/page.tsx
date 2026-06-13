@@ -249,10 +249,15 @@ export default function ClientesPage() {
       return;
     }
 
-    const payload = {
-      ...formData,
-      cpf: formData.cpf ? formData.cpf.replace(/\D/g, '') : null,
-    };
+    const payload = Object.fromEntries(
+      Object.entries(formData).map(([key, val]) => {
+        if (key === 'cpf') {
+          const cleaned = val ? val.replace(/\D/g, '') : '';
+          return [key, cleaned === '' ? null : cleaned];
+        }
+        return [key, val === '' ? null : val];
+      })
+    );
 
     try {
       if (selectedClient) {

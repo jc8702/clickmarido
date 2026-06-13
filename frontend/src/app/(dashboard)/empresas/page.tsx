@@ -200,17 +200,27 @@ export default function EmpresasPage() {
     setFormError('');
     setFormLoading(true);
 
+    const payload = Object.fromEntries(
+      Object.entries(formData).map(([key, val]) => {
+        if (key === 'cnpj') {
+          const cleaned = val ? String(val).replace(/\D/g, '') : '';
+          return [key, cleaned === '' ? null : cleaned];
+        }
+        return [key, val === '' ? null : val];
+      })
+    );
+
     try {
       if (selectedCompany) {
         // Editar
-        const res = await ApiClient.put<{ success: boolean }>(`/companies/${selectedCompany.id}`, formData);
+        const res = await ApiClient.put<{ success: boolean }>(`/companies/${selectedCompany.id}`, payload);
         if (res.success) {
           setIsModalOpen(false);
           fetchCompanies();
         }
       } else {
         // Criar
-        const res = await ApiClient.post<{ success: boolean }>('/companies', formData);
+        const res = await ApiClient.post<{ success: boolean }>('/companies', payload);
         if (res.success) {
           setIsModalOpen(false);
           fetchCompanies();
