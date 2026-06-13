@@ -17,6 +17,14 @@ import {
   Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Tenants simulados para a demonstração multi-tenant
 const tenants = [
@@ -133,48 +141,48 @@ export function Topbar() {
         <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800" />
 
         {/* Dropdown de Perfil de Usuário */}
-        <div className="relative">
-          <button
-            onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-            onBlur={() => setTimeout(() => setProfileDropdownOpen(false), 200)}
-            className="flex items-center gap-2 rounded-lg p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 font-bold text-zinc-700 dark:text-zinc-300 uppercase">
-              {user?.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2) : "CM"}
-            </div>
-            <div className="hidden text-left md:block">
-              <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 leading-tight">
-                {user?.name || "Carregando..."}
-              </p>
-              <p className="text-[10px] text-zinc-400 leading-none">
-                {user?.roles?.[0] || "Usuário"}
-              </p>
-            </div>
-            <ChevronDown className="hidden h-3.5 w-3.5 text-zinc-400 md:block" />
-          </button>
-
-          {profileDropdownOpen && (
-            <div className="absolute right-0 mt-1.5 z-50 w-48 origin-top-right rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-1 shadow-lg">
-              <div className="px-2 py-1.5 text-xs text-zinc-500 border-b border-zinc-200 dark:border-zinc-900 mb-1 truncate">
-                {user?.email || ""}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="flex items-center gap-2 rounded-lg p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors outline-none"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 font-bold text-zinc-700 dark:text-zinc-300 uppercase">
+                {user?.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2) : "CM"}
               </div>
+              <div className="hidden text-left md:block">
+                <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 leading-tight">
+                  {user?.name || "Carregando..."}
+                </p>
+                <p className="text-[10px] text-zinc-400 leading-none">
+                  {user?.roles?.[0] || "Usuário"}
+                </p>
+              </div>
+              <ChevronDown className="hidden h-3.5 w-3.5 text-zinc-400 md:block" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48 mt-1.5 border-zinc-200 dark:border-zinc-800 shadow-lg">
+            <DropdownMenuLabel className="font-normal truncate">
+              {user?.email || ""}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-zinc-200 dark:bg-zinc-800" />
+            <DropdownMenuItem asChild>
               <Link
                 href="/settings"
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
+                className="flex w-full items-center gap-2 cursor-pointer text-zinc-600 dark:text-zinc-400 focus:bg-zinc-100 dark:focus:bg-zinc-900 transition-colors"
               >
-                <UserIcon className="h-3.5 w-3.5" />
+                <UserIcon className="h-4 w-4" />
                 <span>Meu Perfil</span>
               </Link>
-              <button
-                onClick={() => logout()}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-                <span>Sair</span>
-              </button>
-            </div>
-          )}
-        </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => logout()}
+              className="flex w-full items-center gap-2 cursor-pointer text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 focus:bg-red-500/10 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Sair</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
