@@ -1,12 +1,22 @@
 import NextAuth, { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 
+export const dynamic = 'force-dynamic';
+
+const clientId = process.env.GOOGLE_CLIENT_ID || "";
+const clientSecret = process.env.GOOGLE_CLIENT_SECRET || "";
+
+if (!clientId || !clientSecret) {
+  console.warn("⚠️ AVISO: GOOGLE_CLIENT_ID ou GOOGLE_CLIENT_SECRET não estão definidos no ambiente!");
+}
+
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "clickmarido-super-secret-key-2026-xyz987!",
+  debug: true,
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId,
+      clientSecret,
       authorization: {
         params: {
           prompt: "consent",
