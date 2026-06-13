@@ -66,12 +66,11 @@ export class PermissionsGuard implements CanActivate {
       }
     }
 
-    // Verifica se o usuário possui todas as permissões requeridas (AND check)
-    // Ou pelo menos uma (OR check) - vamos usar OR por padrão para flexibilidade,
-    // mas garantindo que o Admin tenha passe livre ("*").
-    const hasPermission = requiredPermissions.every((perm) =>
-      userPermissions.has(perm) || userPermissions.has('*')
-    );
+    // Verifica se o usuário possui permissão de administrador global ("*")
+    // ou se possui pelo menos uma das permissões requeridas (OR check).
+    const hasPermission =
+      userPermissions.has('*') ||
+      requiredPermissions.some((perm) => userPermissions.has(perm));
 
     if (!hasPermission) {
       throw new ForbiddenException('Permissões insuficientes para esta ação');
