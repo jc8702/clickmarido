@@ -21,6 +21,15 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -43,21 +52,30 @@
   --popover: #ffffff;
   --popover-foreground: #09090b;
 
-  --primary: #f59e0b; /* Amber 500 */
-  --primary-foreground: #09090b;
+  --primary: #8b5cf6; /* Roxo 500 */
+  --primary-foreground: #ffffff;
 
-  --accent: #3b82f6; /* Blue 600 */
+  --accent: #3b82f6; /* Blue 500 */
   --accent-foreground: #ffffff;
 
-  --brand-main: #f59e0b;
+  --brand-main: #8b5cf6;
   --brand-secondary: #3b82f6;
 
-  --destructive: #ef4444;
+  --success: #22c55e;
+  --success-foreground: #ffffff;
+
+  --warning: #f97316; /* Laranja 500 */
+  --warning-foreground: #ffffff;
+
+  --info: #3b82f6;
+  --info-foreground: #ffffff;
+
+  --destructive: #ef4444; /* Vermelho 500 */
   --destructive-foreground: #ffffff;
 
   --border: #e4e4e7;
   --input: #e4e4e7;
-  --ring: #f59e0b;
+  --ring: #8b5cf6;
 
   --radius: 0.75rem; /* Atualizado para 2xl gradual */
 }
@@ -72,21 +90,30 @@
   --popover: #121215;
   --popover-foreground: #fafafa;
 
-  --primary: #f59e0b;
+  --primary: #a78bfa; /* Roxo 400 */
   --primary-foreground: #09090b;
 
-  --accent: #3b82f6;
-  --accent-foreground: #ffffff;
+  --accent: #60a5fa; /* Azul 400 */
+  --accent-foreground: #09090b;
 
-  --brand-main: #f59e0b;
-  --brand-secondary: #3b82f6;
+  --brand-main: #a78bfa;
+  --brand-secondary: #60a5fa;
 
-  --destructive: #ef4444;
-  --destructive-foreground: #fafafa;
+  --success: #4ade80;
+  --success-foreground: #09090b;
+
+  --warning: #fb923c;
+  --warning-foreground: #09090b;
+
+  --info: #60a5fa;
+  --info-foreground: #09090b;
+
+  --destructive: #f87171;
+  --destructive-foreground: #09090b;
 
   --border: #222226;
   --input: #222226;
-  --ring: #f59e0b;
+  --ring: #a78bfa;
 }
 
 /* Temas do Sistema (Estilos Globais) */
@@ -142,7 +169,7 @@ body {
 @utility glass-panel {
   background: color-mix(in srgb, var(--card) 60%, transparent);
   backdrop-filter: blur(16px);
-  border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
 }
 
 @utility glow-primary {
@@ -196,8 +223,8 @@ body {
 }
 
 .glow-hover:hover {
-  box-shadow: 0 0 25px rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.25);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--primary) 10%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
 @keyframes fadeIn {

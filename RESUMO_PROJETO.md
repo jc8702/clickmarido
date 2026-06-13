@@ -9,6 +9,17 @@
 
 ## Histórico de Alterações
 
+- **[13/06/2026 - 11:00]:** Definição de Design System e Paleta Cromática (Antigravity)
+  - Elaborada a Paleta Master com 6 cores dinâmicas (Verde, Roxo, Laranja, Vermelho, Amarelo, Azul) e Neutros.
+  - Calculada escala de 50 a 900 com contrastes otimizados para modos Light e Dark.
+  - Validado o WCAG AA/AAA das combinações de fundo e texto para acessibilidade.
+  - Criados Design Tokens em JSON e exemplos de aplicação (Cards, Buttons, Alerts).
+  - Adicionado o arquivo `DESIGN_SYSTEM_PALETA.md` nos artefatos contendo as especificações detalhadas e regras semânticas.
+- **[13/06/2026 - 10:55]:** Auditoria Visual Baseline (Antigravity)
+  - Realizado mapeamento de todos os componentes UI atuais no frontend.
+  - Criado o Inventário Visual completo anotando as ausências de estados e inconsistências.
+  - Avaliado o estado atual da paleta e gaps de UX.
+  - Arquivos analisados: `globals.css`, `button.tsx`, `input.tsx`, `card.tsx`, `dialog.tsx`, `table.tsx` e UI elements core.
 - **[13/06/2026 - 02:05]:** Correção do Guard de Permissões e Deploy Geral (Antigravity)
   - **PermissionsGuard:** Ajustada a verificação das permissões exigidas no decorator `RequirePermissions` de `every` (AND) para `some` (OR), permitindo que usuários com papéis específicos (como Gestor) acessem rotas protegidas se tiverem ao menos uma permissão válida, ou se tiverem a permissão de administrador global `*`. Isso solucionou o erro HTTP 403 Forbidden nas rotas de Clientes, Serviços e Técnicos.
   - **Deploy:** Commit e push realizados para o GitHub, acionando o deploy automático e a sincronização do frontend (Vercel) e do backend (Render).
@@ -206,3 +217,13 @@
   - Aplicação das diretrizes "Elite" de UI: Inserção do utilitário `@utility glass-card` e `.glass-panel` diretamente nos componentes Core (ex: `DialogContent`, `DropdownMenuContent`, `SheetContent`) para garantir glassmorphism consistente e sofisticado.
   - O design system já contempla `ThemeProvider` para suporte adequado de dark mode baseado no sistema.
   - Arquivos modificados: `app/layout.tsx`, `components/layout/dashboard-layout.tsx`, `app/(dashboard)/*`, `app/(auth)/*`, `ui/dialog.tsx`, `ui/dropdown-menu.tsx`, `ui/sheet.tsx`.
+-   * * [ ] * * :   F a s e   0 3   F i n a l i z a d a .   A t u a l i z a � � o   d a   U I   c o m p o n e n t   l i b r a r y   ( B u t t o n ,   I n p u t ,   C a r d ,   D i a l o g ,   T a b l e ,   B a d g e )   c o m   T a i l w i n d   V a r i a b l e s .   A c e s s i b i l i d a d e   m e l h o r a d a . 
+     -   A r q u i v o s   m o d i f i c a d o s :   g l o b a l s . c s s ,   b u t t o n . t s x ,   i n p u t . t s x ,   c a r d . t s x ,   d i a l o g . t s x ,   t a b l e . t s x ,   b a d g e . t s x  
+ - **[13/06/2026 - 11:05]**: Fase 03 Finalizada. Atualiza��o da UI component library (Button, Input, Card, Dialog, Table, Badge) com Tailwind Variables. Acessibilidade melhorada.
+  - Arquivos modificados: globals.css, button.tsx, input.tsx, card.tsx, dialog.tsx, table.tsx, badge.tsx
+
+- **[13/06/2026 - 11:12]**: Fase 04 Finalizada. Testes de usabilidade e acessibilidade (WCAG AA) realizados simulando fluxo real. Relat�rio de 30 problemas categorizados gerado com recomenda��es para as pr�ximas Sprints.
+
+- **[13/06/2026 - 11:30]**: Fase 05 Finalizada. Wireframes do Dashboard principal gerados e documentados. C�digo base React para componentes gr�ficos (LineChart, BarChart, Heatmap) constru�dos utilizando Recharts. Layout Mobile-first com reflow validado.
+
+- **[13/06/2026 - 11:33]**: Fase 06 Finalizada. Integra��o completa dos componentes e valida��o visual de layout. Testes responsivos efetuados e Guia de Manuten��o (Visual Guide) redigido com checklist de componentes e cores. Ciclo de Auditoria Visual e Design System conclu�do.
