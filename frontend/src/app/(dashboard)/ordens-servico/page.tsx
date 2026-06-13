@@ -8,11 +8,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-function formatCurrency(value: number): string {
+function formatCurrency(value: number | null | undefined): string {
+  if (value == null) return 'R$ 0,00';
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string | null | undefined): string {
+  if (!dateString) return '-';
   return new Date(dateString).toLocaleDateString('pt-BR', {
     day: '2-digit',
     month: '2-digit',
@@ -20,7 +22,7 @@ function formatDate(dateString: string): string {
   });
 }
 
-function formatDateTime(dateString?: string): string {
+function formatDateTime(dateString?: string | null): string {
   if (!dateString) return '-';
   return new Date(dateString).toLocaleString('pt-BR', {
     day: '2-digit',
