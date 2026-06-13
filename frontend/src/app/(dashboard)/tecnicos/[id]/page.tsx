@@ -5,7 +5,9 @@ import { getTechnicianById, Technician } from "@/lib/api-technicians";
 import { getAppointments, updateAppointment, createAppointment } from '@/lib/api-appointments';
 import { PageHeader } from "@/components/layout/page-header";
 import { CalendarView } from "@/components/appointments/calendar-view";
+import { EventDialogData } from "@/components/appointments/event-dialog";
 import { HardHat, Star, MapPin, Phone } from "lucide-react";
+import { toast } from "sonner";
 
 export default function TechnicianProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -58,32 +60,43 @@ export default function TechnicianProfilePage({ params }: { params: Promise<{ id
     setEvents((prev) => prev.map((e) => (e.id === event.id ? updatedEvent : e)));
 
     try {
-      const res: any = await updateAppointment(event.id, {
+      await updateAppointment(event.id, {
         startTime: start.toISOString(),
         endTime: end.toISOString(),
       });
-      if (res.conflict) {
-        alert(res.message);
-        fetchEvents();
-      }
-    } catch (error) {
+      toast.success('Horário do agendamento atualizado com sucesso.');
+    } catch (error: any) {
       console.error(error);
-      alert('Erro ao reagendar.');
+      toast.error(error.response?.data?.message || error.message || 'Erro ao reagendar.');
       fetchEvents();
     }
   };
 
-  const handleEventSave = async (title: string, start: Date, end: Date) => {
+  const handleEventSave = async (dialogData: EventDialogData) => {
+    const { title, start, end, data } = dialogData;
+    const isEdit = !!data?.id;
+
     try {
-      await createAppointment({ 
-        title, 
-        startTime: start.toISOString(), 
-        endTime: end.toISOString(),
-        technicianId: resolvedParams.id
-      });
+      if (isEdit) {
+        await updateAppointment(data.id, {
+          title,
+          startTime: start.toISOString(),
+          endTime: end.toISOString(),
+        });
+        toast.success('Agendamento atualizado com sucesso.');
+      } else {
+        await createAppointment({ 
+          title, 
+          startTime: start.toISOString(), 
+          endTime: end.toISOString(),
+          technicianId: resolvedParams.id
+        });
+        toast.success('Agendamento criado com sucesso.');
+      }
       await fetchEvents();
     } catch (e: any) {
-      alert(e.message);
+      console.error(e);
+      toast.error(e.response?.data?.message || e.message || 'Erro ao processar o evento.');
     }
   };
 
