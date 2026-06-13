@@ -246,3 +246,5 @@
 - **[13/06/2026 - 16:40]**: Correção de bug no Frontend da Agenda onde novos eventos criados não apareciam na interface imediatamente devido a provável cache agressivo ou concorrência de fetch. Foi implementada atualização otimista/imediata do estado local (optimistic update) a partir do retorno da própria API para garantir a UX instantânea.
 
 - **[13/06/2026 - 17:05]**: Implementado suporte completo para ediÃ§Ã£o de agendamentos no frontend com `EventDialog` e toasts usando `sonner`. Modificado validaÃ§Ã£o de backend para lanÃ§ar `ConflictException` bloqueante e proteger o banco de conflitos. Refinamento visual Glassmorphism no `CalendarView`.
+
+- **[13/06/2026 - 17:42]**: Removidos os temas 'Minimalist Arctic' e 'Warm Organic' da configuraÃ§Ã£o de aparÃªncia do sistema.

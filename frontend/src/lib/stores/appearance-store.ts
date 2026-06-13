@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type SystemTheme = 'default' | 'arctic' | 'cyber' | 'warm' | 'corporate' | 'purple';
+export type SystemTheme = 'default' | 'cyber' | 'corporate' | 'purple';
 
 interface AppearanceState {
   theme: SystemTheme;

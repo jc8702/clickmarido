@@ -26,9 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const themes: { id: SystemTheme; name: string; preview: string }[] = [
   { id: 'default', name: 'Original Amber', preview: 'bg-amber-500' },
-  { id: 'arctic', name: 'Minimalist Arctic', preview: 'bg-sky-400' },
   { id: 'cyber', name: 'Cyberpunk Tech', preview: 'bg-emerald-400' },
-  { id: 'warm', name: 'Warm Organic', preview: 'bg-orange-300' },
   { id: 'corporate', name: 'Corporate Blue', preview: 'bg-blue-700' },
   { id: 'purple', name: 'Vibrant Purple', preview: 'bg-purple-600' },
 ];
