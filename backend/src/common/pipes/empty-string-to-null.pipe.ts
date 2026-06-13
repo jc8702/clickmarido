@@ -10,6 +10,14 @@ export class EmptyStringToNullPipe implements PipeTransform {
   }
 
   private cleanObject(obj: any): any {
+    if (obj === '') {
+      return null;
+    }
+
+    if (obj === null || obj === undefined || typeof obj !== 'object') {
+      return obj;
+    }
+
     if (Array.isArray(obj)) {
       return obj.map((item) => this.cleanObject(item));
     }
@@ -20,11 +28,7 @@ export class EmptyStringToNullPipe implements PipeTransform {
 
     const newObj = { ...obj };
     for (const key in newObj) {
-      if (newObj[key] === '') {
-        newObj[key] = null;
-      } else if (typeof newObj[key] === 'object' && newObj[key] !== null) {
-        newObj[key] = this.cleanObject(newObj[key]);
-      }
+      newObj[key] = this.cleanObject(newObj[key]);
     }
     return newObj;
   }
