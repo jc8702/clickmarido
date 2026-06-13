@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, use, useCallback } from "react";
 import { getTechnicianById, Technician } from "@/lib/api-technicians";
+import { getAppointments, updateAppointment, createAppointment } from '@/lib/api-appointments';
 import { PageHeader } from "@/components/layout/page-header";
 import { CalendarView } from "@/components/appointments/calendar-view";
 import { HardHat, Star, MapPin, Phone } from "lucide-react";
@@ -10,20 +11,81 @@ export default function TechnicianProfilePage({ params }: { params: Promise<{ id
   const resolvedParams = use(params);
   const [technician, setTechnician] = useState<Technician | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  const [events, setEvents] = useState<any[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+
+  const fetchTech = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await getTechnicianById(resolvedParams.id);
+      setTechnician(data);
+    } catch (err) {
+      console.error("Erro ao carregar técnico:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [resolvedParams.id]);
+
+  const fetchEvents = useCallback(async () => {
+    try {
+      setEventsLoading(true);
+      const data = await getAppointments({ technicianId: resolvedParams.id });
+      setEvents(
+        data.map((app) => ({
+          id: app.id,
+          title: app.title || 'Sem título',
+          start: new Date(app.startTime),
+          end: new Date(app.endTime),
+          resourceId: app.technicianId,
+          data: app,
+        }))
+      );
+    } catch (err) {
+      console.error('Erro ao carregar agendamentos do técnico:', err);
+    } finally {
+      setEventsLoading(false);
+    }
+  }, [resolvedParams.id]);
 
   useEffect(() => {
-    const fetchTech = async () => {
-      try {
-        const data = await getTechnicianById(resolvedParams.id);
-        setTechnician(data);
-      } catch (err) {
-        console.error("Erro ao carregar técnico:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTech();
-  }, [resolvedParams.id]);
+    fetchEvents();
+  }, [fetchTech, fetchEvents]);
+
+  const handleEventMove = async (event: any, start: Date, end: Date) => {
+    const updatedEvent = { ...event, start, end };
+    setEvents((prev) => prev.map((e) => (e.id === event.id ? updatedEvent : e)));
+
+    try {
+      const res: any = await updateAppointment(event.id, {
+        startTime: start.toISOString(),
+        endTime: end.toISOString(),
+      });
+      if (res.conflict) {
+        alert(res.message);
+        fetchEvents();
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao reagendar.');
+      fetchEvents();
+    }
+  };
+
+  const handleEventSave = async (title: string, start: Date, end: Date) => {
+    try {
+      await createAppointment({ 
+        title, 
+        startTime: start.toISOString(), 
+        endTime: end.toISOString(),
+        technicianId: resolvedParams.id
+      });
+      await fetchEvents();
+    } catch (e: any) {
+      alert(e.message);
+    }
+  };
 
   if (loading) {
     return <div className="p-8">Carregando perfil...</div>;
@@ -73,7 +135,12 @@ export default function TechnicianProfilePage({ params }: { params: Promise<{ id
         {/* CALENDAR COLUMN */}
         <div className="lg:col-span-2">
           <h3 className="text-xl font-bold mb-4">Agenda Individual</h3>
-          <CalendarView technicianId={technician.id} />
+          <CalendarView 
+            events={events} 
+            loading={eventsLoading} 
+            onEventMove={handleEventMove} 
+            onEventSave={handleEventSave} 
+          />
         </div>
 
       </div>
