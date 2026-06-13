@@ -18,7 +18,7 @@ export function KpiCard({ title, value, description, trend, trendLabel, icon, cl
   const isNegative = trend && trend < 0;
 
   return (
-    <Card className={cn('p-6 flex flex-col gap-2', className)} variant="default">
+    <Card className={cn('p-6 flex flex-col gap-2', className)}>
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
         {icon && <div className="text-muted-foreground/50">{icon}</div>}
