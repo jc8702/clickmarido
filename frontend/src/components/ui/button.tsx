@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline' | 'link';
+  variant?: 'primary' | 'default' | 'secondary' | 'danger' | 'ghost' | 'outline' | 'link';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   loading?: boolean;
 }
@@ -17,7 +17,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           'inline-flex items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed',
           // Variantes
-          variant === 'primary' && 'bg-primary text-primary-foreground hover:brightness-110 focus-visible:ring-primary shadow-sm shadow-primary/20',
+          (variant === 'primary' || variant === 'default') && 'bg-primary text-primary-foreground hover:brightness-110 focus-visible:ring-primary shadow-sm shadow-primary/20',
           variant === 'secondary' && 'bg-accent text-accent-foreground hover:brightness-110 focus-visible:ring-accent',
           variant === 'danger' && 'bg-destructive text-destructive-foreground hover:brightness-110 focus-visible:ring-destructive',
           variant === 'ghost' && 'bg-transparent text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 focus-visible:ring-border',
