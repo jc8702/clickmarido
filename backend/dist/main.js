@@ -8,12 +8,13 @@ const common_1 = require("@nestjs/common");
 const helmet_1 = __importDefault(require("helmet"));
 const app_module_1 = require("./app.module");
 const all_exceptions_filter_1 = require("./core/all-exceptions.filter");
+const empty_string_to_null_pipe_1 = require("./common/pipes/empty-string-to-null.pipe");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.use((0, helmet_1.default)());
     app.setGlobalPrefix('api');
     app.useGlobalFilters(new all_exceptions_filter_1.AllExceptionsFilter());
-    app.useGlobalPipes(new common_1.ValidationPipe({
+    app.useGlobalPipes(new empty_string_to_null_pipe_1.EmptyStringToNullPipe(), new common_1.ValidationPipe({
         whitelist: true,
         transform: true,
         forbidNonWhitelisted: true,

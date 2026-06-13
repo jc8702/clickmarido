@@ -70,10 +70,6 @@ import { GeolocationModule } from './core/geolocation/geolocation.module';
       useClass: ThrottlerGuard,
     },
     {
-      provide: APP_GUARD,
-      useClass: PermissionsGuard,
-    },
-    {
       provide: APP_INTERCEPTOR,
       useClass: TransformInterceptor,
     },

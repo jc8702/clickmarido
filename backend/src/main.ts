@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './core/all-exceptions.filter';
+import { EmptyStringToNullPipe } from './common/pipes/empty-string-to-null.pipe';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,6 +17,7 @@ async function bootstrap() {
 
   // Habilita validação de dados globalmente para DTOs
   app.useGlobalPipes(
+    new EmptyStringToNullPipe(),
     new ValidationPipe({
       whitelist: true,
       transform: true,

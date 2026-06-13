@@ -6,10 +6,6 @@ import { AppModule } from './../src/app.module';
 import { PrismaService } from '../src/core/prisma/prisma.service';
 import { prismaMock } from '../src/core/prisma/prisma.service.mock';
 import { AiService } from '../src/modules/ai/ai.service';
-
-import { PrismaService } from '../src/core/prisma/prisma.service';
-import { prismaMock } from '../src/core/prisma/prisma.service.mock';
-import { AiService } from '../src/modules/ai/ai.service';
 import { JwtAuthGuard } from '../src/core/auth/jwt-auth.guard';
 
 describe('Backend Integration Test Suite (e2e)', () => {
@@ -59,9 +55,9 @@ describe('Backend Integration Test Suite (e2e)', () => {
         .set('x-company-id', 'company-1')
         .expect(200);
 
-      expect(response.body).toHaveProperty('totalLeads', 5);
-      expect(response.body).toHaveProperty('totalQuotes', 0);
-      expect(response.body).toHaveProperty('completedOrders', 2);
+      expect(response.body.data).toHaveProperty('totalLeads', 5);
+      expect(response.body.data).toHaveProperty('totalQuotes', 0);
+      expect(response.body.data).toHaveProperty('completedOrders', 2);
     });
   });
 
@@ -72,7 +68,7 @@ describe('Backend Integration Test Suite (e2e)', () => {
         .send({ description: 'Torneira da cozinha quebrou e está jorrando água' })
         .expect(201);
 
-      expect(response.body).toEqual({
+      expect(response.body.data).toEqual({
         category: 'Hidráulica',
         severity: 'Critica',
         reason: 'Vazamento ativo detectado',

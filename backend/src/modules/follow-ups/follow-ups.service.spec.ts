@@ -3,10 +3,15 @@ import { FollowUpsService } from './follow-ups.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { prismaMock } from '../../core/prisma/prisma.service.mock';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
+import { EmailService } from '../../core/email/email.service';
 import { subDays } from 'date-fns';
 
 const whatsappServiceMock = {
   sendMessage: jest.fn().mockResolvedValue({ success: true }),
+};
+
+const emailServiceMock = {
+  sendEmail: jest.fn().mockResolvedValue({ success: true }),
 };
 
 describe('FollowUpsService', () => {
@@ -25,6 +30,10 @@ describe('FollowUpsService', () => {
         {
           provide: WhatsappService,
           useValue: whatsappServiceMock,
+        },
+        {
+          provide: EmailService,
+          useValue: emailServiceMock,
         },
       ],
     }).compile();

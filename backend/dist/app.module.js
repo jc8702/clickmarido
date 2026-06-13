@@ -35,7 +35,6 @@ const company_middleware_1 = require("./common/company/company.middleware");
 const logging_interceptor_1 = require("./common/interceptors/logging.interceptor");
 const audit_interceptor_1 = require("./common/interceptors/audit.interceptor");
 const transform_interceptor_1 = require("./common/interceptors/transform.interceptor");
-const permissions_guard_1 = require("./common/guards/permissions.guard");
 const appointments_module_1 = require("./modules/appointments/appointments.module");
 const ai_module_1 = require("./modules/ai/ai.module");
 const geolocation_module_1 = require("./core/geolocation/geolocation.module");
@@ -85,10 +84,6 @@ exports.AppModule = AppModule = __decorate([
             {
                 provide: core_1.APP_GUARD,
                 useClass: throttler_1.ThrottlerGuard,
-            },
-            {
-                provide: core_1.APP_GUARD,
-                useClass: permissions_guard_1.PermissionsGuard,
             },
             {
                 provide: core_1.APP_INTERCEPTOR,

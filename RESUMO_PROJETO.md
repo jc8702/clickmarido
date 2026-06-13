@@ -1,13 +1,20 @@
 # RESUMO DE PROJETO: Click Marido ERP + CRM
 
 ## Informações Gerais
-- **Status Atual:** ✅ Deploy em produção configurado com sucesso (GitHub, Vercel e Supabase).
+- **Status Atual:** ✅ Deploy em produção atualizado; Correção de 401 e Persistência de Dados Concluída com Sucesso.
 - **Objetivo Central:** Plataforma ERP + CRM SaaS multiempresa para gerenciamento de clientes, serviços, orçamentos, auditoria e permissões.
-- **Última Atualização:** 2026-06-12 19:05
+- **Última Atualização:** 2026-06-13 01:40
 
 ---
 
 ## Histórico de Alterações
+
+- **[13/06/2026 - 01:40]:** Correção de Bug de API (401) e Pipe de Higienização de Strings Vazias (Andru.ia)
+  - **Remoção de APP_GUARD Global:** Resolvida a falha HTTP 401 Unauthorized para Clientes e Serviços em produção através da remoção do `PermissionsGuard` global no NestJS. Agora a autenticação e autorização ocorrem localmente no nível do controller.
+  - **Blindagem de Segurança:** Protegidos os controllers de Técnicos, Financeiro e Ordens de Serviço adicionando `@UseGuards(JwtAuthGuard, PermissionsGuard)` e `@RequirePermissions` locais (webhook do Mercado Pago mantido público).
+  - **EmptyStringToNullPipe:** Criado e registrado no `main.ts` o pipe global que converte recursivamente strings vazias `""` em `null` no corpo de requisições, blindando o backend e prevenindo falhas de Unique Constraints do PostgreSQL para CPF e CNPJ.
+  - **Correção da Suite de Testes E2E:** Ajustados os arquivos `app.e2e-spec.ts` e `integration.e2e-spec.ts` para ler as propriedades de resposta dentro do objeto envelopado `data` (gerado pelo `TransformInterceptor`) e resolvido o mock ausente de `EmailService` em `follow-ups.service.spec.ts`.
+  - Arquivos modificados: `backend/src/app.module.ts`, `backend/src/main.ts`, `backend/src/modules/technicians/technicians.controller.ts`, `backend/src/modules/financial/financial.controller.ts`, `backend/src/modules/service-orders/service-orders.controller.ts`, `backend/test/app.e2e-spec.ts`, `backend/test/integration.e2e-spec.ts`, `backend/src/modules/follow-ups/follow-ups.service.spec.ts`, `backend/src/common/pipes/empty-string-to-null.pipe.ts` (Novo).
 
 - **[12/06/2026 - 22:27]:** Correção de Persistência e Higienização de Payloads (Andru.ia)
   - **Clientes, Empresas e Técnicos:** Diagnosticado que strings vazias (`""`) de campos opcionais causavam falhas HTTP 400 no backend. Corrigido adicionando higienização ativa no `handleSubmit` do frontend, convertendo strings vazias em `null` para que passem nas validações do class-validator e sejam gravadas como nulas no banco.

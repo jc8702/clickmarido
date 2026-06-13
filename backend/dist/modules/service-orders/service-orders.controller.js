@@ -17,6 +17,9 @@ const common_1 = require("@nestjs/common");
 const service_orders_service_1 = require("./service-orders.service");
 const create_service_order_dto_1 = require("./dto/create-service-order.dto");
 const update_service_order_dto_1 = require("./dto/update-service-order.dto");
+const jwt_auth_guard_1 = require("../../core/auth/jwt-auth.guard");
+const permissions_guard_1 = require("../../common/guards/permissions.guard");
+const permissions_decorator_1 = require("../../common/decorators/permissions.decorator");
 let ServiceOrdersController = class ServiceOrdersController {
     osService;
     constructor(osService) {
@@ -56,6 +59,7 @@ let ServiceOrdersController = class ServiceOrdersController {
 exports.ServiceOrdersController = ServiceOrdersController;
 __decorate([
     (0, common_1.Post)(),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'service:create'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_service_order_dto_1.CreateServiceOrderDto]),
@@ -63,6 +67,7 @@ __decorate([
 ], ServiceOrdersController.prototype, "create", null);
 __decorate([
     (0, common_1.Post)('from-quote/:quoteId'),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'service:create'),
     __param(0, (0, common_1.Param)('quoteId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -70,6 +75,7 @@ __decorate([
 ], ServiceOrdersController.prototype, "generateFromQuote", null);
 __decorate([
     (0, common_1.Get)(),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'service:read'),
     __param(0, (0, common_1.Query)('companyId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -77,6 +83,7 @@ __decorate([
 ], ServiceOrdersController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'service:read'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -84,6 +91,7 @@ __decorate([
 ], ServiceOrdersController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Put)(':id'),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'service:update'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -92,6 +100,7 @@ __decorate([
 ], ServiceOrdersController.prototype, "update", null);
 __decorate([
     (0, common_1.Post)(':id/finish'),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'service:update'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)('signature')),
     __metadata("design:type", Function),
@@ -100,6 +109,7 @@ __decorate([
 ], ServiceOrdersController.prototype, "finishOrder", null);
 __decorate([
     (0, common_1.Post)(':id/status'),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'service:update'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)('status')),
     __metadata("design:type", Function),
@@ -108,6 +118,7 @@ __decorate([
 ], ServiceOrdersController.prototype, "updateStatus", null);
 __decorate([
     (0, common_1.Post)(':id/photos'),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'service:update'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)('url')),
     __param(2, (0, common_1.Body)('type')),
@@ -117,6 +128,7 @@ __decorate([
 ], ServiceOrdersController.prototype, "addPhoto", null);
 __decorate([
     (0, common_1.Post)(':id/checklist'),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'service:update'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)('item')),
     __metadata("design:type", Function),
@@ -125,6 +137,7 @@ __decorate([
 ], ServiceOrdersController.prototype, "addChecklistItem", null);
 __decorate([
     (0, common_1.Put)(':id/checklist/:checklistId'),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'service:update'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Param)('checklistId')),
     __param(2, (0, common_1.Body)('checked')),
@@ -134,6 +147,7 @@ __decorate([
 ], ServiceOrdersController.prototype, "toggleChecklist", null);
 exports.ServiceOrdersController = ServiceOrdersController = __decorate([
     (0, common_1.Controller)('service-orders'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
     __metadata("design:paramtypes", [service_orders_service_1.ServiceOrdersService])
 ], ServiceOrdersController);
 //# sourceMappingURL=service-orders.controller.js.map

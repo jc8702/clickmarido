@@ -17,6 +17,9 @@ const common_1 = require("@nestjs/common");
 const technicians_service_1 = require("./technicians.service");
 const create_technician_dto_1 = require("./dto/create-technician.dto");
 const update_technician_dto_1 = require("./dto/update-technician.dto");
+const jwt_auth_guard_1 = require("../../core/auth/jwt-auth.guard");
+const permissions_guard_1 = require("../../common/guards/permissions.guard");
+const permissions_decorator_1 = require("../../common/decorators/permissions.decorator");
 let TechniciansController = class TechniciansController {
     techniciansService;
     constructor(techniciansService) {
@@ -44,6 +47,7 @@ let TechniciansController = class TechniciansController {
 exports.TechniciansController = TechniciansController;
 __decorate([
     (0, common_1.Post)(),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'user:update'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_technician_dto_1.CreateTechnicianDto]),
@@ -51,6 +55,7 @@ __decorate([
 ], TechniciansController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'user:read'),
     __param(0, (0, common_1.Query)('companyId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -58,6 +63,7 @@ __decorate([
 ], TechniciansController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('ranking'),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'user:read'),
     __param(0, (0, common_1.Query)('companyId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -65,6 +71,7 @@ __decorate([
 ], TechniciansController.prototype, "getRanking", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'user:read'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -72,6 +79,7 @@ __decorate([
 ], TechniciansController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Put)(':id'),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'user:update'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -80,6 +88,7 @@ __decorate([
 ], TechniciansController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'user:delete'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -87,6 +96,7 @@ __decorate([
 ], TechniciansController.prototype, "remove", null);
 exports.TechniciansController = TechniciansController = __decorate([
     (0, common_1.Controller)('technicians'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
     __metadata("design:paramtypes", [technicians_service_1.TechniciansService])
 ], TechniciansController);
 //# sourceMappingURL=technicians.controller.js.map

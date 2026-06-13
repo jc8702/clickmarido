@@ -17,6 +17,9 @@ const common_1 = require("@nestjs/common");
 const financial_service_1 = require("./financial.service");
 const create_transaction_dto_1 = require("./dto/create-transaction.dto");
 const update_transaction_dto_1 = require("./dto/update-transaction.dto");
+const jwt_auth_guard_1 = require("../../core/auth/jwt-auth.guard");
+const permissions_guard_1 = require("../../common/guards/permissions.guard");
+const permissions_decorator_1 = require("../../common/decorators/permissions.decorator");
 let FinancialController = class FinancialController {
     financialService;
     constructor(financialService) {
@@ -59,6 +62,8 @@ let FinancialController = class FinancialController {
 exports.FinancialController = FinancialController;
 __decorate([
     (0, common_1.Post)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'quote:update'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_transaction_dto_1.CreateTransactionDto]),
@@ -66,6 +71,8 @@ __decorate([
 ], FinancialController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)('summary'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'quote:read'),
     __param(0, (0, common_1.Query)('companyId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -73,6 +80,8 @@ __decorate([
 ], FinancialController.prototype, "getSummary", null);
 __decorate([
     (0, common_1.Get)('dre'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'quote:read'),
     __param(0, (0, common_1.Query)('companyId')),
     __param(1, (0, common_1.Query)('month')),
     __param(2, (0, common_1.Query)('year')),
@@ -82,6 +91,8 @@ __decorate([
 ], FinancialController.prototype, "getDre", null);
 __decorate([
     (0, common_1.Get)('projection'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'quote:read'),
     __param(0, (0, common_1.Query)('companyId')),
     __param(1, (0, common_1.Query)('days')),
     __metadata("design:type", Function),
@@ -90,6 +101,8 @@ __decorate([
 ], FinancialController.prototype, "getProjection", null);
 __decorate([
     (0, common_1.Get)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'quote:read'),
     __param(0, (0, common_1.Query)('companyId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -97,6 +110,8 @@ __decorate([
 ], FinancialController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'quote:read'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -104,6 +119,8 @@ __decorate([
 ], FinancialController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Put)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'quote:update'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -112,6 +129,8 @@ __decorate([
 ], FinancialController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'quote:update'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -119,6 +138,8 @@ __decorate([
 ], FinancialController.prototype, "remove", null);
 __decorate([
     (0, common_1.Post)(':id/generate-pix'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
+    (0, permissions_decorator_1.RequirePermissions)('*', 'quote:update'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

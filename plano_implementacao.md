@@ -1,90 +1,49 @@
-# Plano de Melhoria Visual e Padronização de Temas (SaaS Elite)
+# Plano de Implementação: Persistência, Consistência de Dados e Segurança da API
 
-Este documento apresenta o plano de implementação técnico para corrigir as inconsistências visuais e a falta de legibilidade no Click Marido ERP + CRM, padronizando os botões, os inputs e a conformidade de cores semânticas para Light e Dark Mode em todos os 5 temas dinâmicos.
-
----
-
-## 📸 Diagnóstico Visual (Baseado nas Imagens de Auditoria)
-
-Analisando as capturas fornecidas, identificamos os seguintes problemas que comprometem a experiência de usuário:
-1. **Falta de Contraste (Invisibilidade em Modo Claro):**
-   * Títulos principais das páginas (como "Configurações", "Empresas", "Painel Executivo", "Relatórios e Das") usam a classe rígida `text-white`. Quando o fundo da página em Light Mode é claro (`bg-zinc-50`), esses títulos desaparecem totalmente.
-   * Vários textos secundários e metadados também perdem o contraste.
-2. **Cards e Elementos de Grid Rígidos (Hardcoded):**
-   * Cards de métricas, containers de tabelas e filtros estão estilizados de forma rígida com cores escuras fixas (ex: `bg-zinc-900`, `bg-zinc-950`, `border-zinc-800`).
-   * No Light Mode, isso faz com que os cards pretos flutuem sobre o fundo claro de forma desarmônica.
-3. **Despadronização de Botões:**
-   * Botões de ação primária (como "+ Nova Empresa") estão com cores rígidas e fixas (`bg-blue-600`), ignorando a identidade visual do tema ativo.
-   * O botão da aba Relatórios ("Comercial") é preto rígido, o que quebra a coerência estética no Light Mode.
+Este plano orienta a varredura e refatoração no Click Marido ERP + CRM, focando em garantir o salvamento robusto de dados no banco de dados e a blindagem de segurança de endpoints.
 
 ---
 
-## 🛠️ Levantamento de Skills Necessárias & Squad de Especialistas
+## 🛠️ Levantamento de Skills Necessárias
 
-Para conduzir essa refatoração visual seguindo os mais altos padrões de design de produto (Elite SaaS), o seguinte Squad foi mapeado com base nas competências requeridas:
-
-1. **`tailwind-patterns` (Especialista em Tailwind v4)**: Necessário para a correta manipulação de variáveis CSS no arquivo de estilos central sob a nova estrutura e sintaxe v4 do Tailwind CSS, garantindo compilação limpa.
-2. **`ui-tokens` (Arquiteto de Design System)**: Responsável pela sincronização das variáveis do tema ativo com as variantes `dark` e `light` dinâmicas.
-3. **`ui-a11y` & `wcag-audit-patterns` (Engenheiro de Acessibilidade)**: Responsável por garantir conformidade de contraste (WCAG AA) em todos os temas e modos de visualização, eliminando textos invisíveis.
-4. **`design-spells` & `gpt-taste` (Especialista em UI/UX Premium)**: Responsável pelo polimento das micro-interações, transições suaves nos botões, glassmorphism e design coerente com o padrão internacional de aplicativos SaaS.
+1. **`backend-architect` (Arquitetura NestJS)**: Especialista em injeção de dependências, guards de autenticação e ciclo de vida de requisições no framework NestJS.
+2. **`database-design` (Consistência PostgreSQL)**: Para tratar de forma ótima as unique constraints compostas e garantir a persistência adequada de valores nulos e strings higienizadas.
+3. **`security-auditor` (Segurança e Controle de Acesso)**: Para revisar o controle de acesso baseado em papéis (RBAC) e as rotas públicas da aplicação.
 
 ---
 
-## 🎨 Proposta de Padronização de Cores Semânticas
+## 🚀 Hoja de Ruta de Alterações
 
-Para resolver todos os problemas de contraste, substituiremos as classes de cores estáticas por tokens semânticos baseados nas variáveis CSS ativas de cada tema:
+### Fase 1: Correção do Erro HTTP 401 Unauthorized
+* **[app.module.ts](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/backend/src/app.module.ts):**
+  * Remover a declaração de `PermissionsGuard` como `APP_GUARD` global.
+  * O guard continuará ativo de forma local nos controllers que o declaram explicitamente em `@UseGuards(JwtAuthGuard, PermissionsGuard)`.
 
-| Elemento | De (Rígido) | Para (Semântico) | Comportamento Light / Dark |
-| :--- | :--- | :--- | :--- |
-| **Fundo de Tela** | `bg-zinc-50` / `bg-zinc-900` | `bg-background` | Claro no Light, Escuro no Dark |
-| **Títulos Principais** | `text-white` / `text-zinc-900` | `text-foreground` | Escuro no Light, Claro no Dark |
-| **Subtítulos/Metadata**| `text-zinc-500` / `text-zinc-400` | `text-muted-foreground` | Tons cinza ajustados de forma reativa |
-| **Cards de Conteúdo**  | `bg-zinc-950` / `bg-zinc-900` | `glass-card` / `bg-card` | Fundo translúcido reativo com blur |
-| **Bordas** | `border-zinc-800` | `border-border` | Bordas suaves ajustadas ao tema |
-| **Inputs/Filtros** | `bg-zinc-900 border-zinc-800`| `bg-input/40 border-border`| Translúcidos e responsivos ao foco |
-| **Botões Primários** | `bg-blue-600` / `bg-zinc-900` | `bg-primary text-primary-foreground`| Cor de marca correspondente ao tema ativo |
+### Fase 2: Blindagem e Segurança de Controllers
+* **[technicians.controller.ts](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/backend/src/modules/technicians/technicians.controller.ts):**
+  * Adicionar `@UseGuards(JwtAuthGuard, PermissionsGuard)`.
+  * Adicionar `@RequirePermissions('*', 'user:read')` nos endpoints de leitura e `@RequirePermissions('*', 'user:update')` nos de escrita.
+* **[financial.controller.ts](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/backend/src/modules/financial/financial.controller.ts):**
+  * Adicionar `@UseGuards(JwtAuthGuard, PermissionsGuard)`.
+  * Adicionar `@RequirePermissions('*', 'quote:read')` nos endpoints de leitura e `@RequirePermissions('*', 'quote:update')` nos de escrita.
+  * **Exceção**: Manter o endpoint `/webhook/mercadopago` livre de guards para permitir o recebimento de notificações externas.
+* **[service-orders.controller.ts](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/backend/src/modules/service-orders/service-orders.controller.ts):**
+  * Adicionar `@UseGuards(JwtAuthGuard, PermissionsGuard)`.
+  * Adicionar `@RequirePermissions('*', 'service:read')` para listagem e `@RequirePermissions('*', 'service:update')`/`service:create` nos métodos correspondentes.
 
----
-
-## 🚀 Hoja de Ruta de Alterações Propostas
-
-### Fase 1: Ajuste do CSS e Variáveis de Tema (Design Tokens)
-* **[globals.css](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/app/globals.css):**
-  * Ajustar as propriedades do seletor `:root` e `.dark` para garantir que `--foreground`, `--background`, `--card` e `--border` tenham o comportamento esperado de contraste.
-  * Certificar que a variante `@custom-variant dark (&:where(.dark, .dark *));` esteja ativa para forçar o Tailwind v4 a responder à classe `.dark` inserida no HTML.
-
-### Fase 2: Componentização Core
-* **[dashboard-layout.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/components/layout/dashboard-layout.tsx):**
-  * Atualizar o background do elemento `<main>` para usar `bg-background` de forma que responda dinamicamente às mudanças do `next-themes`.
-* **[page-header.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/components/layout/page-header.tsx):**
-  * Substituir a classe `text-white` por `text-foreground` e `border-zinc-900` por `border-border`.
-
-### Fase 3: Higienização de Telas
-* **[dashboard/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/app/(dashboard)/dashboard/page.tsx):**
-  * Substituir o fundo dos cards de métricas por `glass-card` ou `bg-card`, a borda por `border-border/50` e o texto dos valores por `text-foreground`.
-  * Atualizar as cores de destaque e botões da timeline e painéis para variáveis semânticas.
-* **[empresas/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/app/(dashboard)/empresas/page.tsx):**
-  * Remover classes de cores fixas `text-white` dos cabeçalhos.
-  * Atualizar a barra de filtros para usar `bg-input/20 border-border` no lugar de backgrounds pretos rígidos.
-  * Ajustar o botão de "Nova Empresa" para usar a classe do design system `bg-primary hover:bg-primary/90 text-primary-foreground`.
-* **[relatorios/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/app/(dashboard)/relatorios/page.tsx):**
-  * Corrigir a cor do título principal e subtexto.
-  * Substituir os fundos pretos rígidos dos cards analíticos por `bg-card border-border`.
-  * Tornar o botão de abas semântico (`bg-primary` se ativo ou `variant="outline"`).
-* **[settings/page.tsx](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/frontend/src/app/(dashboard)/settings/page.tsx):**
-  * Higienizar os cards de visualização de temas.
-  * Garantir legibilidade perfeita no seletor de "Aparência".
+### Fase 3: Consistência de Dados e Tratamento de Strings Vazias
+* **[empty-string-to-null.pipe.ts](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/backend/src/common/pipes/empty-string-to-null.pipe.ts):**
+  * Criar um custom NestJS `PipeTransform` que intercepta o corpo das requisições e altera recursivamente strings vazias `""` para `null`.
+* **[main.ts](file:///c:/Users/jc-pr/.gemini/antigravity/scratch/clickmarido/backend/src/main.ts):**
+  * Injetar o `EmptyStringToNullPipe` globalmente antes do `ValidationPipe` do NestJS.
 
 ---
 
-## 🧪 Plano de Verificação Visual
+## 🧪 Plano de Verificação e Testes
 
-1. **Modo Claro (Light Mode):**
-   * Verificar se todos os títulos das páginas estão visíveis e legíveis (em cinza escuro ou preto).
-   * Validar se os cards possuem fundo claro correspondente ao tema.
-   * Certificar que as bordas dos inputs não desaparecem contra o fundo.
-2. **Modo Escuro (Dark Mode):**
-   * Garantir que as fontes fiquem brancas ou cinza claro.
-   * Confirmar se o fundo geral se torna escuro.
-3. **Alternância Dinâmica de Temas:**
-   * Testar a mudança de cor de marca (Arctic, Cyber, Warm, Corporate, Purple) no seletor de Aparência e verificar se os botões primários mudam de cor dinamicamente em ambas as variantes (light/dark).
+1. **Testes do Backend (Unitários e E2E):**
+   * Executar build local e rodar testes do NestJS para verificar integridade da API.
+2. **Teste Prático de Cadastro de Clientes:**
+   * Tentar criar um cliente via frontend de produção/local preenchendo apenas nome e telefone, verificando se a persistência ocorre com sucesso (sem erros de validação por causa do CPF e e-mail vazios).
+3. **Teste Prático de Cadastro de Técnicos:**
+   * Tentar cadastrar um técnico com campos opcionais vazios e validar se é persistido corretamente.
