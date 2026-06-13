@@ -36,20 +36,68 @@ export class ServiceOrdersService {
     });
   }
 
-  async findAll(companyId: string) {
-    return this.prisma.serviceOrder.findMany({
-      where: { companyId, deletedAt: null },
-      include: {
-        client: true,
-        technician: true,
+  async findAll(
+    companyId: string,
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    status?: string,
+  ) {
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      companyId,
+      deletedAt: null,
+    };
+
+    if (status) {
+      where.status = status;
+    }
+
+    if (search) {
+      const searchNum = parseInt(search, 10);
+      if (!isNaN(searchNum)) {
+        where.number = searchNum;
+      } else {
+        where.client = {
+          name: { contains: search, mode: 'insensitive' },
+        };
+      }
+    }
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.serviceOrder.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { number: 'desc' },
+        include: {
+          client: true,
+          technician: true,
+          services: true,
+          materials: true,
+          photos: true,
+          checklists: true,
+        },
+      }),
+      this.prisma.serviceOrder.count({ where }),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        items,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       },
-      orderBy: { createdAt: 'desc' },
-    });
+    };
   }
 
-  async findOne(id: string) {
-    const os = await this.prisma.serviceOrder.findUnique({
-      where: { id },
+  async findOne(id: string, companyId: string) {
+    const os = await this.prisma.serviceOrder.findFirst({
+      where: { id, companyId, deletedAt: null },
       include: {
         client: true,
         technician: true,
@@ -59,8 +107,8 @@ export class ServiceOrdersService {
         checklists: true,
       },
     });
-    if (!os) throw new NotFoundException('Service order not found');
-    return os;
+    if (!os) throw new NotFoundException('Ordem de serviço não encontrada.');
+    return { success: true, data: os };
   }
 
   async generateFromQuote(quoteId: string) {
@@ -69,8 +117,8 @@ export class ServiceOrdersService {
       include: { services: { include: { service: true } } },
     });
 
-    if (!quote) throw new NotFoundException('Quote not found');
-    if (quote.status !== 'Aprovado') throw new BadRequestException('Quote must be Approved to generate an OS');
+    if (!quote) throw new NotFoundException('Orçamento não encontrado.');
+    if (quote.status !== 'Aprovado') throw new BadRequestException('Orçamento precisa estar aprovado para gerar uma OS.');
 
     const lastOs = await this.prisma.serviceOrder.findFirst({
       where: { companyId: quote.companyId },
@@ -78,14 +126,12 @@ export class ServiceOrdersService {
     });
     const nextNumber = lastOs ? lastOs.number + 1 : 1;
 
-    // Convert services from quote to OS
     const services = quote.services.map(qs => ({
       name: qs.service.name,
       quantity: qs.quantity,
       value: qs.value,
     }));
 
-    // Convert materials JSON if exists
     let materials: any[] = [];
     if (quote.materials && Array.isArray(quote.materials)) {
       materials = quote.materials.map((m: any) => ({
@@ -95,7 +141,7 @@ export class ServiceOrdersService {
       }));
     }
 
-    return this.prisma.serviceOrder.create({
+    const os = await this.prisma.serviceOrder.create({
       data: {
         number: nextNumber,
         companyId: quote.companyId,
@@ -106,10 +152,16 @@ export class ServiceOrdersService {
         materials: { create: materials },
       },
     });
+
+    return { success: true, data: os };
   }
 
-  async update(id: string, dto: UpdateServiceOrderDto) {
-    await this.findOne(id);
+  async update(id: string, dto: UpdateServiceOrderDto, companyId: string) {
+    const existing = await this.prisma.serviceOrder.findFirst({
+      where: { id, companyId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException('Ordem de serviço não encontrada.');
+
     const { services, materials, ...rest } = dto;
     
     const updateData: any = { ...rest };
@@ -117,59 +169,95 @@ export class ServiceOrdersService {
       updateData.scheduledAt = new Date(rest.scheduledAt);
     }
     
-    return this.prisma.serviceOrder.update({
+    const updated = await this.prisma.serviceOrder.update({
       where: { id },
       data: updateData,
     });
+
+    return { success: true, data: updated };
   }
 
-  async updateStatus(id: string, status: string) {
-    // Validar status permitidos
+  async updateStatus(id: string, status: string, companyId: string) {
+    const existing = await this.prisma.serviceOrder.findFirst({
+      where: { id, companyId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException('Ordem de serviço não encontrada.');
+
     const validStatuses = ['Pendente', 'Agendado', 'Em Andamento', 'Aguardando Peça', 'Concluído', 'Cancelado'];
     if (!validStatuses.includes(status)) {
-      throw new BadRequestException('Status inválido');
+      throw new BadRequestException('Status inválido.');
     }
 
-    return this.prisma.serviceOrder.update({
+    const updated = await this.prisma.serviceOrder.update({
       where: { id },
       data: { status },
     });
+
+    return { success: true, data: updated };
   }
 
-  async finishOrder(id: string, signatureBase64: string) {
-    return this.prisma.serviceOrder.update({
+  async finishOrder(id: string, signatureBase64: string, companyId: string) {
+    const existing = await this.prisma.serviceOrder.findFirst({
+      where: { id, companyId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException('Ordem de serviço não encontrada.');
+
+    const updated = await this.prisma.serviceOrder.update({
       where: { id },
       data: {
         status: 'Concluído',
         signature: signatureBase64,
       },
     });
+
+    return { success: true, data: updated };
   }
 
-  async addPhoto(id: string, url: string, type: 'antes' | 'depois') {
-    return this.prisma.serviceOrderPhoto.create({
+  async addPhoto(id: string, url: string, type: 'antes' | 'depois', companyId: string) {
+    const existing = await this.prisma.serviceOrder.findFirst({
+      where: { id, companyId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException('Ordem de serviço não encontrada.');
+
+    const photo = await this.prisma.serviceOrderPhoto.create({
       data: {
         serviceOrderId: id,
         url,
         type,
       },
     });
+
+    return { success: true, data: photo };
   }
 
-  async toggleChecklist(id: string, checklistId: string, checked: boolean) {
-    return this.prisma.serviceOrderChecklist.update({
+  async toggleChecklist(id: string, checklistId: string, checked: boolean, companyId: string) {
+    const existing = await this.prisma.serviceOrder.findFirst({
+      where: { id, companyId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException('Ordem de serviço não encontrada.');
+
+    const updated = await this.prisma.serviceOrderChecklist.update({
       where: { id: checklistId },
       data: { checked },
     });
+
+    return { success: true, data: updated };
   }
 
-  async addChecklistItem(id: string, item: string) {
-    return this.prisma.serviceOrderChecklist.create({
+  async addChecklistItem(id: string, item: string, companyId: string) {
+    const existing = await this.prisma.serviceOrder.findFirst({
+      where: { id, companyId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException('Ordem de serviço não encontrada.');
+
+    const checklist = await this.prisma.serviceOrderChecklist.create({
       data: {
         serviceOrderId: id,
         item,
       },
     });
+
+    return { success: true, data: checklist };
   }
 
   async findPublicOrder(id: string) {
@@ -185,8 +273,10 @@ export class ServiceOrdersService {
   }
 
   async saveClientRating(id: string, rating: number, review?: string) {
-    const os = await this.findOne(id);
-    if (!os) throw new NotFoundException('OS não encontrada');
+    const os = await this.prisma.serviceOrder.findUnique({
+      where: { id },
+    });
+    if (!os) throw new NotFoundException('Ordem de serviço não encontrada.');
 
     // Salva na OS
     await this.prisma.serviceOrder.update({

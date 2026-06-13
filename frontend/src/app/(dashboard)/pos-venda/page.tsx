@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { RefreshCcw, Handshake, CheckCircle2, Circle, Clock } from 'lucide-react';
+import { RefreshCcw, HeartHandshake, CheckCircle2, Circle, Clock } from 'lucide-react';
 import { FollowUp, getFollowUps, syncFollowUps, triggerCronManually } from '@/lib/api-follow-ups';
 import { format, differenceInDays } from 'date-fns';
 
@@ -67,7 +67,12 @@ export default function PosVendaPage() {
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Pós-Venda</h2>
+          <h2 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+            <div className="p-2 rounded-2xl bg-rose-500/10 text-rose-500">
+              <HeartHandshake className="w-7 h-7" />
+            </div>
+            Pós-Venda
+          </h2>
           <p className="text-muted-foreground">Régua automatizada de relacionamento via WhatsApp.</p>
         </div>
         <div className="flex items-center gap-2">
@@ -123,7 +128,7 @@ export default function PosVendaPage() {
                   <tr key={f.id} className="border-b border-border/50 last:border-0 hover:bg-muted/30">
                     <td className="px-6 py-4">
                       <div className="font-medium flex items-center gap-2">
-                        <Handshake className="w-4 h-4 text-emerald-500" /> {f.client?.name}
+                        <HeartHandshake className="w-4 h-4 text-emerald-500" /> {f.client?.name}
                       </div>
                       <div className="text-xs text-muted-foreground mt-0.5">{f.client?.phone}</div>
                     </td>

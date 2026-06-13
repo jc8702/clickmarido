@@ -2,69 +2,432 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { ClipboardList, Search, User, Calendar, Wrench, FileText, XCircle, CheckCircle2, Award } from 'lucide-react';
 import { ServiceOrder, getServiceOrders } from '@/lib/api-service-orders';
-import { format } from 'date-fns';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
-const COMPANY_ID = "6fb48ab0-08ab-49bd-9eab-57dd4f923ff1"; // MOCK for MVP
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+}
+
+function formatDate(dateString: string): string {
+  return new Date(dateString).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+function formatDateTime(dateString?: string): string {
+  if (!dateString) return '-';
+  return new Date(dateString).toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
 export default function OrdensServicoPage() {
+
   const [orders, setOrders] = useState<ServiceOrder[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
 
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [viewedOrder, setViewedOrder] = useState<ServiceOrder | null>(null);
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const result = await getServiceOrders({
+        page,
+        limit,
+        search: search || undefined,
+        status: statusFilter || undefined,
+      });
+      setOrders(result.items);
+      setTotal(result.total);
+      setTotalPages(result.totalPages);
+    } catch (e: any) {
+      console.error('Erro ao buscar ordens de serviço:', e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    getServiceOrders(COMPANY_ID)
-      .then(data => setOrders(data))
-      .finally(() => setLoading(false));
-  }, []);
+    fetchOrders();
+  }, [page, statusFilter]);
+
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      setPage(1);
+      fetchOrders();
+    }, 400);
+    return () => clearTimeout(delayDebounce);
+  }, [search]);
+
+  const handleOpenViewModal = (order: ServiceOrder) => {
+    setViewedOrder(order);
+    setIsViewModalOpen(true);
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'Pendente':
+        return <Badge variant="outline" className="bg-zinc-500/10 border-zinc-500/20 text-zinc-400 font-semibold px-2 py-0.5">Pendente</Badge>;
+      case 'Agendado':
+        return <Badge variant="outline" className="bg-blue-500/10 border-blue-500/20 text-blue-400 font-semibold px-2 py-0.5">Agendado</Badge>;
+      case 'Em Andamento':
+        return <Badge variant="outline" className="bg-amber-500/10 border-amber-500/20 text-amber-400 font-semibold px-2 py-0.5">Em Andamento</Badge>;
+      case 'Aguardando Peça':
+        return <Badge variant="outline" className="bg-orange-500/10 border-orange-500/20 text-orange-400 font-semibold px-2 py-0.5">Aguardando Peça</Badge>;
+      case 'Concluído':
+        return <Badge variant="outline" className="bg-emerald-500/10 border-emerald-500/20 text-emerald-400 font-semibold px-2 py-0.5">Concluído</Badge>;
+      case 'Cancelado':
+        return <Badge variant="outline" className="bg-rose-500/10 border-rose-500/20 text-rose-400 font-semibold px-2 py-0.5">Cancelado</Badge>;
+      default:
+        return <Badge variant="outline" className="font-semibold px-2 py-0.5">{status}</Badge>;
+    }
+  };
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Ordens de Serviço</h2>
+    <div className="p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
+      {/* Conteúdo da Tela */}
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-zinc-900 pb-6">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">
+              <ClipboardList className="w-8 h-8 text-violet-500" />
+              Gestão de Ordens de Serviço
+            </h1>
+            <p className="mt-2 text-sm text-zinc-400">
+              Acompanhe, gerencie e execute todas as ordens de serviço da empresa.
+            </p>
+          </div>
+        </div>
+
+        {/* Barra de Busca e Filtros */}
+        <div className="flex flex-col md:flex-row gap-4 bg-zinc-950 p-4 border border-zinc-900 rounded-2xl">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-3 w-4 h-4 text-zinc-500" />
+            <input
+              type="text"
+              placeholder="Buscar por número ou cliente..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full h-10 pl-10 pr-4 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50"
+            />
+          </div>
+          <div className="flex gap-2">
+            <select
+              value={statusFilter}
+              onChange={(e) => { setPage(1); setStatusFilter(e.target.value); }}
+              className="h-10 px-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50"
+            >
+              <option value="">Todos os Status</option>
+              <option value="Pendente">Pendente</option>
+              <option value="Agendado">Agendado</option>
+              <option value="Em Andamento">Em Andamento</option>
+              <option value="Aguardando Peça">Aguardando Peça</option>
+              <option value="Concluído">Concluído</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Lista de Ordens */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center p-20 space-y-4">
+            <div className="w-10 h-10 rounded-full border-4 border-violet-500/30 border-t-violet-500 animate-spin" />
+            <p className="text-xs text-zinc-500 font-bold uppercase">Carregando ordens...</p>
+          </div>
+        ) : orders.length === 0 ? (
+          <Card className="flex flex-col items-center justify-center p-16 text-center border-dashed border-zinc-900 bg-zinc-950/20">
+            <ClipboardList className="w-14 h-14 text-zinc-700 mb-4" />
+            <h3 className="text-lg font-semibold text-zinc-300">Nenhuma ordem de serviço encontrada</h3>
+            <p className="text-sm text-zinc-500 mt-1 max-w-sm">
+              As ordens de serviço são geradas automaticamente ao aprovar um orçamento.
+              Vá em Orçamentos e aprove uma proposta para gerar uma OS.
+            </p>
+            <Link href="/orcamentos">
+              <Button className="mt-6 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-white rounded-xl text-xs font-semibold px-4 h-9">
+                <FileText className="w-4 h-4 mr-2" />
+                Ir para Orçamentos
+              </Button>
+            </Link>
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+              {orders.map((order, idx) => (
+                <Card
+                  key={order.id}
+                  onClick={() => handleOpenViewModal(order)}
+                  className="group glass-card glow-hover border-zinc-900/50 animate-in-slide cursor-pointer"
+                  style={{ animationDelay: `${idx * 0.05}s` }}
+                >
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-black transition-all ${
+                          order.status === 'Concluído'
+                            ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+                            : order.status === 'Cancelado'
+                            ? 'bg-rose-500/10 border border-rose-500/20 text-rose-400'
+                            : 'bg-gradient-to-br from-zinc-855 to-zinc-900 border border-zinc-800/80 text-zinc-400 group-hover:glow-primary'
+                        }`}>
+                          #{order.number}
+                        </div>
+                        <div className="space-y-1">
+                          <h3 className="text-md font-bold text-white tracking-tight leading-snug truncate">
+                            {order.client?.name || 'Cliente não informado'}
+                          </h3>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs text-zinc-400 font-semibold">{formatDate(order.createdAt)}</span>
+                            {getStatusBadge(order.status)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {order.technician?.name && (
+                        <div className="flex items-center gap-2 text-xs text-zinc-500">
+                          <User className="w-3.5 h-3.5 text-zinc-600" />
+                          <span className="font-medium text-zinc-400">{order.technician.name}</span>
+                        </div>
+                      )}
+                      {order.scheduledAt && (
+                        <div className="flex items-center gap-2 text-xs text-zinc-500">
+                          <Calendar className="w-3.5 h-3.5 text-zinc-600" />
+                          <span className="font-medium text-zinc-400">{formatDateTime(order.scheduledAt)}</span>
+                        </div>
+                      )}
+                      {order.services && order.services.length > 0 && (
+                        <div className="flex items-center gap-2 text-xs text-zinc-500">
+                          <Wrench className="w-3.5 h-3.5 text-zinc-600" />
+                          <span className="font-medium text-zinc-400">{order.services.length} serviço(s)</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex justify-between items-center bg-zinc-950/40 border border-zinc-900/60 p-3 rounded-xl">
+                      <div className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Valor Total</div>
+                      <div className="text-lg font-black text-emerald-400">{formatCurrency(order.totalValue)}</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Paginação */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-zinc-900 pt-6">
+                <span className="text-sm font-medium text-zinc-500">
+                  Página <span className="text-white">{page}</span> de <span className="text-white">{totalPages}</span>
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    disabled={page === 1}
+                    onClick={() => setPage(page - 1)}
+                    className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 disabled:opacity-50 text-white font-bold h-9 px-4 rounded-lg text-xs"
+                  >
+                    Anterior
+                  </Button>
+                  <Button
+                    disabled={page === totalPages}
+                    onClick={() => setPage(page + 1)}
+                    className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 disabled:opacity-50 text-white font-bold h-9 px-4 rounded-lg text-xs"
+                  >
+                    Próxima
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      <div className="bg-card border rounded-lg shadow-sm overflow-hidden">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-muted text-muted-foreground uppercase text-xs">
-            <tr>
-              <th className="px-4 py-3">OS #</th>
-              <th className="px-4 py-3">Cliente</th>
-              <th className="px-4 py-3">Técnico</th>
-              <th className="px-4 py-3">Agendamento</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody className="bg-card">
-            {loading ? (
-               <tr><td colSpan={6} className="px-4 py-4 text-center">Carregando...</td></tr>
-            ) : orders.length === 0 ? (
-               <tr><td colSpan={6} className="px-4 py-4 text-center">Nenhuma ordem encontrada. Vá em Orçamentos e gere uma!</td></tr>
-            ) : (
-              orders.map(os => (
-                <tr key={os.id} className="border-t">
-                  <td className="px-4 py-3 font-medium">#{os.number}</td>
-                  <td className="px-4 py-3">{os.client?.name || '-'}</td>
-                  <td className="px-4 py-3">{os.technician?.name || 'Não atribuído'}</td>
-                  <td className="px-4 py-3">
-                    {os.scheduledAt ? format(new Date(os.scheduledAt), 'dd/MM/yyyy HH:mm') : '-'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs ${os.status === 'Concluído' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                      {os.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Link href={`/ordens-servico/${os.id}`} className="text-primary hover:underline">
-                      Abrir Execução
-                    </Link>
-                  </td>
-                </tr>
-              ))
+      {/* Modal do Visualizador de Detalhes */}
+      {isViewModalOpen && viewedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in-fade">
+          <div className="relative w-full max-w-2xl rounded-2xl bg-zinc-950 border border-zinc-900 shadow-2xl p-6 space-y-6 max-h-[95vh] overflow-y-auto">
+
+            {/* Header de Detalhes */}
+            <div className="flex justify-between items-start border-b border-zinc-900 pb-4">
+              <div>
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  OS #{viewedOrder.number}
+                  {getStatusBadge(viewedOrder.status)}
+                </h3>
+                <p className="text-zinc-500 text-xs mt-1">Criada em: {formatDate(viewedOrder.createdAt)}</p>
+              </div>
+
+              <Button
+                onClick={() => setIsViewModalOpen(false)}
+                variant="ghost"
+                className="h-8 w-8 text-zinc-500 hover:text-white rounded-lg p-0"
+              >
+                <XCircle className="w-5 h-5" />
+              </Button>
+            </div>
+
+            {/* Ações Rápidas */}
+            <div className="flex flex-wrap gap-2">
+              <Link href={`/ordens-servico/${viewedOrder.id}`}>
+                <Button className="bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-300 font-bold h-9 px-4 rounded-xl text-xs flex items-center gap-1.5">
+                  <Wrench className="w-4 h-4 text-zinc-400" /> Abrir Execução
+                </Button>
+              </Link>
+
+              {viewedOrder.status === 'Concluído' && (
+                <Link href={`/os/${viewedOrder.id}/rate`}>
+                  <Button className="bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/20 text-emerald-400 font-bold h-9 px-4 rounded-xl text-xs flex items-center gap-1.5">
+                    <Award className="w-4 h-4 text-emerald-500" /> Avaliação
+                  </Button>
+                </Link>
+              )}
+            </div>
+
+            {/* Informações do Cliente e Técnico */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 rounded-xl bg-zinc-900/30 border border-zinc-900 space-y-1.5">
+                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Cliente</p>
+                <h4 className="text-sm font-bold text-zinc-300">{viewedOrder.client?.name || '-'}</h4>
+                {viewedOrder.client?.phone && (
+                  <p className="text-xs text-zinc-500">{viewedOrder.client.phone}</p>
+                )}
+              </div>
+              <div className="p-4 rounded-xl bg-zinc-900/30 border border-zinc-900 space-y-1.5">
+                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Técnico</p>
+                <h4 className="text-sm font-bold text-zinc-300">{viewedOrder.technician?.name || 'Não atribuído'}</h4>
+                {viewedOrder.scheduledAt && (
+                  <p className="text-xs text-zinc-500">{formatDateTime(viewedOrder.scheduledAt)}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Tabela de Serviços */}
+            {viewedOrder.services && viewedOrder.services.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Serviços</p>
+                <div className="border border-zinc-900 rounded-xl overflow-hidden text-xs">
+                  <div className="grid grid-cols-4 bg-zinc-900/40 p-2.5 border-b border-zinc-900 font-black text-zinc-400 uppercase tracking-wider">
+                    <div className="col-span-2">Serviço</div>
+                    <div className="text-center">Qtd</div>
+                    <div className="text-right">Total</div>
+                  </div>
+                  {viewedOrder.services.map((s: any, idx: number) => (
+                    <div key={idx} className="grid grid-cols-4 p-2.5 border-b border-zinc-900/50 text-zinc-300">
+                      <div className="col-span-2 font-bold leading-tight self-center">
+                        {s.name}
+                      </div>
+                      <div className="text-center font-bold self-center">{s.quantity}</div>
+                      <div className="text-right font-black text-zinc-350 self-center">
+                        {formatCurrency(s.quantity * s.value)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
-          </tbody>
-        </table>
-      </div>
+
+            {/* Tabela de Materiais */}
+            {viewedOrder.materials && viewedOrder.materials.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Materiais</p>
+                <div className="border border-zinc-900 rounded-xl overflow-hidden text-xs">
+                  <div className="grid grid-cols-4 bg-zinc-900/40 p-2.5 border-b border-zinc-900 font-black text-zinc-400 uppercase tracking-wider">
+                    <div className="col-span-2">Material</div>
+                    <div className="text-center">Qtd</div>
+                    <div className="text-right">Total</div>
+                  </div>
+                  {viewedOrder.materials.map((m: any, idx: number) => (
+                    <div key={idx} className="grid grid-cols-4 p-2.5 border-b border-zinc-900/50 text-zinc-300">
+                      <div className="col-span-2 font-bold self-center">{m.description}</div>
+                      <div className="text-center font-bold self-center">{m.quantity}</div>
+                      <div className="text-right font-black text-zinc-350 self-center">
+                        {formatCurrency(m.quantity * (m.unitValue || m.value || 0))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Checklist */}
+            {viewedOrder.checklists && viewedOrder.checklists.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Checklist</p>
+                <div className="border border-zinc-900 rounded-xl overflow-hidden text-xs">
+                  {viewedOrder.checklists.map((c: any, idx: number) => (
+                    <div key={idx} className="flex items-center gap-3 p-2.5 border-b border-zinc-900/50">
+                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                        c.checked ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600'
+                      }`}>
+                        {c.checked && <CheckCircle2 className="w-3 h-3 text-white" />}
+                      </div>
+                      <span className={`text-sm ${c.checked ? 'text-zinc-500 line-through' : 'text-zinc-300'}`}>
+                        {c.item}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Fotos */}
+            {viewedOrder.photos && viewedOrder.photos.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Fotos</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {viewedOrder.photos.map((p: any, idx: number) => (
+                    <div key={idx} className="relative rounded-lg overflow-hidden border border-zinc-800 aspect-square">
+                      <img src={p.url} alt={`Foto ${p.type}`} className="w-full h-full object-cover" />
+                      <span className={`absolute top-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        p.type === 'antes' ? 'bg-amber-500/80 text-white' : 'bg-emerald-500/80 text-white'
+                      }`}>
+                        {p.type === 'antes' ? 'Antes' : 'Depois'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Totais */}
+            <div className="flex justify-end pt-2">
+              <div className="w-64 space-y-2 bg-zinc-900/20 p-4 border border-zinc-900 rounded-xl text-xs font-semibold text-zinc-400">
+                <div className="flex justify-between border-t border-zinc-900 pt-2 text-sm font-black text-zinc-200">
+                  <span>Valor Total:</span>
+                  <span className="text-emerald-400">{formatCurrency(viewedOrder.totalValue)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Assinatura se tiver */}
+            {viewedOrder.signature && (
+              <div className="pt-4 flex flex-col items-center justify-center space-y-2 border-t border-zinc-900">
+                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Assinatura Digital</p>
+                <div className="border border-zinc-800 rounded-xl p-2 bg-white w-64 h-32 flex items-center justify-center">
+                  <img src={viewedOrder.signature} alt="Assinatura" className="max-w-full max-h-full" />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

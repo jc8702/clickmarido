@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { FinancialTransaction, getFinancialTransactions, createTransaction, deleteTransaction, updateTransaction } from '@/lib/api-financial';
 import { format } from 'date-fns';
-import { Plus, Trash, CheckCircle } from 'lucide-react';
+import { DollarSign, Plus, Trash, CheckCircle } from 'lucide-react';
 
 const COMPANY_ID = "6fb48ab0-08ab-49bd-9eab-57dd4f923ff1"; // MOCK for MVP
 
@@ -67,7 +67,12 @@ export default function FinancialTransactionsPage() {
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Extrato & Lançamentos</h2>
+        <h2 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+          <div className="p-2 rounded-2xl bg-emerald-500/10 text-emerald-500">
+            <DollarSign className="w-7 h-7" />
+          </div>
+          Extrato & Lançamentos
+        </h2>
         <button onClick={() => setIsModalOpen(true)} className="bg-primary text-primary-foreground px-4 py-2 rounded flex items-center gap-2">
           <Plus className="w-4 h-4" /> Novo Lançamento
         </button>

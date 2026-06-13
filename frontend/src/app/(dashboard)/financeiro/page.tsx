@@ -42,7 +42,12 @@ export default function FinanceiroDashboardPage() {
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Painel Financeiro</h2>
+        <h2 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+          <div className="p-2 rounded-2xl bg-emerald-500/10 text-emerald-500">
+            <DollarSign className="w-7 h-7" />
+          </div>
+          Painel Financeiro
+        </h2>
         <Link href="/financeiro/transacoes" className="bg-primary text-primary-foreground px-4 py-2 rounded font-medium text-sm">
           Acessar Extrato Detalhado
         </Link>

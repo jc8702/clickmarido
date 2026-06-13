@@ -89,7 +89,12 @@ export default function GarantiasPage() {
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Garantias</h2>
+          <h2 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+            <div className="p-2 rounded-2xl bg-emerald-500/10 text-emerald-500">
+              <Shield className="w-7 h-7" />
+            </div>
+            Garantias
+          </h2>
           <p className="text-muted-foreground">Monitoramento de garantias de serviços prestados (30, 60 e 90 dias).</p>
         </div>
         <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-md hover:bg-emerald-600 font-medium">

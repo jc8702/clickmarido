@@ -369,7 +369,7 @@ export default function OrcamentosPage() {
 
   // Impressão Física / PDF
   const handlePrint = () => {
-    window.print();
+    requestAnimationFrame(() => window.print());
   };
 
   // Canvas da Assinatura Digital Local

@@ -18,11 +18,36 @@ export interface ServiceOrder {
   materials?: any[];
   photos?: any[];
   checklists?: any[];
+  createdAt: string;
+  updatedAt: string;
 }
 
-export const getServiceOrders = async (companyId: string) => {
-  const res: any = await ApiClient.get(`/service-orders?companyId=${companyId}`);
-  return res as ServiceOrder[];
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface GetServiceOrdersParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+}
+
+export const getServiceOrders = async (params?: GetServiceOrdersParams) => {
+  const queryParams: Record<string, string> = {};
+  if (params?.page) queryParams.page = String(params.page);
+  if (params?.limit) queryParams.limit = String(params.limit);
+  if (params?.search) queryParams.search = params.search;
+  if (params?.status) queryParams.status = params.status;
+
+  const queryString = new URLSearchParams(queryParams).toString();
+  const endpoint = `/service-orders${queryString ? `?${queryString}` : ''}`;
+  const res: any = await ApiClient.get(endpoint);
+  return res as PaginatedResponse<ServiceOrder>;
 };
 
 export const getServiceOrder = async (id: string) => {

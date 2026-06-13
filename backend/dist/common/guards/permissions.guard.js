@@ -55,7 +55,8 @@ let PermissionsGuard = class PermissionsGuard {
                 userPermissions.add(permission.action);
             }
         }
-        const hasPermission = requiredPermissions.every((perm) => userPermissions.has(perm) || userPermissions.has('*'));
+        const hasPermission = userPermissions.has('*') ||
+            requiredPermissions.some((perm) => userPermissions.has(perm));
         if (!hasPermission) {
             throw new common_1.ForbiddenException('Permissões insuficientes para esta ação');
         }

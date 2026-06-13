@@ -1,13 +1,19 @@
 # RESUMO DE PROJETO: Click Marido ERP + CRM
 
 ## Informações Gerais
-- **Status Atual:** ✅ Deploy em produção atualizado; Correção de 401 e Persistência de Dados Concluída com Sucesso.
+- **Status Atual:** ✅ Deploy em produção atualizado; Permissões Corrigidas e Deploy Geral Concluído com Sucesso.
 - **Objetivo Central:** Plataforma ERP + CRM SaaS multiempresa para gerenciamento de clientes, serviços, orçamentos, auditoria e permissões.
-- **Última Atualização:** 2026-06-13 01:40
+- **Última Atualização:** 2026-06-13 02:05
 
 ---
 
 ## Histórico de Alterações
+
+- **[13/06/2026 - 02:05]:** Correção do Guard de Permissões e Deploy Geral (Antigravity)
+  - **PermissionsGuard:** Ajustada a verificação das permissões exigidas no decorator `RequirePermissions` de `every` (AND) para `some` (OR), permitindo que usuários com papéis específicos (como Gestor) acessem rotas protegidas se tiverem ao menos uma permissão válida, ou se tiverem a permissão de administrador global `*`. Isso solucionou o erro HTTP 403 Forbidden nas rotas de Clientes, Serviços e Técnicos.
+  - **Deploy:** Commit e push realizados para o GitHub, acionando o deploy automático e a sincronização do frontend (Vercel) e do backend (Render).
+  - **Validação:** Realizados testes na produção com a conta de demonstração de Gestor, efetuando o cadastro de novos clientes com campos opcionais em branco com sucesso (convertidos em null) e navegando pelas telas sem erros.
+  - Arquivos modificados: `backend/src/common/guards/permissions.guard.ts`
 
 - **[13/06/2026 - 01:40]:** Correção de Bug de API (401) e Pipe de Higienização de Strings Vazias (Andru.ia)
   - **Remoção de APP_GUARD Global:** Resolvida a falha HTTP 401 Unauthorized para Clientes e Serviços em produção através da remoção do `PermissionsGuard` global no NestJS. Agora a autenticação e autorização ocorrem localmente no nível do controller.
