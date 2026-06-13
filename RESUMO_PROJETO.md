@@ -9,7 +9,14 @@
 
 ## HistÃ³rico de AlteraÃ§Ãµes
 
-- **[13/06/2026 - 11:00]:** DefiniÃ§Ã£o de Design System e Paleta CromÃ¡tica (Antigravity)
+- **[13/06/2026 - 15:00]:** ExecuÃ§Ã£o e RefatoraÃ§Ã£o Completa UX/UI (WCAG, Componentes, Dashboard) (Antigravity)
+  - Refatorados os estados dos componentes `Button` e `Input` (Hover, Focus, Active).
+  - Adicionadas propriedades de acessibilidade WCAG AA (ex: `aria-invalid`) em inputs para screen-readers.
+  - Corrigido o foreground de `success` e `warning` no `globals.css` para atingir a taxa de contraste exigida de 4.5:1.
+  - Criados os componentes analÃ­ticos `KpiCard` e grÃ¡ficos reativos `DashboardLineChart` e `DashboardBarChart` (via `recharts`).
+  - O painel executivo principal foi inteiramente reconstruÃ­do para usar os novos grÃ¡ficos interativos no lugar de mocks.
+  - Criada a nova paleta de design tokens consolidadas no arquivo `src/lib/colors.ts`.
+  - DocumentaÃ§Ãµes `AUDIT_DESIGN.md` e `VISUAL_GUIDE.md` atualizadas marcando 100% dos dÃ©bitos visuais como concluÃ­dos.- **[13/06/2026 - 11:00]:** DefiniÃ§Ã£o de Design System e Paleta CromÃ¡tica (Antigravity)
   - Elaborada a Paleta Master com 6 cores dinÃ¢micas (Verde, Roxo, Laranja, Vermelho, Amarelo, Azul) e Neutros.
   - Calculada escala de 50 a 900 com contrastes otimizados para modos Light e Dark.
   - Validado o WCAG AA/AAA das combinaÃ§Ãµes de fundo e texto para acessibilidade.
@@ -217,13 +224,13 @@
   - AplicaÃ§Ã£o das diretrizes "Elite" de UI: InserÃ§Ã£o do utilitÃ¡rio `@utility glass-card` e `.glass-panel` diretamente nos componentes Core (ex: `DialogContent`, `DropdownMenuContent`, `SheetContent`) para garantir glassmorphism consistente e sofisticado.
   - O design system jÃ¡ contempla `ThemeProvider` para suporte adequado de dark mode baseado no sistema.
   - Arquivos modificados: `app/layout.tsx`, `components/layout/dashboard-layout.tsx`, `app/(dashboard)/*`, `app/(auth)/*`, `ui/dialog.tsx`, `ui/dropdown-menu.tsx`, `ui/sheet.tsx`.
--   * * [ ] * * :   F a s e   0 3   F i n a l i z a d a .   A t u a l i z a ç ã o   d a   U I   c o m p o n e n t   l i b r a r y   ( B u t t o n ,   I n p u t ,   C a r d ,   D i a l o g ,   T a b l e ,   B a d g e )   c o m   T a i l w i n d   V a r i a b l e s .   A c e s s i b i l i d a d e   m e l h o r a d a . 
+-   * * [ ] * * :   F a s e   0 3   F i n a l i z a d a .   A t u a l i z a ï¿½ ï¿½ o   d a   U I   c o m p o n e n t   l i b r a r y   ( B u t t o n ,   I n p u t ,   C a r d ,   D i a l o g ,   T a b l e ,   B a d g e )   c o m   T a i l w i n d   V a r i a b l e s .   A c e s s i b i l i d a d e   m e l h o r a d a . 
      -   A r q u i v o s   m o d i f i c a d o s :   g l o b a l s . c s s ,   b u t t o n . t s x ,   i n p u t . t s x ,   c a r d . t s x ,   d i a l o g . t s x ,   t a b l e . t s x ,   b a d g e . t s x  
- - **[13/06/2026 - 11:05]**: Fase 03 Finalizada. Atualização da UI component library (Button, Input, Card, Dialog, Table, Badge) com Tailwind Variables. Acessibilidade melhorada.
+ - **[13/06/2026 - 11:05]**: Fase 03 Finalizada. Atualizaï¿½ï¿½o da UI component library (Button, Input, Card, Dialog, Table, Badge) com Tailwind Variables. Acessibilidade melhorada.
   - Arquivos modificados: globals.css, button.tsx, input.tsx, card.tsx, dialog.tsx, table.tsx, badge.tsx
 
-- **[13/06/2026 - 11:12]**: Fase 04 Finalizada. Testes de usabilidade e acessibilidade (WCAG AA) realizados simulando fluxo real. Relatório de 30 problemas categorizados gerado com recomendações para as próximas Sprints.
+- **[13/06/2026 - 11:12]**: Fase 04 Finalizada. Testes de usabilidade e acessibilidade (WCAG AA) realizados simulando fluxo real. Relatï¿½rio de 30 problemas categorizados gerado com recomendaï¿½ï¿½es para as prï¿½ximas Sprints.
 
-- **[13/06/2026 - 11:30]**: Fase 05 Finalizada. Wireframes do Dashboard principal gerados e documentados. Código base React para componentes gráficos (LineChart, BarChart, Heatmap) construídos utilizando Recharts. Layout Mobile-first com reflow validado.
+- **[13/06/2026 - 11:30]**: Fase 05 Finalizada. Wireframes do Dashboard principal gerados e documentados. Cï¿½digo base React para componentes grï¿½ficos (LineChart, BarChart, Heatmap) construï¿½dos utilizando Recharts. Layout Mobile-first com reflow validado.
 
-- **[13/06/2026 - 11:33]**: Fase 06 Finalizada. Integração completa dos componentes e validação visual de layout. Testes responsivos efetuados e Guia de Manutenção (Visual Guide) redigido com checklist de componentes e cores. Ciclo de Auditoria Visual e Design System concluído.
+- **[13/06/2026 - 11:33]**: Fase 06 Finalizada. Integraï¿½ï¿½o completa dos componentes e validaï¿½ï¿½o visual de layout. Testes responsivos efetuados e Guia de Manutenï¿½ï¿½o (Visual Guide) redigido com checklist de componentes e cores. Ciclo de Auditoria Visual e Design System concluï¿½do.

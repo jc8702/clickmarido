@@ -42,7 +42,8 @@ Este documento detalha a auditoria visual do sistema, identificando pontos de me
 ### Fase 3: Polimento e UX ✅ Concluído
 - [x] **Smooth Scrolling:** `scroll-behavior: smooth` no `html` + scrollbar dinâmico com cor primária no hover.
 - [x] **Micro-animação de Sucesso:** `@utility animate-success` com `successPulse` keyframe para confirmações.
-- [ ] **Ações de Bulk:** Seleção múltipla em tabelas (backlog — depende de definição de produto).
+- [x] **Acessibilidade WCAG AA:** Contrastes revisados, `aria-describedby` configurado nos Inputs, Skeletons legíveis e ring offsets atualizados.
+- [x] **Dashboard de Alto Impacto:** Substituição dos mocks estáticos por componentes reativos `KpiCard` (com tendências e ícones) e Gráficos utilizando `recharts` (`DashboardLineChart`, `DashboardBarChart`).
 
 ---
 

@@ -23,12 +23,17 @@ Temos uma biblioteca baseada no Radix-UI (shadcn-like), já adaptada para nosso 
 | Componente | Uso | Arquivo |
 |------------|-----|---------|
 | **Button** | Botões de ação (`variant="primary|danger|ghost|outline"`) | `button.tsx` |
-| **Input** | Campos de texto com validação visual (`error`, `success`) | `input.tsx` |
+| **Input** | Campos de texto com validação visual (`error`, `success`) e ARIA | `input.tsx` |
 | **Card** | Contêineres de conteúdo, KPIs, formulários | `card.tsx` |
 | **Badge** | Tags de status com cores semânticas (`variant="success|warning|danger"`) | `badge.tsx` |
 | **Dialog** | Modais interativos com overlay (`backdrop-blur`) | `dialog.tsx` |
 | **Select** | Dropdowns de seleção customizados | `select.tsx` |
 | **Spinner**| Indicador de carregamento genérico | `spinner.tsx` |
+| **KpiCard**| Cartão customizado para exibição de métricas com trend | `dashboard/kpi-card.tsx` |
+| **Charts** | Gráficos (Line, Bar) usando `recharts` | `dashboard/charts.tsx` |
+
+> [!NOTE]
+> Todos os Design Tokens da escala cromática (50 a 900) estão disponíveis e consolidados em `src/lib/colors.ts`. Utilize-os para construção de gradientes mais finos em componentes customizados.
 
 ### Acessibilidade (A11y)
 Todos os componentes interativos possuem `focus-visible:ring-2 focus-visible:ring-primary`, garantindo conformidade com a WCAG para navegação via teclado (`Tab`).

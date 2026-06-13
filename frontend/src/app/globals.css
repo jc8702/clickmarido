@@ -62,10 +62,10 @@
   --brand-secondary: #3b82f6;
 
   --success: #22c55e;
-  --success-foreground: #ffffff;
+  --success-foreground: #022c22; /* Dark Green para bom contraste */
 
   --warning: #f97316; /* Laranja 500 */
-  --warning-foreground: #ffffff;
+  --warning-foreground: #431407; /* Dark Orange para contraste */
 
   --info: #3b82f6;
   --info-foreground: #ffffff;
@@ -77,7 +77,7 @@
   --input: #e4e4e7;
   --ring: #8b5cf6;
 
-  --radius: 0.75rem; /* Atualizado para 2xl gradual */
+  --radius: 0.75rem;
 }
 
 .dark {

@@ -21,9 +21,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             : success 
               ? "border-success focus-visible:ring-success focus-visible:border-success"
               : "border-border focus-visible:ring-primary/50 focus-visible:border-primary",
-          className
         )}
         ref={ref}
+        aria-invalid={error ? "true" : undefined}
         {...props}
       />
     )

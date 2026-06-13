@@ -21,6 +21,8 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/layout/page-header';
+import { KpiCard } from '@/components/dashboard/kpi-card';
+import { DashboardLineChart, DashboardBarChart } from '@/components/dashboard/charts';
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('pt-BR', {
@@ -71,32 +73,45 @@ export default function DashboardPage() {
           ))
         ) : (
           <>
-            {[
-              { label: 'Total de Leads', value: stats.totalLeads, sub: 'CRM Pipeline', icon: Users, color: 'text-purple-500 dark:text-purple-400', bg: 'bg-purple-500/10' },
-              { label: 'Orçamentos Emitidos', value: stats.totalQuotes, sub: 'Propostas comerciais', icon: FileText, color: 'text-blue-500 dark:text-blue-400', bg: 'bg-blue-500/10' },
-              { label: 'Taxa de Conversão', value: `${stats.conversionRate}%`, sub: 'Sucesso de vendas', icon: Percent, color: 'text-pink-500 dark:text-pink-400', bg: 'bg-pink-500/10' },
-              { label: 'Serviços Concluídos', value: stats.completedOrders, sub: 'Ordens finalizadas', icon: CheckCircle2, color: 'text-indigo-500 dark:text-indigo-400', bg: 'bg-indigo-500/10' },
-              { label: 'Receita Total', value: formatCurrency(stats.totalRevenue), sub: 'Faturamento Bruto', icon: DollarSign, color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-500/10' },
-              { label: 'Lucro Líquido', value: formatCurrency(stats.totalProfit), sub: 'Receita - Despesa', icon: TrendingUp, color: 'text-emerald-600 dark:text-emerald-500', bg: 'bg-emerald-500/10' },
-              { label: 'Técnicos Ativos', value: stats.activeTechs, sub: 'Capacidade operacional', icon: Wrench, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500/10' },
-              { label: 'Garantias Vigentes', value: stats.activeWarranties, sub: 'Monitoramento Pós-venda', icon: ShieldCheck, color: 'text-sky-600 dark:text-sky-400', bg: 'bg-sky-500/10' },
-            ].map((kpi, idx) => (
-              <Card key={idx} className="group glass-card glow-hover border-border/50 overflow-hidden relative">
-                <div className={cn("absolute top-0 right-0 w-24 h-24 blur-[40px] opacity-20 transition-opacity group-hover:opacity-40", kpi.bg)} />
-                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                  <CardTitle className="text-xs font-bold tracking-widest uppercase text-muted-foreground">{kpi.label}</CardTitle>
-                  <div className={cn("p-2 rounded-lg", kpi.bg)}>
-                    <kpi.icon className={cn("h-4 w-4", kpi.color)} />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-extrabold text-foreground tracking-tight">{kpi.value}</div>
-                  <p className="text-xs text-muted-foreground mt-2 font-medium">{kpi.sub}</p>
-                </CardContent>
-              </Card>
-            ))}
+            <KpiCard title="Total de Leads" value={stats.totalLeads} description="CRM Pipeline" icon={<Users className="w-5 h-5" />} trend={12} className="border-border/50 shadow-sm" />
+            <KpiCard title="Orçamentos Emitidos" value={stats.totalQuotes} description="Propostas comerciais" icon={<FileText className="w-5 h-5" />} trend={5} className="border-border/50 shadow-sm" />
+            <KpiCard title="Taxa de Conversão" value={`${stats.conversionRate}%`} description="Sucesso de vendas" icon={<Percent className="w-5 h-5" />} trend={-2} className="border-border/50 shadow-sm" />
+            <KpiCard title="Serviços Concluídos" value={stats.completedOrders} description="Ordens finalizadas" icon={<CheckCircle2 className="w-5 h-5" />} trend={8} className="border-border/50 shadow-sm" />
+            <KpiCard title="Receita Total" value={formatCurrency(stats.totalRevenue)} description="Faturamento Bruto" icon={<DollarSign className="w-5 h-5" />} trend={15} className="border-border/50 shadow-sm" />
+            <KpiCard title="Lucro Líquido" value={formatCurrency(stats.totalProfit)} description="Receita - Despesa" icon={<TrendingUp className="w-5 h-5" />} trend={18} className="border-border/50 shadow-sm" />
+            <KpiCard title="Técnicos Ativos" value={stats.activeTechs} description="Capacidade operacional" icon={<Wrench className="w-5 h-5" />} className="border-border/50 shadow-sm" />
+            <KpiCard title="Garantias Vigentes" value={stats.activeWarranties} description="Monitoramento Pós-venda" icon={<ShieldCheck className="w-5 h-5" />} className="border-border/50 shadow-sm" />
           </>
         )}
+      </div>
+
+      {/* Gráficos Recharts */}
+      <div className="grid gap-6 lg:grid-cols-2 mt-8 animate-in-slide" style={{ animationDelay: '0.15s' }}>
+        <DashboardLineChart 
+          title="Receita Mensal (Estimada)" 
+          data={[
+            { name: 'Jan', receita: 12000 },
+            { name: 'Fev', receita: 15000 },
+            { name: 'Mar', receita: 14000 },
+            { name: 'Abr', receita: 18000 },
+            { name: 'Mai', receita: 22000 },
+            { name: 'Jun', receita: 25000 },
+          ]} 
+          dataKey="receita" 
+          color="var(--primary)" 
+        />
+        <DashboardBarChart 
+          title="Top Serviços Realizados" 
+          data={[
+            { name: 'Elétrica', total: 45 },
+            { name: 'Hidráulica', total: 30 },
+            { name: 'Pintura', total: 20 },
+            { name: 'Montagem', total: 15 },
+            { name: 'Geral', total: 10 },
+          ]} 
+          dataKey="total" 
+          color="var(--accent)" 
+        />
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 mt-8 animate-in-slide" style={{ animationDelay: '0.2s' }}>
