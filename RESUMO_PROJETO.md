@@ -9,9 +9,10 @@
 
 ## Histórico de Alterações
 
-- **[12/06/2026 - 21:35]:** Auditoria Visual de Bordas e Tecla ESC nos Modais (Andru.ia)
+- **[12/06/2026 - 22:10]:** Auditoria de Bordas, Tecla ESC e Deploy em Produção (Andru.ia)
   - **Bordas Escuras:** Sobrescritas as bordas do `react-big-calendar` em `globals.css` e atualizados os contêineres e tabelas de Pós-Venda, Garantias e Conversas para usar classes semânticas `glass-card border-border/50` eliminando contornos claros.
   - **Tecla ESC:** Implementado `useEffect` de escuta global da tecla `Escape` para fechar modais de agendamento, cadastro de garantias, cadastro de empresas, cadastro de clientes e drawer de histórico de clientes.
+  - **Deploy:** Commit e push realizados para a branch `main` no GitHub (`commit f989420`), disparando a esteira automática da Vercel. A build foi validada com sucesso via navegador na URL de produção `https://clickmarido.vercel.app`.
   - Arquivos modificados: `frontend/src/app/globals.css`, `frontend/src/components/appointments/calendar-view.tsx`, `frontend/src/components/agenda/appointment-modal.tsx`, `frontend/src/app/(dashboard)/pos-venda/page.tsx`, `frontend/src/app/(dashboard)/garantias/page.tsx`, `frontend/src/app/(dashboard)/conversas/page.tsx`, `frontend/src/app/(dashboard)/empresas/page.tsx`, `frontend/src/app/(dashboard)/clientes/page.tsx`.
 
 - **[12/06/2026 - 19:45]:** Deploy Geral em Produção (GitHub, Vercel, Render e Supabase)
