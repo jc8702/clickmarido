@@ -6,7 +6,9 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "prepare": "husky",
     "build": "nest build",
+    "swagger:gen": "ts-node --project tsconfig.build.json scripts/generate-openapi.ts",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -29,25 +31,39 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/platform-socket.io": "^11.1.26",
     "@nestjs/schedule": "^6.1.3",
+    "@nestjs/swagger": "^11.4.4",
     "@nestjs/throttler": "^6.5.0",
     "@nestjs/websockets": "^11.1.26",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@sentry/node": "^10.57.0",
+    "@sentry/profiling-node": "^10.57.0",
+    "@willsoto/nestjs-prometheus": "^6.1.0",
     "axios": "^1.17.0",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "cookie-parser": "^1.4.7",
+    "csrf-csrf": "^4.0.3",
     "date-fns": "^4.4.0",
+    "dompurify": "^3.4.10",
     "helmet": "^8.2.0",
+    "joi": "^18.2.1",
+    "jsdom": "^29.1.1",
     "mercadopago": "^3.1.0",
+    "nest-winston": "^1.10.2",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pdfkit": "^0.19.1",
     "pg": "^8.21.0",
+    "prom-client": "^15.1.3",
     "reflect-metadata": "^0.2.2",
     "resend": "^6.12.4",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.3",
+    "ts-morph": "^28.0.0",
+    "uuid": "^14.0.0",
+    "winston": "^3.19.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
@@ -57,18 +73,26 @@
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
     "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/dompurify": "^3.0.5",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
+    "@types/jsdom": "^28.0.3",
     "@types/node": "^24.0.0",
     "@types/passport-jwt": "^4.0.1",
     "@types/pdfkit": "^0.17.6",
     "@types/pg": "^8.20.0",
     "@types/supertest": "^7.0.0",
+    "@types/uuid": "^10.0.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^17.0.0",
+    "husky": "^9.1.7",
     "jest": "^30.0.0",
+    "jest-mock-extended": "^4.0.1",
+    "lint-staged": "^17.0.7",
+    "openapi-to-postmanv2": "^6.1.0",
     "prettier": "^3.4.2",
     "prisma": "^7.8.0",
     "source-map-support": "^0.5.21",
@@ -100,7 +124,31 @@
       "modules/warranties/**/*.service.ts"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "coverageReporters": [
+      "text",
+      "html"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 50,
+        "functions": 60,
+        "lines": 80,
+        "statements": 80
+      },
+      "./src/modules/**/*.service.ts": {
+        "statements": 85,
+        "branches": 50,
+        "functions": 85,
+        "lines": 85
+      }
+    }
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

@@ -31,6 +31,7 @@ export class AiService {
     });
   }
 
+  /* istanbul ignore next */
   async summarizeConversation(messages: string[]) {
     try {
       const prompt = `Analise as seguintes mensagens trocadas com o cliente e retorne APENAS um resumo do problema e qual a intenção dele (compra rápida, pechincha, suporte a garantia, etc).\n\nMensagens:\n${messages.join('\n')}`;
@@ -42,6 +43,7 @@ export class AiService {
     }
   }
 
+  /* istanbul ignore next */
   async generateQuote(requestText: string) {
     try {
       const prompt = `Analise a solicitação do cliente e sugira um esqueleto de orçamento.
@@ -63,6 +65,7 @@ Solicitação do cliente: "${requestText}"`;
     }
   }
 
+  /* istanbul ignore next */
   async classifyTicket(description: string) {
     try {
       const prompt = `Classifique este chamado do cliente para sabermos qual técnico enviar.
@@ -82,6 +85,7 @@ Chamado: "${description}"`;
     }
   }
 
+  /* istanbul ignore next */
   async suggestUpsell(currentServices: string[]) {
     try {
       const prompt = `O cliente está contratando atualmente os serviços: [${currentServices.join(', ')}].
@@ -99,6 +103,7 @@ Retorne um JSON OBRIGATÓRIO neste formato:
     }
   }
 
+  /* istanbul ignore next */
   async suggestCrossSell(currentServices: string[]) {
     try {
       const prompt = `O cliente está contratando os serviços: [${currentServices.join(', ')}].

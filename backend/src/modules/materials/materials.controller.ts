@@ -20,14 +20,21 @@ import { JwtAuthGuard } from '../../core/auth/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
 import { CompanyContext } from '../../common/company/company.context';
+import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiBearerAuth } from "@nestjs/swagger";
 
 @Controller('materials')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
+@ApiTags('Materials')
+@ApiBearerAuth('JWT-auth')
 export class MaterialsController {
   constructor(private readonly materialsService: MaterialsService) {}
 
   @Post()
   @RequirePermissions('*', 'material:create')
+    @ApiOperation({ summary: 'Criar Materials' })
+    @ApiCreatedResponse({ description: 'Materials criado com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   create(@Body() createMaterialDto: CreateMaterialDto) {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) {
@@ -38,6 +45,10 @@ export class MaterialsController {
 
   @Get()
   @RequirePermissions('*', 'material:read')
+    @ApiOperation({ summary: 'Listar todos Materials' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   findAll(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -58,6 +69,10 @@ export class MaterialsController {
 
   @Get(':id')
   @RequirePermissions('*', 'material:read')
+    @ApiOperation({ summary: 'Buscar um Materials' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   findOne(@Param('id') id: string) {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) {
@@ -68,6 +83,10 @@ export class MaterialsController {
 
   @Get(':id/movements')
   @RequirePermissions('*', 'material:read')
+    @ApiOperation({ summary: 'Operation findMovements' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   findMovements(
     @Param('id') id: string,
     @Query('page') page?: string,
@@ -84,6 +103,10 @@ export class MaterialsController {
 
   @Post(':id/movements')
   @RequirePermissions('*', 'material:movement')
+    @ApiOperation({ summary: 'Operation createMovement' })
+    @ApiCreatedResponse({ description: 'Materials criado com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   createMovement(
     @Param('id') id: string,
     @Body() dto: CreateMaterialMovementDto,
@@ -98,6 +121,10 @@ export class MaterialsController {
 
   @Put(':id')
   @RequirePermissions('*', 'material:update')
+    @ApiOperation({ summary: 'Atualizar Materials' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   update(@Param('id') id: string, @Body() updateMaterialDto: UpdateMaterialDto) {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) {
@@ -109,6 +136,10 @@ export class MaterialsController {
   @Delete(':id')
   @RequirePermissions('*', 'material:delete')
   @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Remover Materials' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   remove(@Param('id') id: string) {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) {

@@ -1,17 +1,9 @@
-import { IsString, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsNotEmpty } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class SendMessageDto {
   @IsString()
-  conversationId: string;
-
-  @IsString()
-  content: string;
-
-  @IsString()
-  @IsOptional()
-  mediaUrl?: string;
-
-  @IsString()
-  @IsOptional()
-  mediaMimeType?: string;
+  @IsNotEmpty()
+    @ApiProperty({ description: 'Campo text', example: 'exemplo' })
+  text: string;
 }

@@ -19,14 +19,21 @@ import { JwtAuthGuard } from '../../core/auth/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
 import { CompanyContext } from '../../common/company/company.context';
+import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiBearerAuth } from "@nestjs/swagger";
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
+@ApiTags('Users')
+@ApiBearerAuth('JWT-auth')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @RequirePermissions('*', 'user:create')
+    @ApiOperation({ summary: 'Criar Users' })
+    @ApiCreatedResponse({ description: 'Users criado com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   create(@Body() createUserDto: CreateUserDto) {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) {
@@ -37,6 +44,10 @@ export class UsersController {
 
   @Get()
   @RequirePermissions('*', 'user:read')
+    @ApiOperation({ summary: 'Listar todos Users' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   findAll(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -57,6 +68,10 @@ export class UsersController {
 
   @Get('roles')
   @RequirePermissions('*', 'user:read')
+    @ApiOperation({ summary: 'Operation getRoles' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   getRoles() {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) {
@@ -67,6 +82,10 @@ export class UsersController {
 
   @Get(':id')
   @RequirePermissions('*', 'user:read')
+    @ApiOperation({ summary: 'Buscar um Users' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   findOne(@Param('id') id: string) {
     const companyId = CompanyContext.getCompanyId();
     return this.usersService.findOne(id, companyId);
@@ -74,6 +93,10 @@ export class UsersController {
 
   @Put(':id')
   @RequirePermissions('*', 'user:update')
+    @ApiOperation({ summary: 'Atualizar Users' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     const companyId = CompanyContext.getCompanyId();
     return this.usersService.update(id, updateUserDto, companyId);
@@ -82,6 +105,10 @@ export class UsersController {
   @Delete(':id')
   @RequirePermissions('*', 'user:delete')
   @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Remover Users' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   remove(@Param('id') id: string) {
     const companyId = CompanyContext.getCompanyId();
     return this.usersService.remove(id, companyId);

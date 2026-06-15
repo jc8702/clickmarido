@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FinancialTransaction, getFinancialTransactions, createTransaction, deleteTransaction, updateTransaction } from '@/lib/api-financial';
+import { FinancialTransaction, getFinancialTransactions, createTransaction, deleteTransaction, updateTransaction } from '@/lib/api/modules/financial';
 import { format } from 'date-fns';
 import { DollarSign, Plus, Trash, CheckCircle } from 'lucide-react';
 

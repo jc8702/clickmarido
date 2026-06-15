@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState, useRef, use } from "react";
-import { ApiClient } from "@/lib/api-client";
+import { ApiClient } from "@/lib/api/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle2, Eraser, PenTool, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 export default function PublicQuotePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -159,7 +160,9 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
         {/* CABEÇALHO DA EMPRESA */}
         <div className="text-center space-y-2">
           {quote.company?.logoUrl && (
-            <img src={quote.company.logoUrl} alt={quote.company.name} className="h-16 mx-auto object-contain" />
+            <div className="relative h-16 w-full">
+              <Image src={quote.company.logoUrl} alt={quote.company.name} fill className="object-contain" unoptimized />
+            </div>
           )}
           <h1 className="text-2xl font-bold">{quote.company?.name || "Prestador de Serviços"}</h1>
           <p className="text-muted-foreground text-sm">

@@ -1,43 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import useSWR from 'swr';
 import { Building, Plus, Phone, Mail, MapPin, Trash2, Search, ArrowLeft, Edit, CheckCircle2, XCircle, ShieldAlert } from 'lucide-react';
-import { ApiClient } from '@/lib/api-client';
+import { ApiClient } from '@/lib/api/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
-
-interface Company {
-  id: string;
-  name: string;
-  slug: string;
-  cnpj?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  active: boolean;
-  createdAt: string;
-}
+import { useDebounce } from '@/hooks/use-debounce';
+import { DataTable } from '@/components/ui/data-table';
+import { DataTablePagination } from '@/components/ui/data-table-pagination';
+import { SkeletonTable } from '@/components/ui/skeleton-table';
+import { FilterPanel } from '@/components/ui/filter-panel';
+import { getCompanyColumns, Company } from './columns';
 
 export default function EmpresasPage() {
   const { user } = useAuth();
   
-  // Estados de dados
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
   
   // Estados de busca e filtros
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [stateFilter, setStateFilter] = useState('');
-  const [loading, setLoading] = useState(true);
 
   // Estados de formulário/modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,57 +44,34 @@ export default function EmpresasPage() {
   const [formError, setFormError] = useState('');
   const [formLoading, setFormLoading] = useState(false);
 
-  // Carrega as empresas da API
-  const fetchCompanies = async () => {
-    if (!user || !user.roles.includes('Administrador')) return;
-    
-    setLoading(true);
-    try {
-      const activeParam = activeFilter === 'active' ? 'true' : activeFilter === 'inactive' ? 'false' : '';
-      const data = await ApiClient.get<{
-        success: boolean;
-        data: {
-          items: Company[];
-          total: number;
-          page: number;
-          limit: number;
-          totalPages: number;
-        };
-      }>('/companies', {
+  const debouncedSearch = useDebounce(search, 300);
+
+  const swrKey = useMemo(() => {
+    return ['/companies', page, limit, debouncedSearch, activeFilter, stateFilter, user];
+  }, [page, limit, debouncedSearch, activeFilter, stateFilter, user]);
+
+  const { data: swrData, isLoading, mutate: fetchCompanies } = useSWR(
+    swrKey,
+    ([url, p, l, s, a, st]: any) => {
+      if (!user || !user.roles.includes('Administrador')) return null;
+      const activeParam = a === 'active' ? 'true' : a === 'inactive' ? 'false' : '';
+      return ApiClient.get<any>(url, {
         params: {
-          page: String(page),
-          limit: String(limit),
-          search,
+          page: String(p),
+          limit: String(l),
+          search: s,
           active: activeParam,
-          state: stateFilter,
+          state: st,
         },
       });
+    },
+    { keepPreviousData: true, dedupingInterval: 300000 }
+  );
 
-      if (data.success) {
-        setCompanies(data.data.items);
-        setTotal(data.data.total);
-        setTotalPages(data.data.totalPages);
-      }
-    } catch (e: any) {
-      console.error('Erro ao buscar empresas:', e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCompanies();
-  }, [page, activeFilter, stateFilter, user]);
-
-  // Handler de Busca com debouncing leve na ação de digitação
-  useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      setPage(1);
-      fetchCompanies();
-    }, 400);
-
-    return () => clearTimeout(delayDebounce);
-  }, [search]);
+  const companies = swrData?.data?.items || [];
+  const total = swrData?.data?.total || 0;
+  const totalPages = swrData?.data?.totalPages || 1;
+  const loading = isLoading;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -246,6 +211,11 @@ export default function EmpresasPage() {
     }
   };
 
+  const columns = useMemo(() => getCompanyColumns({
+    onOpenEdit: handleOpenEditModal,
+    onDelete: handleDelete,
+  }), []);
+
   return (
     <div className="p-8 lg:p-12 max-w-6xl mx-auto space-y-10 animate-in-fade">
       {/* Header Section */}
@@ -278,167 +248,37 @@ export default function EmpresasPage() {
       </div>
 
       {/* Filtros e Busca */}
-      <div className="grid gap-4 md:grid-cols-4 items-center bg-input/10 p-4 rounded-2xl border border-border backdrop-blur-sm">
-        <div className="relative md:col-span-2">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-11 pl-10 pr-4 rounded-xl bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
-            placeholder="Nome ou CNPJ..."
+      <FilterPanel
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Buscar por razão social, nome fantasia, CNPJ..."
+      />
+
+      {/* Lista de Empresas */}
+      <div className="space-y-4">
+        {loading ? (
+          <SkeletonTable columns={4} rows={10} />
+        ) : (
+          <DataTable
+            columns={columns}
+            data={companies}
+            isLoading={loading}
+            virtualized={companies.length > 50}
           />
-        </div>
+        )}
         
-        <div>
-          <select
-            value={activeFilter}
-            onChange={(e) => {
-              setActiveFilter(e.target.value);
-              setPage(1);
-            }}
-            className="w-full h-11 px-4 rounded-xl bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all cursor-pointer"
-          >
-            <option value="all">Todos os Status</option>
-            <option value="active">Ativas</option>
-            <option value="inactive">Inativas</option>
-          </select>
-        </div>
-
-        <div>
-          <input
-            type="text"
-            value={stateFilter}
-            onChange={(e) => {
-              setStateFilter(e.target.value.toUpperCase().slice(0, 2));
-              setPage(1);
-            }}
-            className="w-full h-11 px-4 rounded-xl bg-input/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all uppercase"
-            placeholder="UF (Estado)..."
-            maxLength={2}
-          />
-        </div>
+        <DataTablePagination
+          pageIndex={page - 1}
+          pageCount={totalPages}
+          pageSize={limit}
+          totalItems={total}
+          canPreviousPage={page > 1}
+          canNextPage={page < totalPages}
+          setPageIndex={(idx) => setPage(idx + 1)}
+          previousPage={() => setPage(p => p - 1)}
+          nextPage={() => setPage(p => p + 1)}
+        />
       </div>
-
-      {/* Grid de Conteúdo */}
-      {loading ? (
-        <div className="flex flex-col items-center justify-center p-24 text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
-          <span className="text-zinc-500 mt-4 font-semibold">Carregando empresas...</span>
-        </div>
-      ) : companies.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center p-24 text-center border-dashed border-border glass-card">
-          <div className="w-20 h-20 rounded-full bg-input/40 flex items-center justify-center mb-6">
-            <Building className="w-10 h-10 text-muted-foreground opacity-50" />
-          </div>
-          <h3 className="text-xl font-bold text-foreground/80">Nenhuma empresa encontrada</h3>
-          <p className="text-muted-foreground mt-2 max-w-sm">
-            Tente ajustar os termos da busca ou adicione uma nova empresa.
-          </p>
-        </Card>
-      ) : (
-        <div className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-            {companies.map((company, idx) => (
-              <Card key={company.id} className="group glass-card glow-hover border-border/50 animate-in-slide" style={{ animationDelay: `${idx * 0.05}s` }}>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-5">
-                      <div className="relative shrink-0">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-input/60 to-input border border-border flex items-center justify-center text-lg font-black text-foreground/80 group-hover:glow-primary transition-all">
-                          {company.name.split(' ').map((n) => n[0]).slice(0, 2).join('')}
-                        </div>
-                        <div className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-background rounded-full ${company.active ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                      </div>
-                      <div className="space-y-3 min-w-0">
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-lg font-bold text-foreground tracking-tight truncate">{company.name}</h3>
-                            <Badge variant={company.active ? 'success' : 'destructive'} className="text-[10px] font-black uppercase tracking-tighter px-1.5 py-0">
-                              {company.active ? 'Ativa' : 'Inativa'}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground font-medium font-mono">Slug: {company.slug}</p>
-                        </div>
-                        
-                        <div className="grid gap-2 text-xs font-medium text-muted-foreground">
-                          {company.cnpj && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-muted-foreground/80 font-bold uppercase tracking-wider text-[10px]">CNPJ:</span>
-                              <span className="font-mono">{company.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")}</span>
-                            </div>
-                          )}
-                          {company.phone && (
-                            <div className="flex items-center gap-2">
-                              <Phone className="w-3.5 h-3.5 text-muted-foreground" />
-                              {company.phone}
-                            </div>
-                          )}
-                          {company.email && (
-                            <div className="flex items-center gap-2">
-                              <Mail className="w-3.5 h-3.5 text-muted-foreground" />
-                              <span className="truncate">{company.email}</span>
-                            </div>
-                          )}
-                          {(company.city || company.state) && (
-                            <div className="flex items-center gap-2">
-                              <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
-                              <span>{company.address ? `${company.address}, ` : ''}{company.city} - {company.state}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-2 shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
-                        onClick={() => handleOpenEditModal(company)}
-                      >
-                        <Edit className="w-5 h-5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
-                        onClick={() => handleDelete(company.id)}
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Paginação */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-border pt-6">
-              <span className="text-sm font-medium text-muted-foreground">
-                Página <span className="text-foreground">{page}</span> de <span className="text-foreground">{totalPages}</span>
-              </span>
-              <div className="flex gap-2">
-                <Button
-                  disabled={page === 1}
-                  onClick={() => setPage(page - 1)}
-                  className="bg-input/40 border border-border hover:bg-input/80 disabled:opacity-50 text-foreground font-bold h-9 px-4 rounded-lg text-xs"
-                >
-                  Anterior
-                </Button>
-                <Button
-                  disabled={page === totalPages}
-                  onClick={() => setPage(page + 1)}
-                  className="bg-input/40 border border-border hover:bg-input/80 disabled:opacity-50 text-foreground font-bold h-9 px-4 rounded-lg text-xs"
-                >
-                  Próxima
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Modal CRUD de Empresas */}
       {isModalOpen && (

@@ -1,10 +1,15 @@
 "use client";
 
 import { useEffect, useState, use, useCallback } from "react";
-import { getTechnicianById, Technician } from "@/lib/api-technicians";
-import { getAppointments, updateAppointment, createAppointment } from '@/lib/api-appointments';
+import { getTechnicianById, Technician } from "@/lib/api/modules/technicians";
+import { getAppointments, updateAppointment, createAppointment } from '@/lib/api/modules/appointments';
 import { PageHeader } from "@/components/layout/page-header";
-import { CalendarView } from "@/components/appointments/calendar-view";
+import dynamic from "next/dynamic";
+
+const CalendarView = dynamic(() => import('@/components/appointments/calendar-view').then(mod => mod.CalendarView), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-zinc-900/50 rounded-lg w-full h-[600px] flex items-center justify-center text-zinc-500">Carregando calendário...</div>
+});
 import { EventDialogData } from "@/components/appointments/event-dialog";
 import { HardHat, Star, MapPin, Phone } from "lucide-react";
 import { toast } from "sonner";

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { WhatsAppInstance, getInstance, connectInstance, disconnectInstance } from '@/lib/api-whatsapp';
+import { WhatsAppInstance, getInstance, connectInstance, disconnectInstance } from '@/lib/api/modules/whatsapp';
 import { QrCode, Smartphone, Wifi, WifiOff } from 'lucide-react';
 import Image from 'next/image';
 

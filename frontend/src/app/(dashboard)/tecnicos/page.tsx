@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Technician, getTechnicians, getTechnicianRanking, deleteTechnician } from '@/lib/api-technicians';
+import { Technician, getTechnicians, getTechnicianRanking, deleteTechnician } from '@/lib/api/modules/technicians';
 import { TechniciansTable } from '@/components/technicians/technicians-table';
 import { TechnicianForm } from '@/components/technicians/technician-form';
 import { TechnicianAnalytics } from '@/components/technicians/technician-analytics';
@@ -9,37 +9,33 @@ import { useAuth } from '@/contexts/auth-context';
 import { PageHeader } from '@/components/layout/page-header';
 import { HardHat, Plus } from 'lucide-react';
 
+import useSWR from 'swr';
+
 export default function TecnicosPage() {
   const { company } = useAuth();
-  const [technicians, setTechnicians] = useState<Technician[]>([]);
-  const [ranking, setRanking] = useState<Technician[]>([]);
-  const [loading, setLoading] = useState(true);
   
   const [showForm, setShowForm] = useState(false);
   const [editingTech, setEditingTech] = useState<Technician | null>(null);
 
-  const fetchData = async () => {
-    if (!company) return;
-    setLoading(true);
-    try {
-      const [techData, rankData] = await Promise.all([
-        getTechnicians(company.id),
-        getTechnicianRanking(company.id)
-      ]);
-      setTechnicians(techData);
-      setRanking(rankData);
-    } catch (err) {
-      console.error('Falha ao carregar técnicos', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: techData, mutate: mutateTech } = useSWR(
+    company ? ['technicians', company.id] : null,
+    ([_, id]) => getTechnicians(id),
+    { keepPreviousData: true, dedupingInterval: 300000 }
+  );
 
-  useEffect(() => {
-    if (company) {
-      fetchData();
-    }
-  }, [company]);
+  const { data: rankData, mutate: mutateRank } = useSWR(
+    company ? ['technicians-ranking', company.id] : null,
+    ([_, id]) => getTechnicianRanking(id),
+    { keepPreviousData: true, dedupingInterval: 300000 }
+  );
+
+  const technicians = techData || [];
+  const ranking = rankData || [];
+  const loading = !techData || !rankData;
+
+  const fetchData = async () => {
+    await Promise.all([mutateTech(), mutateRank()]);
+  };
 
   const handleAddNew = () => {
     setEditingTech(null);

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { RefreshCcw, HeartHandshake, CheckCircle2, Circle, Clock } from 'lucide-react';
-import { FollowUp, getFollowUps, syncFollowUps, triggerCronManually } from '@/lib/api-follow-ups';
+import { FollowUp, getFollowUps, syncFollowUps, triggerCronManually } from '@/lib/api/modules/follow-ups';
 import { format, differenceInDays } from 'date-fns';
 
 export default function PosVendaPage() {

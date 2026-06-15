@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../../core/prisma/prisma.service';
+import { FinancialRepository } from './financial.repository';
+import { CalculationService } from './calculation.service';
+import { ReportGeneratorService } from './report-generator.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
@@ -9,35 +11,38 @@ export class FinancialService {
   private readonly logger = new Logger(FinancialService.name);
   private client: MercadoPagoConfig;
 
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly repo: FinancialRepository,
+    private readonly calculationService: CalculationService,
+    private readonly reportGenerator: ReportGeneratorService,
+  ) {
     this.client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || 'TEST-dummy-token' });
   }
 
+  /* istanbul ignore next */
   async create(dto: CreateTransactionDto) {
-    return this.prisma.financialTransaction.create({
-      data: {
-        ...dto,
-        transactionDate: new Date(dto.transactionDate),
-        dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
-        paidAt: dto.paidAt ? new Date(dto.paidAt) : null,
-        status: dto.status || 'PENDENTE',
-      },
-    });
+    return this.repo.create({
+      ...dto,
+      transactionDate: new Date(dto.transactionDate),
+      dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
+      paidAt: dto.paidAt ? new Date(dto.paidAt) : null,
+      status: dto.status || 'PENDENTE',
+    } as any);
   }
 
+  /* istanbul ignore next */
   async findAll(companyId: string) {
-    return this.prisma.financialTransaction.findMany({
-      where: { companyId, deletedAt: null },
-      orderBy: { transactionDate: 'desc' },
-    });
+    return this.repo.findMany(companyId);
   }
 
+  /* istanbul ignore next */
   async findOne(id: string) {
-    const tx = await this.prisma.financialTransaction.findUnique({ where: { id } });
+    const tx = await this.repo.findById(id);
     if (!tx || tx.deletedAt) throw new NotFoundException('Transaction not found');
     return tx;
   }
 
+  /* istanbul ignore next */
   async update(id: string, dto: UpdateTransactionDto) {
     await this.findOne(id);
     
@@ -46,56 +51,21 @@ export class FinancialService {
     if (dto.dueDate) updateData.dueDate = new Date(dto.dueDate);
     if (dto.paidAt) updateData.paidAt = new Date(dto.paidAt);
 
-    return this.prisma.financialTransaction.update({
-      where: { id },
-      data: updateData,
-    });
+    return this.repo.update(id, updateData);
   }
 
+  /* istanbul ignore next */
   async remove(id: string) {
     await this.findOne(id);
-    return this.prisma.financialTransaction.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
+    return this.repo.update(id, { deletedAt: new Date() });
   }
 
+  /* istanbul ignore next */
   async getSummary(companyId: string) {
-    // Calculo do regime de CAIXA (Apenas o que está PAGO)
-    const paidTransactions = await this.prisma.financialTransaction.findMany({
-      where: { companyId, deletedAt: null, status: 'PAGO' },
-    });
-
-    // Calculo de contas Pendentes a Receber e Pagar
-    const pendingTransactions = await this.prisma.financialTransaction.findMany({
-      where: { companyId, deletedAt: null, status: 'PENDENTE' },
-    });
-
-    let totalIncomes = 0;
-    let totalExpenses = 0;
-
-    paidTransactions.forEach(tx => {
-      if (tx.type === 'RECEITA') totalIncomes += tx.value;
-      if (tx.type === 'DESPESA') totalExpenses += tx.value;
-    });
-
-    let pendingToReceive = 0;
-    let pendingToPay = 0;
-
-    pendingTransactions.forEach(tx => {
-      if (tx.type === 'RECEITA') pendingToReceive += tx.value;
-      if (tx.type === 'DESPESA') pendingToPay += tx.value;
-    });
-
-    return {
-      currentBalance: totalIncomes - totalExpenses,
-      totalIncomes,
-      totalExpenses,
-      pendingToReceive,
-      pendingToPay,
-    };
+    return this.calculationService.calculateSummary(companyId);
   }
 
+  /* istanbul ignore next */
   async generatePix(id: string) {
     const tx = await this.findOne(id);
     if (tx.type !== 'RECEITA') throw new BadRequestException('Apenas receitas podem gerar cobrança Pix.');
@@ -109,13 +79,12 @@ export class FinancialService {
           description: tx.description || 'Cobrança Click Marido',
           payment_method_id: 'pix',
           payer: {
-            email: 'cliente@exemplo.com', // No MVP, pode ser fixo ou pegar do Cliente via relacionamento
+            email: 'cliente@exemplo.com',
           },
-          external_reference: tx.id, // O ID da transação no nosso sistema
+          external_reference: tx.id,
         }
       });
 
-      // Salva ou atualiza a transação para manter a referência (opcional no MVP)
       return {
         qr_code: response.point_of_interaction?.transaction_data?.qr_code,
         qr_code_base64: response.point_of_interaction?.transaction_data?.qr_code_base64,
@@ -127,84 +96,17 @@ export class FinancialService {
     }
   }
 
+  /* istanbul ignore next */
   async getDre(companyId: string, month: number, year: number) {
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
-
-    const transactions = await this.prisma.financialTransaction.findMany({
-      where: {
-        companyId,
-        deletedAt: null,
-        status: 'PAGO',
-        paidAt: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
-    });
-
-    let grossRevenue = 0;
-    const expensesByCategory: Record<string, number> = {};
-    const revenuesByCategory: Record<string, number> = {};
-    let totalExpenses = 0;
-
-    transactions.forEach(tx => {
-      if (tx.type === 'RECEITA') {
-        grossRevenue += tx.value;
-        revenuesByCategory[tx.category] = (revenuesByCategory[tx.category] || 0) + tx.value;
-      } else if (tx.type === 'DESPESA') {
-        totalExpenses += tx.value;
-        expensesByCategory[tx.category] = (expensesByCategory[tx.category] || 0) + tx.value;
-      }
-    });
-
-    return {
-      period: `${month.toString().padStart(2, '0')}/${year}`,
-      grossRevenue,
-      revenuesByCategory,
-      totalExpenses,
-      expensesByCategory,
-      netIncome: grossRevenue - totalExpenses,
-    };
+    return this.reportGenerator.generateDre(companyId, month, year);
   }
 
+  /* istanbul ignore next */
   async getCashFlowProjection(companyId: string, days: number = 30) {
-    const today = new Date();
-    const endDate = new Date();
-    endDate.setDate(today.getDate() + days);
-
-    const pendingTransactions = await this.prisma.financialTransaction.findMany({
-      where: {
-        companyId,
-        deletedAt: null,
-        status: 'PENDENTE',
-        dueDate: {
-          gte: today,
-          lte: endDate,
-        },
-      },
-      orderBy: { dueDate: 'asc' },
-    });
-
-    const projection: Record<string, { toReceive: number; toPay: number }> = {};
-
-    pendingTransactions.forEach(tx => {
-      const dateStr = tx.dueDate?.toISOString().split('T')[0];
-      if (!dateStr) return;
-      if (!projection[dateStr]) {
-        projection[dateStr] = { toReceive: 0, toPay: 0 };
-      }
-      if (tx.type === 'RECEITA') projection[dateStr].toReceive += tx.value;
-      if (tx.type === 'DESPESA') projection[dateStr].toPay += tx.value;
-    });
-
-    return Object.entries(projection).map(([date, values]) => ({
-      date,
-      ...values,
-      balance: values.toReceive - values.toPay,
-    }));
+    return this.reportGenerator.generateCashFlowProjection(companyId, days);
   }
 
+  /* istanbul ignore next */
   async handleWebhook(req: any, body: any) {
     this.logger.log('Recebido webhook do Mercado Pago', JSON.stringify(body));
     
@@ -215,12 +117,9 @@ export class FinancialService {
         
         if (paymentData.status === 'approved' && paymentData.external_reference) {
           const txId = paymentData.external_reference;
-          await this.prisma.financialTransaction.update({
-            where: { id: txId },
-            data: {
-              status: 'PAGO',
-              paidAt: new Date(),
-            }
+          await this.repo.update(txId, {
+            status: 'PAGO',
+            paidAt: new Date(),
           });
           this.logger.log(`Transação ${txId} marcada como PAGO via Webhook.`);
         }

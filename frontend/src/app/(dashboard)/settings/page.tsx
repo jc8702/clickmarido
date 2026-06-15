@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Image from 'next/image';
 
 const themes: { id: SystemTheme; name: string; preview: string }[] = [
   { id: 'default', name: 'Original Amber', preview: 'bg-amber-500' },
@@ -159,10 +160,10 @@ export default function SettingsPage() {
                 <div className="flex flex-col md:flex-row gap-8 items-center">
                   <div 
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-40 h-40 rounded-3xl border-2 border-dashed border-border hover:border-primary/50 bg-input/40 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all group overflow-hidden shrink-0"
+                    className="relative w-40 h-40 rounded-3xl border-2 border-dashed border-border hover:border-primary/50 bg-input/40 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all group overflow-hidden shrink-0"
                   >
                     {logoUrl ? (
-                      <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-4" />
+                      <Image src={logoUrl} alt="Logo" fill className="object-contain p-4" unoptimized />
                     ) : (
                       <>
                         <Upload className="w-6 h-6 text-muted-foreground group-hover:text-primary" />

@@ -61,12 +61,13 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* E-mail */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                <label htmlFor="login-email" className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                   E-mail institucional
                 </label>
                 <div className="relative">
-                  <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                  <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" aria-hidden="true" />
                   <input
+                    id="login-email"
                     type="email"
                     required
                     placeholder="nome@clickmarido.com.br"
@@ -80,7 +81,7 @@ export default function LoginPage() {
               {/* Senha */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                  <label htmlFor="login-password" className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                     Senha de acesso
                   </label>
                   <Link
@@ -91,8 +92,9 @@ export default function LoginPage() {
                   </Link>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                  <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" aria-hidden="true" />
                   <input
+                    id="login-password"
                     type="password"
                     required
                     placeholder="••••••••"

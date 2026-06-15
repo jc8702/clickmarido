@@ -51,7 +51,7 @@ const TableFooter = React.forwardRef<
 ))
 TableFooter.displayName = "TableFooter"
 
-const TableRow = React.forwardRef<
+const TableRow = React.memo(React.forwardRef<
   HTMLTableRowElement,
   React.HTMLAttributes<HTMLTableRowElement>
 >(({ className, ...props }, ref) => (
@@ -63,7 +63,7 @@ const TableRow = React.forwardRef<
     )}
     {...props}
   />
-))
+)))
 TableRow.displayName = "TableRow"
 
 const TableHead = React.forwardRef<
@@ -72,6 +72,7 @@ const TableHead = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <th
     ref={ref}
+    scope="col"
     className={cn(
       "h-12 px-4 text-left align-middle font-medium text-foreground [&:has([role=checkbox])]:pr-0",
       className

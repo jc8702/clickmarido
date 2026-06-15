@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-clickmarido_staging}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-staging_password}
+      POSTGRES_DB: ${POSTGRES_DB:-clickmarido_staging}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+    networks:
+      - staging_network
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_staging_data:/data
+    networks:
+      - staging_network
+
+  backend:
+    image: ghcr.io/clickmarido/backend:${IMAGE_TAG:-latest}
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      NODE_ENV: staging
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-clickmarido_staging}:${POSTGRES_PASSWORD:-staging_password}@postgres:5432/${POSTGRES_DB:-clickmarido_staging}?schema=public
+      REDIS_URL: redis://redis:6379
+      # Outras variáveis necessárias (JWT, Stripe, etc) devem estar no arquivo .env injetado na VM
+    ports:
+      - "3001:3001"
+    networks:
+      - staging_network
+
+  frontend:
+    image: ghcr.io/clickmarido/frontend:${IMAGE_TAG:-latest}
+    restart: always
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: staging
+      NEXT_PUBLIC_API_URL: https://api-staging.clickmarido.com
+    ports:
+      - "3000:3000"
+    networks:
+      - staging_network
+
+volumes:
+  postgres_staging_data:
+  redis_staging_data:
+
+networks:
+  staging_network:
+    driver: bridge

@@ -4,13 +4,20 @@ import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from '../../core/auth/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { CompanyContext } from '../../common/company/company.context';
+import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiBearerAuth } from "@nestjs/swagger";
 
 @Controller('reports')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
+@ApiTags('Reports')
+@ApiBearerAuth('JWT-auth')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
   @Get('dashboard')
+    @ApiOperation({ summary: 'Operation getDashboard' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   getDashboard(@Request() req: any) {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) throw new BadRequestException('Empresa não encontrada');
@@ -18,6 +25,10 @@ export class ReportsController {
   }
 
   @Get('commercial')
+    @ApiOperation({ summary: 'Operation getCommercial' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   getCommercial() {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) throw new BadRequestException('Empresa não encontrada');
@@ -25,6 +36,10 @@ export class ReportsController {
   }
 
   @Get('operational')
+    @ApiOperation({ summary: 'Operation getOperational' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   getOperational() {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) throw new BadRequestException('Empresa não encontrada');
@@ -32,6 +47,10 @@ export class ReportsController {
   }
 
   @Get('financial')
+    @ApiOperation({ summary: 'Operation getFinancial' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   getFinancial() {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) throw new BadRequestException('Empresa não encontrada');
@@ -39,6 +58,10 @@ export class ReportsController {
   }
 
   @Get('export/financial')
+    @ApiOperation({ summary: 'Operation exportFinancial' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   async exportFinancial(@Res() res: Response) {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) throw new BadRequestException('Empresa não encontrada');

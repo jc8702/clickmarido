@@ -1,332 +1,75 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@custom-variant dark (&:where(.dark, .dark *));
+@layer base {
+  :root {
+    --primary: #0055ff;
+    --primary-foreground: #ffffff;
+    --background: #ffffff;
+    --foreground: #0f172a;
+    
+    /* Cores otimizadas para contraste 4.5:1 WCAG AA */
+    --text-high-contrast: #111827;
+    --text-medium-contrast: #4b5563; /* ratio seguro contra #fff */
+    --focus-ring: #2563eb;
+  }
 
-@theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
-  
-  --color-info: var(--info);
-  --color-info-foreground: var(--info-foreground);
-  
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  body {
+    @apply bg-white text-slate-900;
+  }
 
-  --color-brand-main: var(--brand-main);
-  --color-brand-secondary: var(--brand-secondary);
-  
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-}
+  /*
+    * GESTÃO DE FOCO
+    * Não remover o outline ao menos que forneça um focus-visible customizado.
+    */
+  *:focus {
+    outline: none;
+  }
 
-:root {
-  --background: #fcfcfd;
-  --foreground: #09090b;
-
-  --card: #ffffff;
-  --card-foreground: #09090b;
-
-  --popover: #ffffff;
-  --popover-foreground: #09090b;
-
-  --primary: #8b5cf6; /* Roxo 500 */
-  --primary-foreground: #ffffff;
-
-  --accent: #3b82f6; /* Blue 500 */
-  --accent-foreground: #ffffff;
-
-  --brand-main: #8b5cf6;
-  --brand-secondary: #3b82f6;
-
-  --success: #22c55e;
-  --success-foreground: #022c22; /* Dark Green para bom contraste */
-
-  --warning: #f97316; /* Laranja 500 */
-  --warning-foreground: #431407; /* Dark Orange para contraste */
-
-  --info: #3b82f6;
-  --info-foreground: #ffffff;
-
-  --destructive: #ef4444; /* Vermelho 500 */
-  --destructive-foreground: #ffffff;
-
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #8b5cf6;
-
-  --radius: 0.75rem;
-}
-
-.dark {
-  --background: #09090b;
-  --foreground: #fafafa;
-
-  --card: #121215;
-  --card-foreground: #fafafa;
-
-  --popover: #121215;
-  --popover-foreground: #fafafa;
-
-  --primary: #a78bfa; /* Roxo 400 */
-  --primary-foreground: #09090b;
-
-  --accent: #60a5fa; /* Azul 400 */
-  --accent-foreground: #09090b;
-
-  --brand-main: #a78bfa;
-  --brand-secondary: #60a5fa;
-
-  --success: #4ade80;
-  --success-foreground: #09090b;
-
-  --warning: #fb923c;
-  --warning-foreground: #09090b;
-
-  --info: #60a5fa;
-  --info-foreground: #09090b;
-
-  --destructive: #f87171;
-  --destructive-foreground: #09090b;
-
-  --border: #222226;
-  --input: #222226;
-  --ring: #a78bfa;
-}
-
-/* Temas do Sistema (Estilos Globais) */
-[data-theme='arctic'] {
-  --background: #f8fafc;
-  --primary: #38bdf8;
-  --card: rgba(255, 255, 255, 0.8);
-  --border: rgba(0, 0, 0, 0.05);
-}
-
-[data-theme='cyber'] {
-  --background: #050505;
-  --primary: #00ffa3;
-  --accent: #ff003c;
-  --card: rgba(15, 15, 20, 0.9);
-  --foreground: #e0e0e0;
-}
-
-[data-theme='warm'] {
-  --background: #fdfbf7;
-  --primary: #d4a373;
-  --accent: #ccd5ae;
-  --foreground: #4a3f35;
-}
-
-[data-theme='corporate'] {
-  --background: #f3f4f6;
-  --primary: #1d4ed8;
-  --accent: #f59e0b;
-}
-
-[data-theme='purple'] {
-  --background: #0f0c29;
-  --primary: #b14bf4;
-  --accent: #4b12fe;
-}
-
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Utilitários Customizados do Tailwind v4 declarados na raiz */
-@utility glass-card {
-  background: color-mix(in srgb, var(--card) 45%, transparent);
-  backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, var(--foreground) 5%, transparent);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-}
-
-@utility glass-panel {
-  background: color-mix(in srgb, var(--card) 60%, transparent);
-  backdrop-filter: blur(16px);
-  border: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
-}
-
-@utility glow-primary {
-  box-shadow: 0 0 20px color-mix(in srgb, var(--primary) 15%, transparent);
-  border-color: color-mix(in srgb, var(--primary) 25%, transparent);
-}
-
-@utility glow-hover {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  &:hover {
-    box-shadow: 0 0 25px color-mix(in srgb, var(--primary) 20%, transparent);
-    border-color: color-mix(in srgb, var(--primary) 40%, transparent);
-    transform: translateY(-1px);
+  *:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
   }
 }
 
-@utility gradient-text {
-  background: linear-gradient(135deg, var(--foreground) 0%, color-mix(in srgb, var(--foreground) 60%, transparent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-@utility gradient-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 80%, black) 100%);
-}
-
-@utility animate-in-fade {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-@utility animate-in-slide {
-  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Modificadores e Acoplamentos para o Tema Escuro */
-.dark .glass-card {
-  background: rgba(18, 18, 21, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-}
-
-.dark .glass-panel {
-  background: rgba(18, 18, 21, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.dark .gradient-text {
-  background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.glow-hover:hover {
-  box-shadow: 0 0 20px color-mix(in srgb, var(--primary) 10%, transparent);
-  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
+@layer utilities {
+  /* SCREEN READER ONLY (Maneira segura de esconder textos mas mantê-los lidos pelo NVDA/VoiceOver) */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .not-sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
   }
 }
 
-/* Smooth Scrolling */
-html {
-  scroll-behavior: smooth;
+/*
+  * PREFERS REDUCED MOTION
+  * Remove todas as animações críticas caso o usuário tenha ativado a proteção contra motion
+  * no sistema operacional.
+  */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
-
-/* Custom Scrollbar — visível apenas ao mover */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--border) 60%, transparent);
-  border-radius: 4px;
-  transition: background 0.2s;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
-}
-
-/* Micro-animação de sucesso */
-@keyframes successPulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 40%, transparent); }
-  50% { transform: scale(1.05); box-shadow: 0 0 0 8px transparent; }
-}
-
-@utility animate-success {
-  animation: successPulse 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* React Big Calendar Overrides - Dark/Light Theme Integration */
-.rbc-calendar,
-.rbc-time-view,
-.rbc-time-header,
-.rbc-time-content,
-.rbc-month-view,
-.rbc-month-row,
-.rbc-header,
-.rbc-day-bg,
-.rbc-time-header-content,
-.rbc-time-gutter,
-.rbc-timeslot-group,
-.rbc-day-slot .rbc-time-slot,
-.rbc-agenda-view table.rbc-agenda-table,
-.rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
-  border-color: color-mix(in srgb, var(--border) 40%, transparent) !important;
-}
-
-.rbc-time-header-content {
-  border-left: 1px solid color-mix(in srgb, var(--border) 40%, transparent) !important;
-}
-
-.rbc-toolbar button {
-  border-color: color-mix(in srgb, var(--border) 50%, transparent) !important;
-  color: var(--foreground) !important;
-  background-color: transparent !important;
-}
-
-.rbc-toolbar button:hover, 
-.rbc-toolbar button:active, 
-.rbc-toolbar button.rbc-active {
-  background-color: color-mix(in srgb, var(--primary) 10%, transparent) !important;
-  border-color: var(--primary) !important;
-  color: var(--primary) !important;
-}
-
-.rbc-today {
-  background-color: color-mix(in srgb, var(--primary) 8%, transparent) !important;
-}
-
-.rbc-show-more {
-  color: var(--primary) !important;
-  background-color: transparent !important;
-}
-
-.rbc-event {
-  background-color: var(--primary) !important;
-  color: var(--primary-foreground) !important;
-  border: none !important;
-  border-radius: var(--radius-sm) !important;
-}
-

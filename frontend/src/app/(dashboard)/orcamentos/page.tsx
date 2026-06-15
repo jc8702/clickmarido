@@ -3,12 +3,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { FileText, Plus, Search, Trash2, Edit, Printer, Share2, Award, DollarSign, User, Calendar, Trash, CheckCircle2, XCircle, Clock, ShieldAlert, BookOpen, Wrench } from 'lucide-react';
-import { ApiClient } from '@/lib/api-client';
+import { ApiClient } from '@/lib/api/client';
+import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useDebounce } from '@/hooks/use-debounce';
+import { DataTable } from '@/components/ui/data-table';
+import { DataTablePagination } from '@/components/ui/data-table-pagination';
+import { SkeletonTable } from '@/components/ui/skeleton-table';
+import { FilterPanel } from '@/components/ui/filter-panel';
+import { getQuoteColumns } from './columns';
 import { useAuth } from '@/contexts/auth-context';
-import { generateFromQuote } from '@/lib/api-service-orders';
+import { generateFromQuote } from '@/lib/api/modules/service-orders';
 
 interface Client {
   id: string;
@@ -183,15 +190,13 @@ export default function OrcamentosPage() {
     fetchClientsAndServices();
   }, []);
 
+  const debouncedSearch = useDebounce(search, 300);
+
   // Busca debounced
   useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      setPage(1);
-      fetchQuotes();
-    }, 400);
-
-    return () => clearTimeout(delayDebounce);
-  }, [search]);
+    setPage(1);
+    fetchQuotes();
+  }, [debouncedSearch]);
 
   // Cálculo de valor final reativo no frontend
   const calculateTotal = () => {
@@ -610,8 +615,8 @@ export default function OrcamentosPage() {
           {viewedQuote.signature ? (
             <div className="pt-8 flex flex-col items-center justify-center space-y-2">
               <p className="text-xs font-black text-gray-400 uppercase">Assinatura Digital do Cliente</p>
-              <div className="border border-gray-300 rounded-lg p-2 bg-white w-72 h-36 flex items-center justify-center">
-                <img src={viewedQuote.signature} alt="Assinatura" className="max-w-full max-h-full" />
+              <div className="relative border border-gray-300 rounded-lg p-2 bg-white w-72 h-36 flex items-center justify-center">
+                <Image src={viewedQuote.signature} alt="Assinatura" fill className="object-contain" unoptimized />
               </div>
               <p className="text-[10px] text-gray-500 font-semibold">Assinado eletronicamente em: {viewedQuote.signedAt ? formatDate(viewedQuote.signedAt) : ''}</p>
             </div>
@@ -642,40 +647,16 @@ export default function OrcamentosPage() {
           </Button>
         </div>
 
-        {/* Barra de Busca e Filtros */}
-        <div className="flex flex-col md:flex-row gap-4 bg-zinc-950 p-4 border border-zinc-900 rounded-2xl">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 w-4 h-4 text-zinc-500" />
-            <input
-              type="text"
-              placeholder="Buscar por número ou cliente..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-10 pl-10 pr-4 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50"
-            />
-          </div>
-          <div className="flex gap-2">
-            <select
-              value={statusFilter}
-              onChange={(e) => { setPage(1); setStatusFilter(e.target.value); }}
-              className="h-10 px-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50"
-            >
-              <option value="">Todos os Status</option>
-              <option value="Rascunho">Rascunho</option>
-              <option value="Enviado">Enviado</option>
-              <option value="Visualizado">Visualizado</option>
-              <option value="Aprovado">Aprovado</option>
-              <option value="Rejeitado">Rejeitado</option>
-            </select>
-          </div>
-        </div>
+        {/* Filter Panel */}
+        <FilterPanel
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Buscar por número ou cliente..."
+        />
 
         {/* Lista de Orçamentos */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center p-20 space-y-4">
-            <div className="w-10 h-10 rounded-full border-4 border-violet-500/30 border-t-violet-500 animate-spin" />
-            <p className="text-xs text-zinc-500 font-bold uppercase">Carregando orçamentos...</p>
-          </div>
+          <SkeletonTable columns={5} rows={10} />
         ) : quotes.length === 0 ? (
           <Card className="flex flex-col items-center justify-center p-16 text-center border-dashed border-zinc-900 bg-zinc-950/20">
             <FileText className="w-14 h-14 text-zinc-700 mb-4" />
@@ -689,85 +670,29 @@ export default function OrcamentosPage() {
             </Button>
           </Card>
         ) : (
-          <div className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-              {quotes.map((quote, idx) => (
-                <Card
-                  key={quote.id}
-                  onClick={() => handleOpenViewModal(quote)}
-                  className="group glass-card glow-hover border-zinc-900/50 animate-in-slide cursor-pointer"
-                  style={{ animationDelay: `${idx * 0.05}s` }}
-                >
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-zinc-855 to-zinc-900 border border-zinc-800/80 flex items-center justify-center text-lg font-black text-zinc-400 group-hover:glow-primary transition-all">
-                          #{quote.number}
-                        </div>
-                        <div className="space-y-1">
-                          <h3 className="text-md font-bold text-white tracking-tight leading-snug truncate">
-                            {quote.client.name}
-                          </h3>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs text-zinc-400 font-semibold">{formatDate(quote.createdAt)}</span>
-                            {getStatusBadge(quote.status)}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-1 shrink-0">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-lg text-zinc-500 hover:text-violet-400 hover:bg-violet-400/10 transition-all"
-                          onClick={(e) => handleOpenEditModal(quote, e)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-all"
-                          onClick={(e) => handleDelete(quote.id, e)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center bg-zinc-950/40 border border-zinc-900/60 p-3 rounded-xl">
-                      <div className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Valor Final</div>
-                      <div className="text-lg font-black text-emerald-400">{formatCurrency(quote.totalValue)}</div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Paginação */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-zinc-900 pt-6">
-                <span className="text-sm font-medium text-zinc-500">
-                  Página <span className="text-white">{page}</span> de <span className="text-white">{totalPages}</span>
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    disabled={page === 1}
-                    onClick={() => setPage(page - 1)}
-                    className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 disabled:opacity-50 text-white font-bold h-9 px-4 rounded-lg text-xs"
-                  >
-                    Anterior
-                  </Button>
-                  <Button
-                    disabled={page === totalPages}
-                    onClick={() => setPage(page + 1)}
-                    className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 disabled:opacity-50 text-white font-bold h-9 px-4 rounded-lg text-xs"
-                  >
-                    Próxima
-                  </Button>
-                </div>
-              </div>
-            )}
+          <div className="space-y-4">
+            <DataTable
+              columns={getQuoteColumns({
+                onEdit: handleOpenEditModal as any,
+                onDelete: handleDelete as any,
+              }) as any}
+              data={quotes}
+              isLoading={loading}
+              virtualized={quotes.length > 50}
+              onRowClick={handleOpenViewModal}
+            />
+            
+            <DataTablePagination
+              pageIndex={page - 1}
+              pageCount={totalPages}
+              pageSize={limit}
+              totalItems={total}
+              canPreviousPage={page > 1}
+              canNextPage={page < totalPages}
+              setPageIndex={(idx) => setPage(idx + 1)}
+              previousPage={() => setPage(p => p - 1)}
+              nextPage={() => setPage(p => p + 1)}
+            />
           </div>
         )}
       </div>
@@ -1148,8 +1073,8 @@ export default function OrcamentosPage() {
             {viewedQuote.signature && (
               <div className="pt-4 flex flex-col items-center justify-center space-y-2 border-t border-zinc-900">
                 <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Assinatura Digital Local</p>
-                <div className="border border-zinc-800 rounded-xl p-2 bg-white w-64 h-32 flex items-center justify-center">
-                  <img src={viewedQuote.signature} alt="Assinatura" className="max-w-full max-h-full" />
+                <div className="relative border border-zinc-800 rounded-xl p-2 bg-white w-64 h-32 flex items-center justify-center">
+                  <Image src={viewedQuote.signature} alt="Assinatura" fill className="object-contain" unoptimized />
                 </div>
                 <p className="text-[10px] text-zinc-500 font-medium">Assinado em: {viewedQuote.signedAt ? formatDate(viewedQuote.signedAt) : ''}</p>
               </div>

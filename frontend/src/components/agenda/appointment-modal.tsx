@@ -1,26 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Clock, Search, Loader2 } from 'lucide-react';
+import { X, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ApiClient } from '@/lib/api-client';
-import type { Appointment, AppointmentFormData } from '@/types/agenda';
-
-interface ClientOption {
-  id: string;
-  name: string;
-  phone?: string;
-}
-
-interface UserOption {
-  id: string;
-  name: string;
-}
-
-interface ServiceOrderOption {
-  id: string;
-  number: string;
-}
+import { AppointmentSchema, AppointmentFormData } from '@/schemas/appointment.schema';
+import { useAppointmentContext } from '@/contexts/appointment-context';
+import { TimeSlotPicker } from '@/components/agenda/time-slot-picker';
+import { TechnicianSelector } from '@/components/agenda/technician-selector';
+import { ConflictDetector } from '@/components/agenda/conflict-detector';
+import { ClientSelector } from '@/components/agenda/client-selector';
+import type { Appointment } from '@/types/agenda';
 
 interface AppointmentModalProps {
   open: boolean;
@@ -32,9 +21,8 @@ interface AppointmentModalProps {
   defaultEnd?: string;
 }
 
-type SimpleApiList<T> = { success: boolean; data: { items: T[] } };
-
 function toLocalDatetime(iso: string) {
+  if (!iso) return '';
   const d = new Date(iso);
   const offset = d.getTimezoneOffset();
   const local = new Date(d.getTime() - offset * 60000);
@@ -50,6 +38,8 @@ export function AppointmentModal({
   defaultStart,
   defaultEnd,
 }: AppointmentModalProps) {
+  const { dataLoading } = useAppointmentContext();
+
   const [title, setTitle] = useState(appointment?.title || '');
   const [description, setDescription] = useState(appointment?.description || '');
   const [startTime, setStartTime] = useState(
@@ -63,87 +53,41 @@ export function AppointmentModal({
   const [serviceOrderId, setServiceOrderId] = useState(appointment?.serviceOrderId || '');
   const [selectedClientName, setSelectedClientName] = useState(appointment?.client?.name || '');
 
-  const [clients, setClients] = useState<ClientOption[]>([]);
-  const [technicians, setTechnicians] = useState<UserOption[]>([]);
-  const [serviceOrders, setServiceOrders] = useState<ServiceOrderOption[]>([]);
-  const [dataLoading, setDataLoading] = useState(true);
-
-  const [clientSearch, setClientSearch] = useState('');
-  const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
-
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const filteredClients = clients.filter(
-    (c) => c.name.toLowerCase().includes(clientSearch.toLowerCase())
-  );
-
   useEffect(() => {
-    let ignore = false;
-
-    async function loadClients() {
-      try {
-        const res = await ApiClient.get<SimpleApiList<ClientOption>>('/clients', { params: { limit: '100' } });
-        if (!ignore && res.success) setClients(res.data.items);
-      } catch { /* ignore */ }
-    }
-
-    async function loadTechnicians() {
-      try {
-        const res = await ApiClient.get<SimpleApiList<UserOption>>('/users', { params: { limit: '100', active: 'true' } });
-        if (!ignore && res.success) setTechnicians(res.data.items);
-      } catch { /* ignore */ }
-    }
-
-    async function loadServiceOrders() {
-      try {
-        const res = await ApiClient.get<SimpleApiList<ServiceOrderOption>>('/service-orders', { params: { limit: '100' } });
-        if (!ignore && res.success) setServiceOrders(res.data.items);
-      } catch { /* ignore */ }
-    }
-
-    Promise.all([loadClients(), loadTechnicians(), loadServiceOrders()]).finally(() => {
-      if (!ignore) setDataLoading(false);
-    });
-
-    return () => { ignore = true; };
-  }, []);
-
-  function selectClient(client: ClientOption) {
-    setClientId(client.id);
-    setSelectedClientName(client.name);
-    setClientDropdownOpen(false);
-  }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (open) window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
 
-    if (!title.trim()) {
-      setError('O título do compromisso é obrigatório.');
-      return;
-    }
-    if (!startTime || !endTime) {
-      setError('Defina a data/hora de início e término.');
-      return;
-    }
-    if (new Date(startTime) >= new Date(endTime)) {
-      setError('O início deve ser anterior ao término.');
+    const formData = {
+      title: title.trim(),
+      description: description.trim() || undefined,
+      startTime: startTime ? new Date(startTime).toISOString() : '',
+      endTime: endTime ? new Date(endTime).toISOString() : '',
+      clientId: clientId || undefined,
+      technicianId: technicianId || undefined,
+      serviceOrderId: serviceOrderId || undefined,
+    };
+
+    const validation = AppointmentSchema.safeParse(formData);
+    if (!validation.success) {
+      setError(validation.error.issues[0].message);
       return;
     }
 
     setSaving(true);
     try {
-      await onSave({
-        title: title.trim(),
-        description: description.trim() || undefined,
-        startTime: new Date(startTime).toISOString(),
-        endTime: new Date(endTime).toISOString(),
-        clientId: clientId || undefined,
-        technicianId: technicianId || undefined,
-        serviceOrderId: serviceOrderId || undefined,
-      });
+      await onSave(validation.data);
     } catch {
       setError('Erro ao salvar agendamento.');
     } finally {
@@ -161,20 +105,6 @@ export function AppointmentModal({
       setDeleting(false);
     }
   }
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-    if (open) {
-      window.addEventListener('keydown', handleKeyDown);
-    }
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -226,102 +156,32 @@ export function AppointmentModal({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Início</label>
-              <input
-                type="datetime-local"
-                required
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Término</label>
-              <input
-                type="datetime-local"
-                required
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50"
-              />
-            </div>
-          </div>
+          <TimeSlotPicker
+            startTime={startTime}
+            setStartTime={setStartTime}
+            endTime={endTime}
+            setEndTime={setEndTime}
+          />
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Cliente</label>
-            <div className="relative">
-              <div
-                className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white flex items-center cursor-pointer justify-between"
-                onClick={() => { setClientDropdownOpen(!clientDropdownOpen); setClientSearch(''); }}
-              >
-                <span className={selectedClientName ? '' : 'text-zinc-500'}>
-                  {selectedClientName || 'Selecionar cliente...'}
-                </span>
-                <Search className="w-4 h-4 text-zinc-500" />
-              </div>
-              {clientDropdownOpen && (
-                <div className="absolute top-11 left-0 right-0 z-10 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl max-h-48 overflow-y-auto">
-                  <div className="p-2 border-b border-zinc-800">
-                    <input
-                      type="text"
-                      value={clientSearch}
-                      onChange={(e) => setClientSearch(e.target.value)}
-                      className="w-full h-8 px-2 rounded bg-zinc-800 border border-zinc-700 text-xs text-white focus:outline-none"
-                      placeholder="Buscar cliente..."
-                      autoFocus
-                    />
-                  </div>
-                  <div className="p-1">
-                    {filteredClients.length === 0 ? (
-                      <p className="px-2 py-3 text-xs text-zinc-500 text-center">Nenhum cliente encontrado.</p>
-                    ) : (
-                      filteredClients.map((c) => (
-                        <button
-                          key={c.id}
-                          type="button"
-                          onClick={() => selectClient(c)}
-                          className="w-full text-left px-2 py-2 rounded text-xs text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
-                        >
-                          <span className="font-medium">{c.name}</span>
-                          {c.phone && <span className="text-zinc-500 ml-2">{c.phone}</span>}
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <ConflictDetector 
+            startTime={startTime} 
+            endTime={endTime} 
+            technicianId={technicianId} 
+          />
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Técnico</label>
-            <select
-              value={technicianId}
-              onChange={(e) => setTechnicianId(e.target.value)}
-              className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 cursor-pointer"
-            >
-              <option value="">Sem técnico</option>
-              {technicians.map((t) => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
-            </select>
-          </div>
+          <ClientSelector
+            clientId={clientId}
+            setClientId={setClientId}
+            selectedClientName={selectedClientName}
+            setSelectedClientName={setSelectedClientName}
+          />
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Ordem de Serviço (opcional)</label>
-            <select
-              value={serviceOrderId}
-              onChange={(e) => setServiceOrderId(e.target.value)}
-              className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 cursor-pointer"
-            >
-              <option value="">Nenhuma</option>
-              {serviceOrders.map((so) => (
-                <option key={so.id} value={so.id}>OS #{so.number}</option>
-              ))}
-            </select>
-          </div>
+          <TechnicianSelector
+            technicianId={technicianId}
+            setTechnicianId={setTechnicianId}
+            serviceOrderId={serviceOrderId}
+            setServiceOrderId={setServiceOrderId}
+          />
 
           <div className="space-y-1">
             <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Observações</label>

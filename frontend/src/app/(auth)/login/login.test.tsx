@@ -13,7 +13,11 @@ vi.mock('next/link', () => ({
   default: ({ children, href }: any) => <a href={href}>{children}</a>,
 }));
 
-test('renders login form inputs and submits successfully', async () => {
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() })
+}));
+
+test('renders login form inputs and submits successfully, redirecting to dashboard', async () => {
   const loginMock = vi.fn().mockResolvedValue({ success: true });
   (useAuth as any).mockReturnValue({
     login: loginMock,

@@ -26,19 +26,29 @@ import { CompanyMiddleware } from './common/company/company.middleware';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { SentryInterceptor } from './common/interceptors/sentry.interceptor';
 import { PermissionsGuard } from './common/guards/permissions.guard';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { AiModule } from './modules/ai/ai.module';
 import { GeolocationModule } from './core/geolocation/geolocation.module';
+import { LoggerModule } from './core/logger/logger.module';
+import { RequestIdMiddleware } from './common/middlewares/request-id.middleware';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { APP_FILTER } from '@nestjs/core';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { MetricsController } from './modules/metrics/metrics.controller';
+
+import { envValidationSchema } from './core/config/env-validation';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validationSchema: envValidationSchema,
     }),
     ThrottlerModule.forRoot([{
       ttl: 60000,
-      limit: 60,
+      limit: 100,
     }]),
     PrismaModule,
     EmailModule,
@@ -60,9 +70,15 @@ import { GeolocationModule } from './core/geolocation/geolocation.module';
     ReportsModule,
     AiModule,
     GeolocationModule,
+    LoggerModule,
     ScheduleModule.forRoot(),
+    PrometheusModule.register({
+      defaultMetrics: {
+        enabled: true,
+      },
+    }),
   ],
-  controllers: [AppController],
+  controllers: [AppController, MetricsController],
   providers: [
     AppService,
     {
@@ -81,13 +97,21 @@ import { GeolocationModule } from './core/geolocation/geolocation.module';
       provide: APP_INTERCEPTOR,
       useClass: AuditInterceptor,
     },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
+    },
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // Registra o middleware do multi-tenant globalmente para todas as rotas
+    // Registra middlewares globais
     consumer
-      .apply(CompanyMiddleware)
+      .apply(RequestIdMiddleware, CompanyMiddleware)
       .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }

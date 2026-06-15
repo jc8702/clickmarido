@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import { ApiClient } from "@/lib/api-client";
+import { ApiClient } from "@/lib/api/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Star, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export default function PublicRatePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -100,7 +101,9 @@ export default function PublicRatePage({ params }: { params: Promise<{ id: strin
         {/* CABEÇALHO */}
         <div className="text-center pt-6 px-6 space-y-2">
           {order.company?.logoUrl && (
-            <img src={order.company.logoUrl} alt={order.company.name} className="h-12 mx-auto object-contain mb-4" />
+            <div className="relative h-12 w-full mb-4">
+              <Image src={order.company.logoUrl} alt={order.company.name} fill className="object-contain" unoptimized />
+            </div>
           )}
           <h1 className="text-xl font-bold">{order.company?.name || "Prestador de Serviços"}</h1>
           <p className="text-muted-foreground text-sm">

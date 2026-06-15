@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { ServiceOrder, getServiceOrder } from '@/lib/api-service-orders';
+import { ServiceOrder, getServiceOrder } from '@/lib/api/modules/service-orders';
 import { ServiceOrderExecution } from '@/components/service-orders/service-order-execution';
 import Link from 'next/link';
 

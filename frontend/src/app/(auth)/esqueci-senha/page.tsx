@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Mail, Loader2, ArrowLeft, Send } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ApiClient } from "@/lib/api-client";
+import { ApiClient } from "@/lib/api/client";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");

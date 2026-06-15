@@ -1,29 +1,66 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
-import { AllExceptionsFilter } from './core/all-exceptions.filter';
+import { XssSanitizePipe } from './common/pipes/xss-sanitize.pipe';
 import { EmptyStringToNullPipe } from './common/pipes/empty-string-to-null.pipe';
+import { setupSwagger } from './core/config/swagger.config';
+import * as cookieParser from 'cookie-parser';
+import { doubleCsrfProtection } from './core/security/csrf';
+import * as Sentry from '@sentry/node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Headers de segurança HTTP (XSS, Clickjacking, MIME sniffing, etc.)
-  app.use(helmet());
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    integrations: [
+      nodeProfilingIntegration(),
+    ],
+    tracesSampleRate: 1.0,
+    profilesSampleRate: 1.0,
+    environment: process.env.NODE_ENV || 'development',
+  });
 
-  // Configura um prefixo global para as rotas da API (ex: http://localhost:3001/api/...)
+  app.use((cookieParser as any)(process.env.COOKIE_SECRET || 'cookie-secret'));
+
+  // Headers de segurança HTTP (XSS, Clickjacking, MIME sniffing, etc.)
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", process.env.CORS_ORIGIN || 'http://localhost:3000'],
+      },
+    },
+  }));
+
+  // Configura um prefixo global para as rotas da API (ex: http://localhost:3001/api/v1/...)
   app.setGlobalPrefix('api');
-  app.useGlobalFilters(new AllExceptionsFilter());
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
+
+  // CSRF Protection middleware
+  app.use(doubleCsrfProtection);
 
   // Habilita validação de dados globalmente para DTOs
   app.useGlobalPipes(
     new EmptyStringToNullPipe(),
+    new XssSanitizePipe(),
     new ValidationPipe({
       whitelist: true,
       transform: true,
       forbidNonWhitelisted: true,
     }),
   );
+
+  // Configuração do Swagger OpenAPI
+  setupSwagger(app);
 
   // CORS restritivo — apenas domínios autorizados via variável de ambiente
   const corsOrigin = process.env.CORS_ORIGIN;

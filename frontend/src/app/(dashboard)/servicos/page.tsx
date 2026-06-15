@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Wrench, Plus, Clock, Search, ArrowLeft, Trash2, Edit, Download, Upload, XCircle, CheckCircle2, ShieldAlert } from 'lucide-react';
-import { ApiClient } from '@/lib/api-client';
+import { ApiClient } from '@/lib/api/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -82,14 +82,11 @@ export default function ServicosPage() {
     setLoading(true);
     try {
       const data = await ApiClient.get<{
-        success: boolean;
-        data: {
-          items: Service[];
-          total: number;
-          page: number;
-          limit: number;
-          totalPages: number;
-        };
+        items: Service[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
       }>('/services', {
         params: {
           page: String(page),
@@ -101,10 +98,10 @@ export default function ServicosPage() {
         },
       });
 
-      if (data.success) {
-        setServices(data.data.items);
-        setTotal(data.data.total);
-        setTotalPages(data.data.totalPages);
+      if (data && data.items) {
+        setServices(data.items);
+        setTotal(data.total);
+        setTotalPages(data.totalPages);
       }
     } catch (e: any) {
       console.error('Erro ao buscar serviços:', e.message);
@@ -211,14 +208,14 @@ export default function ServicosPage() {
 
     try {
       if (selectedService) {
-        const res = await ApiClient.put<{ success: boolean }>(`/services/${selectedService.id}`, payload);
-        if (res.success) {
+        const res = await ApiClient.put<Service>(`/services/${selectedService.id}`, payload);
+        if (res) {
           setIsFormModalOpen(false);
           fetchServices();
         }
       } else {
-        const res = await ApiClient.post<{ success: boolean }>('/services', payload);
-        if (res.success) {
+        const res = await ApiClient.post<Service>('/services', payload);
+        if (res) {
           setIsFormModalOpen(false);
           fetchServices();
         }
@@ -235,10 +232,8 @@ export default function ServicosPage() {
     if (!confirm('Deseja realmente arquivar este serviço do catálogo?')) return;
 
     try {
-      const res = await ApiClient.delete<{ success: boolean }>(`/services/${id}`);
-      if (res.success) {
-        fetchServices();
-      }
+      await ApiClient.delete<void>(`/services/${id}`);
+      fetchServices();
     } catch (err: any) {
       alert(err.message || 'Erro ao arquivar serviço.');
     }
@@ -322,13 +317,10 @@ export default function ServicosPage() {
       reader.onload = async (event) => {
         try {
           const csvContent = event.target?.result as string;
-          const res = await ApiClient.post<{
-            success: boolean;
-            data: any[];
-          }>('/services/import/validate', { csv: csvContent });
+          const data = await ApiClient.post<any[]>('/services/import/validate', { csv: csvContent });
 
-          if (res.success) {
-            setValidationItems(res.data);
+          if (data) {
+            setValidationItems(data);
             setImportStep('PREVIEW');
           }
         } catch (err: any) {
@@ -362,18 +354,15 @@ export default function ServicosPage() {
     setImportError('');
 
     try {
-      const res = await ApiClient.post<{
-        success: boolean;
-        data: {
-          totalProcessed: number;
-          createdCount: number;
-          updatedCount: number;
-          errorCount: number;
-        };
+      const data = await ApiClient.post<{
+        totalProcessed: number;
+        createdCount: number;
+        updatedCount: number;
+        errorCount: number;
       }>('/services/import/confirm', { items: validItems });
 
-      if (res.success) {
-        setImportSummary(res.data);
+      if (data) {
+        setImportSummary(data);
         setImportStep('SUCCESS');
         fetchServices();
       }
@@ -565,6 +554,7 @@ export default function ServicosPage() {
                         size="icon"
                         className="h-10 w-10 rounded-xl text-zinc-500 hover:text-violet-400 hover:bg-violet-400/10 transition-all"
                         onClick={() => handleOpenEditModal(service)}
+                        aria-label="Editar"
                       >
                         <Edit className="w-5 h-5" />
                       </Button>
@@ -573,6 +563,7 @@ export default function ServicosPage() {
                         size="icon"
                         className="h-10 w-10 rounded-xl text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-all"
                         onClick={() => handleDelete(service.id)}
+                        aria-label="Excluir"
                       >
                         <Trash2 className="w-5 h-5" />
                       </Button>

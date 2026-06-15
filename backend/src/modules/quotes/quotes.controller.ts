@@ -23,9 +23,12 @@ import { JwtAuthGuard } from '../../core/auth/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
 import { CompanyContext } from '../../common/company/company.context';
+import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiBearerAuth } from "@nestjs/swagger";
 
 @Controller('quotes')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
+@ApiTags('Quotes')
+@ApiBearerAuth('JWT-auth')
 export class QuotesController {
   constructor(
     private readonly quotesService: QuotesService,
@@ -34,6 +37,10 @@ export class QuotesController {
 
   @Post()
   @RequirePermissions('*', 'quote:create')
+    @ApiOperation({ summary: 'Criar Quotes' })
+    @ApiCreatedResponse({ description: 'Quotes criado com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   create(@Body() createQuoteDto: CreateQuoteDto) {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) {
@@ -44,6 +51,10 @@ export class QuotesController {
 
   @Get()
   @RequirePermissions('*', 'quote:read')
+    @ApiOperation({ summary: 'Listar todos Quotes' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   findAll(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -63,6 +74,10 @@ export class QuotesController {
 
   @Get(':id')
   @RequirePermissions('*', 'quote:read')
+    @ApiOperation({ summary: 'Buscar um Quotes' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   findOne(@Param('id') id: string) {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) {
@@ -73,6 +88,10 @@ export class QuotesController {
 
   @Put(':id')
   @RequirePermissions('*', 'quote:update')
+    @ApiOperation({ summary: 'Atualizar Quotes' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   update(@Param('id') id: string, @Body() updateQuoteDto: UpdateQuoteDto) {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) {
@@ -83,6 +102,10 @@ export class QuotesController {
 
   @Post(':id/sign')
   @RequirePermissions('*', 'quote:update')
+    @ApiOperation({ summary: 'Operation saveSignature' })
+    @ApiCreatedResponse({ description: 'Quotes criado com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   saveSignature(@Param('id') id: string, @Body('signature') signature: string) {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) {
@@ -97,6 +120,10 @@ export class QuotesController {
   @Delete(':id')
   @RequirePermissions('*', 'quote:delete')
   @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Remover Quotes' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   remove(@Param('id') id: string) {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) {
@@ -107,6 +134,10 @@ export class QuotesController {
 
   @Get(':id/pdf')
   @RequirePermissions('*', 'quote:read')
+    @ApiOperation({ summary: 'Operation getPdf' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   async getPdf(@Param('id') id: string, @Res() res: Response) {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) {

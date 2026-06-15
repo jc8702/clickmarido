@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Users, Plus, Phone, Mail, Trash2, Search, ArrowLeft, Edit, XCircle, ShieldAlert, CheckCircle2 } from 'lucide-react';
-import { ApiClient } from '@/lib/api-client';
+import { ApiClient } from '@/lib/api/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -369,6 +369,7 @@ export default function UsuariosPage() {
                         size="icon"
                         className="h-10 w-10 rounded-xl text-zinc-500 hover:text-blue-400 hover:bg-blue-400/10 transition-all"
                         onClick={() => handleOpenEditModal(targetUser)}
+                        aria-label="Editar"
                       >
                         <Edit className="w-5 h-5" />
                       </Button>
@@ -378,6 +379,7 @@ export default function UsuariosPage() {
                         className="h-10 w-10 rounded-xl text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-all"
                         onClick={() => handleDelete(targetUser.id)}
                         disabled={targetUser.id === currentUser?.id}
+                        aria-label="Excluir"
                       >
                         <Trash2 className="w-5 h-5" />
                       </Button>

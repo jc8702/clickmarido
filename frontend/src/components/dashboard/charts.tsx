@@ -27,7 +27,7 @@ interface CommonChartProps {
   className?: string;
 }
 
-export function DashboardLineChart({ data, title, dataKey, color = '#8b5cf6', className }: CommonChartProps) {
+export const DashboardLineChart = React.memo(function DashboardLineChart({ data, title, dataKey, color = '#8b5cf6', className }: CommonChartProps) {
   return (
     <Card className={`p-6 ${className || ''}`}>
       <h3 className="text-lg font-semibold mb-4 text-foreground">{title}</h3>
@@ -47,9 +47,9 @@ export function DashboardLineChart({ data, title, dataKey, color = '#8b5cf6', cl
       </div>
     </Card>
   );
-}
+});
 
-export function DashboardBarChart({ data, title, dataKey, color = '#3b82f6', className }: CommonChartProps) {
+export const DashboardBarChart = React.memo(function DashboardBarChart({ data, title, dataKey, color = '#3b82f6', className }: CommonChartProps) {
   return (
     <Card className={`p-6 ${className || ''}`}>
       <h3 className="text-lg font-semibold mb-4 text-foreground">{title}</h3>
@@ -69,4 +69,4 @@ export function DashboardBarChart({ data, title, dataKey, color = '#3b82f6', cla
       </div>
     </Card>
   );
-}
+});

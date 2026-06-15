@@ -1,4 +1,5 @@
 import { IsString, IsNotEmpty, IsOptional, IsNumber, IsDateString, IsIn } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 const RECEITA_CATEGORIES = ['PIX', 'DINHEIRO', 'CARTAO', 'TRANSFERENCIA'] as const;
 const DESPESA_CATEGORIES = ['COMBUSTIVEL', 'MATERIAIS', 'FERRAMENTAS', 'MARKETING'] as const;
@@ -9,32 +10,40 @@ export class CreateFinancialTransactionDto {
   @IsString()
   @IsNotEmpty({ message: 'O tipo é obrigatório' })
   @IsIn(TRANSACTION_TYPES, { message: 'Tipo deve ser RECEITA ou DESPESA' })
+    @ApiProperty({ description: 'Campo type', example: 'exemplo' })
   type: string;
 
   @IsString()
   @IsNotEmpty({ message: 'A categoria é obrigatória' })
+    @ApiProperty({ description: 'Campo category', example: 'exemplo' })
   category: string;
 
   @IsNumber({}, { message: 'O valor deve ser um número' })
+    @ApiProperty({ description: 'Campo value', example: 1 })
   value: number;
 
   @IsString()
   @IsOptional()
+    @ApiPropertyOptional({ description: 'Campo description', example: 'exemplo' })
   description?: string;
 
   @IsDateString({}, { message: 'Data inválida' })
+    @ApiProperty({ description: 'Campo transactionDate', example: 'exemplo' })
   transactionDate: string;
 
   @IsDateString()
   @IsOptional()
+    @ApiPropertyOptional({ description: 'Campo dueDate', example: 'exemplo' })
   dueDate?: string;
 
   @IsString()
   @IsOptional()
   @IsIn(TRANSACTION_STATUS)
+    @ApiPropertyOptional({ description: 'Campo status', example: 'exemplo' })
   status?: string;
 
   @IsDateString()
   @IsOptional()
+    @ApiPropertyOptional({ description: 'Campo paidAt', example: 'exemplo' })
   paidAt?: string;
 }

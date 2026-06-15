@@ -1,28 +1,36 @@
 #!/bin/bash
+# scripts/backup-db.sh
+# Uso: ./backup-db.sh
+# Dependências: pg_dump, gzip
 
-# Configurações do Banco
-DB_CONTAINER_NAME="clickmarido-db"
-DB_USER="clickmarido_user"
-DB_NAME="clickmarido_db"
-BACKUP_DIR="./backups"
-DATE=$(date +%Y-%m-%d_%H-%M-%S)
-BACKUP_FILE="${BACKUP_DIR}/clickmarido_backup_${DATE}.sql.gz"
+set -e
 
-# Cria diretório de backup se não existir
-mkdir -p "${BACKUP_DIR}"
+# Configurações (Normalmente providas pelo env)
+BACKUP_DIR=${BACKUP_DIR:-"/var/backups/clickmarido"}
+DB_HOST=${DB_HOST:-"localhost"}
+DB_PORT=${DB_PORT:-"5432"}
+DB_USER=${DB_USER:-"postgres"}
+DB_NAME=${DB_NAME:-"clickmarido"}
+RETENTION_DAYS=${RETENTION_DAYS:-7}
 
-echo "[$(date)] Iniciando Backup do Banco de Dados..."
+# Senha: Para cron, configure ~/.pgpass ou passe a variável PGPASSWORD
+export PGPASSWORD=${DB_PASSWORD}
 
-# Executa o dump comprimido via Docker
-docker exec -t "${DB_CONTAINER_NAME}" pg_dump -U "${DB_USER}" "${DB_NAME}" | gzip > "${BACKUP_FILE}"
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+FILENAME="db_backup_${TIMESTAMP}.sql.gz"
+FILEPATH="${BACKUP_DIR}/${FILENAME}"
 
-if [ $? -eq 0 ]; then
-  echo "[$(date)] Backup realizado com sucesso: ${BACKUP_FILE}"
-else
-  echo "[$(date)] ERRO: Falha ao gerar backup." >&2
-  exit 1
-fi
+echo "Iniciando backup do banco de dados ${DB_NAME} em ${DB_HOST}..."
 
-# Remove backups com mais de 7 dias
-find "${BACKUP_DIR}" -name "clickmarido_backup_*.sql.gz" -mtime +7 -exec rm {} \;
-echo "[$(date)] Rotatividade de arquivos antigos concluída."
+# Cria diretório se não existir
+mkdir -p "$BACKUP_DIR"
+
+# Executa o dump e comprime diretamente
+pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" --no-owner --clean | gzip > "$FILEPATH"
+
+echo "✅ Backup finalizado com sucesso: $FILEPATH"
+
+# Rotação de logs
+echo "Limpando backups mais antigos que $RETENTION_DAYS dias..."
+find "$BACKUP_DIR" -type f -name "db_backup_*.sql.gz" -mtime +$RETENTION_DAYS -exec rm -f {} \;
+echo "Limpeza concluída."

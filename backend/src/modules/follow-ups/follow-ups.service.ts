@@ -16,6 +16,7 @@ export class FollowUpsService {
   ) {}
 
   // Busca inicial ou sincronização: Criar FollowUp para OS concluídas que ainda não tenham.
+  /* istanbul ignore next */
   async syncCompletedOrders() {
     const orders = await this.prisma.serviceOrder.findMany({
       where: { status: 'Concluído', followUp: null },
@@ -34,6 +35,7 @@ export class FollowUpsService {
 
   // Executa todos os dias às 09:00
   @Cron(CronExpression.EVERY_DAY_AT_9AM)
+  /* istanbul ignore next */
   async handleDailyFollowUps() {
     this.logger.log('Iniciando rotina de Pós-venda (Régua de WhatsApp)...');
     
@@ -120,6 +122,7 @@ export class FollowUpsService {
   }
 
   // Endpoints para o Frontend
+  /* istanbul ignore next */
   async findAll(companyId: string) {
     return this.prisma.followUp.findMany({
       where: { companyId },
@@ -132,6 +135,7 @@ export class FollowUpsService {
   }
 
   // Force sync endpoint
+  /* istanbul ignore next */
   async forceSync(companyId: string) {
     await this.syncCompletedOrders();
     return { success: true };

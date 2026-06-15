@@ -100,6 +100,7 @@ export function Sidebar() {
           <button
             className="rounded-lg p-1.5 hover:bg-[var(--border)] md:hidden text-[var(--foreground)]"
             onClick={() => setSidebarOpen(false)}
+            aria-label="Fechar menu"
           >
             <X className="h-5 w-5" />
           </button>
@@ -153,7 +154,7 @@ export function Sidebar() {
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             className="flex w-full items-center justify-center rounded-xl py-2 transition-colors text-[var(--foreground)]/50 hover:text-[var(--foreground)] hover:bg-[var(--border)]/60"
-            title={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
+            aria-label={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
           >
             {sidebarCollapsed ? (
               <ChevronRight className="h-5 w-5" />

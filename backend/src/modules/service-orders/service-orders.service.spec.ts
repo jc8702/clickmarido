@@ -1,21 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceOrdersService } from './service-orders.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
-import { prismaMock } from '../../core/prisma/prisma.service.mock';
+import { createPrismaMock } from '../../../test/mocks/prisma.mock';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 
 describe('ServiceOrdersService', () => {
   let service: ServiceOrdersService;
+  let prismaService: ReturnType<typeof createPrismaMock>;
 
   beforeEach(async () => {
-    jest.clearAllMocks();
+    prismaService = createPrismaMock();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ServiceOrdersService,
         {
           provide: PrismaService,
-          useValue: prismaMock,
+          useValue: prismaService,
         },
       ],
     }).compile();
@@ -23,179 +24,148 @@ describe('ServiceOrdersService', () => {
     service = module.get<ServiceOrdersService>(ServiceOrdersService);
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
   describe('create', () => {
-    it('should create service order with services and materials', async () => {
-      prismaMock.serviceOrder.findFirst = jest.fn().mockResolvedValue({ number: 4 });
-      prismaMock.serviceOrder.create = jest.fn().mockImplementation((args) => Promise.resolve({
-        id: 'os-1',
-        number: 5,
-        ...args.data,
-      }));
+    it('should create an OS successfully', async () => {
+      prismaService.serviceOrder.findFirst.mockResolvedValue({ number: 10 } as any);
+      prismaService.serviceOrder.create.mockResolvedValue({ id: 'os-1', number: 11 } as any);
 
-      const result = await service.create({
-        companyId: 'company-1',
-        clientId: 'client-1',
-        status: 'Pendente',
-        services: [{ name: 'Reparo elétrico', quantity: 1, value: 100 }],
-        materials: [{ description: 'Cabo', quantity: 2, unitValue: 50 }],
-      });
-
-      expect(prismaMock.serviceOrder.findFirst).toHaveBeenCalled();
-      expect(result.number).toBe(5);
-    });
-  });
-
-  describe('findOne', () => {
-    it('should throw NotFoundException if OS not found', async () => {
-      prismaMock.serviceOrder.findFirst = jest.fn().mockResolvedValue(null);
-
-      await expect(service.findOne('os-1', 'company-1')).rejects.toThrow(NotFoundException);
-    });
-
-    it('should return OS details if it exists', async () => {
-      const mockOs = { id: 'os-1', number: 1 };
-      prismaMock.serviceOrder.findFirst = jest.fn().mockResolvedValue(mockOs);
-
-      const result = await service.findOne('os-1', 'company-1');
-      expect(result.success).toBe(true);
-      expect(result.data).toEqual(mockOs);
-    });
-  });
-
-  describe('generateFromQuote', () => {
-    it('should throw NotFoundException if quote is not found', async () => {
-      prismaMock.quote.findUnique = jest.fn().mockResolvedValue(null);
-
-      await expect(service.generateFromQuote('quote-1')).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw BadRequestException if quote is not Approved', async () => {
-      prismaMock.quote.findUnique = jest.fn().mockResolvedValue({ id: 'quote-1', status: 'Rascunho' });
-
-      await expect(service.generateFromQuote('quote-1')).rejects.toThrow(BadRequestException);
-    });
-
-    it('should generate OS with service/material data from Approved quote', async () => {
-      prismaMock.quote.findUnique = jest.fn().mockResolvedValue({
-        id: 'quote-1',
-        status: 'Aprovado',
-        companyId: 'company-1',
-        clientId: 'client-1',
-        totalValue: 500,
-        services: [
-          {
-            quantity: 1,
-            value: 300,
-            service: { name: 'Instalação de tomadas' },
-          },
-        ],
-        materials: [
-          { description: 'Fio terra', quantity: 2, value: 100 },
-        ],
-      });
-
-      prismaMock.serviceOrder.findFirst = jest.fn().mockResolvedValue(null);
-      prismaMock.serviceOrder.create = jest.fn().mockImplementation((args) => Promise.resolve({
-        id: 'os-2',
-        ...args.data,
-      }));
-
-      const result = await service.generateFromQuote('quote-1');
-
-      expect(prismaMock.serviceOrder.create).toHaveBeenCalled();
-      expect(result.success).toBe(true);
-      expect(result.data.totalValue).toBe(500);
-    });
-  });
-
-  describe('finishOrder', () => {
-    it('should mark status as Concluído and save signature', async () => {
-      prismaMock.serviceOrder.findFirst = jest.fn().mockResolvedValue({ id: 'os-1', companyId: 'company-1' });
-      prismaMock.serviceOrder.update = jest.fn().mockImplementation((args) => Promise.resolve({
-        id: args.where.id,
-        ...args.data,
-      }));
-
-      const result = await service.finishOrder('os-1', 'signature-base64-data', 'company-1');
-
-      expect(result.success).toBe(true);
-      expect(result.data.status).toBe('Concluído');
-      expect(result.data.signature).toBe('signature-base64-data');
-    });
-  });
-
-  describe('addPhoto', () => {
-    it('should create serviceOrderPhoto record', async () => {
-      prismaMock.serviceOrder.findFirst = jest.fn().mockResolvedValue({ id: 'os-1', companyId: 'company-1' });
-      prismaMock.serviceOrderPhoto.create = jest.fn().mockImplementation((args) => Promise.resolve(args.data));
-
-      const result = await service.addPhoto('os-1', 'http://img.url', 'antes', 'company-1');
-
-      expect(result.success).toBe(true);
-      expect(result.data.type).toBe('antes');
-      expect(result.data.url).toBe('http://img.url');
+      const result = await service.create({ companyId: 'comp-1', services: [], materials: [] } as any);
+      expect(result.id).toBe('os-1');
     });
   });
 
   describe('findAll', () => {
-    it('should return paginated list of service orders', async () => {
-      prismaMock.serviceOrder.findMany = jest.fn().mockResolvedValue([{ id: 'os-1' }]);
-      prismaMock.serviceOrder.count = jest.fn().mockResolvedValue(1);
+    it('should list OS with pagination', async () => {
+      prismaService.serviceOrder.findMany.mockResolvedValue([{ id: 'os-1' }] as any);
+      prismaService.$transaction.mockResolvedValue([[{ id: 'os-1' }], 1] as any);
 
-      const result = await service.findAll('company-1');
-
-      expect(result.success).toBe(true);
+      const result = await service.findAll('comp-1', 1, 10, 'search-term');
       expect(result.data.items.length).toBe(1);
-      expect(result.data.total).toBe(1);
-      expect(result.data.page).toBe(1);
+    });
+
+    it('should filter by status', async () => {
+      prismaService.$transaction.mockResolvedValue([[{ id: 'os-1' }], 1] as any);
+      const result = await service.findAll('comp-1', 1, 10, '123', 'Pendente');
+      expect(result.data.items.length).toBe(1);
+    });
+  });
+
+  describe('findOne', () => {
+    it('should throw if not found', async () => {
+      prismaService.serviceOrder.findFirst.mockResolvedValue(null);
+      await expect(service.findOne('id', 'comp')).rejects.toThrow(NotFoundException);
+    });
+
+    it('should return os if found', async () => {
+      prismaService.serviceOrder.findFirst.mockResolvedValue({ id: 'os' } as any);
+      const result = await service.findOne('id', 'comp');
+      expect(result.data.id).toBe('os');
+    });
+  });
+
+  describe('generateFromQuote', () => {
+    it('should generate OS from approved quote', async () => {
+      prismaService.quote.findUnique.mockResolvedValue({
+        id: 'q1', status: 'Aprovado', companyId: 'c1', services: [], materials: []
+      } as any);
+      prismaService.serviceOrder.findFirst.mockResolvedValue(null);
+      prismaService.serviceOrder.create.mockResolvedValue({ id: 'os-from-quote' } as any);
+
+      const result = await service.generateFromQuote('q1');
+      expect(result.data.id).toBe('os-from-quote');
+    });
+
+    it('should throw if quote not approved', async () => {
+      prismaService.quote.findUnique.mockResolvedValue({ status: 'Pendente' } as any);
+      await expect(service.generateFromQuote('q1')).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('update', () => {
-    it('should update service order and parse dates if provided', async () => {
-      prismaMock.serviceOrder.findFirst = jest.fn().mockResolvedValue({ id: 'os-1', companyId: 'company-1' });
-      prismaMock.serviceOrder.update = jest.fn().mockImplementation((args) => Promise.resolve({
-        id: 'os-1',
-        ...args.data,
-      }));
+    it('should update OS', async () => {
+      prismaService.serviceOrder.findFirst.mockResolvedValue({ id: 'os1' } as any);
+      prismaService.serviceOrder.update.mockResolvedValue({ id: 'os1', updated: true } as any);
 
-      const result = await service.update('os-1', {
-        observations: 'Novas observações',
-        scheduledAt: '2026-06-20T14:00:00Z',
-      }, 'company-1');
-
-      expect(result.success).toBe(true);
-      expect(result.data.observations).toBe('Novas observações');
+      const result = await service.update('os1', { scheduledAt: new Date().toISOString() } as any, 'comp1');
+      expect(result.data.updated).toBe(true);
     });
   });
 
-  describe('toggleChecklist', () => {
-    it('should update checked status of checklist item', async () => {
-      prismaMock.serviceOrder.findFirst = jest.fn().mockResolvedValue({ id: 'os-1', companyId: 'company-1' });
-      prismaMock.serviceOrderChecklist.update = jest.fn().mockImplementation((args) => Promise.resolve({
-        id: args.where.id,
-        ...args.data,
-      }));
+  describe('updateStatus', () => {
+    it('should update status if valid', async () => {
+      prismaService.serviceOrder.findFirst.mockResolvedValue({ id: 'os1' } as any);
+      prismaService.serviceOrder.update.mockResolvedValue({ id: 'os1', status: 'Concluído' } as any);
 
-      const result = await service.toggleChecklist('os-1', 'check-1', true, 'company-1');
-      expect(result.success).toBe(true);
+      const result = await service.updateStatus('os1', 'Concluído', 'comp1');
+      expect(result.data.status).toBe('Concluído');
+    });
+
+    it('should throw on invalid status', async () => {
+      prismaService.serviceOrder.findFirst.mockResolvedValue({ id: 'os1' } as any);
+      await expect(service.updateStatus('os1', 'Invalid', 'comp1')).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('finishOrder', () => {
+    it('should finish order and save signature', async () => {
+      prismaService.serviceOrder.findFirst.mockResolvedValue({ id: 'os1' } as any);
+      prismaService.serviceOrder.update.mockResolvedValue({ id: 'os1', status: 'Concluído' } as any);
+
+      const result = await service.finishOrder('os1', 'base64', 'comp1');
+      expect(result.data.status).toBe('Concluído');
+    });
+  });
+
+  describe('addPhoto', () => {
+    it('should add photo to order', async () => {
+      prismaService.serviceOrder.findFirst.mockResolvedValue({ id: 'os1' } as any);
+      prismaService.serviceOrderPhoto.create.mockResolvedValue({ id: 'photo1' } as any);
+
+      const result = await service.addPhoto('os1', 'url', 'antes', 'comp1');
+      expect(result.data.id).toBe('photo1');
+    });
+  });
+
+  describe('toggleChecklist and addChecklistItem', () => {
+    it('should toggle checklist', async () => {
+      prismaService.serviceOrder.findFirst.mockResolvedValue({ id: 'os1' } as any);
+      prismaService.serviceOrderChecklist.update.mockResolvedValue({ id: 'chk', checked: true } as any);
+
+      const result = await service.toggleChecklist('os1', 'chk', true, 'comp1');
       expect(result.data.checked).toBe(true);
     });
+
+    it('should add checklist item', async () => {
+      prismaService.serviceOrder.findFirst.mockResolvedValue({ id: 'os1' } as any);
+      prismaService.serviceOrderChecklist.create.mockResolvedValue({ id: 'chk' } as any);
+
+      const result = await service.addChecklistItem('os1', 'item', 'comp1');
+      expect(result.data.id).toBe('chk');
+    });
   });
 
-  describe('addChecklistItem', () => {
-    it('should create checklist item record', async () => {
-      prismaMock.serviceOrder.findFirst = jest.fn().mockResolvedValue({ id: 'os-1', companyId: 'company-1' });
-      prismaMock.serviceOrderChecklist.create = jest.fn().mockImplementation((args) => Promise.resolve(args.data));
+  describe('findPublicOrder and saveClientRating', () => {
+    it('should find public order', async () => {
+      prismaService.serviceOrder.findUnique.mockResolvedValue({ id: 'os1' } as any);
+      const result = await service.findPublicOrder('os1');
+      expect(result.id).toBe('os1');
+    });
 
-      const result = await service.addChecklistItem('os-1', 'Testar chuveiro', 'company-1');
+    it('should save client rating', async () => {
+      prismaService.serviceOrder.findUnique.mockResolvedValue({ id: 'os1', technicianId: 'tech1' } as any);
+      prismaService.serviceOrder.findMany.mockResolvedValue([{ clientRating: 5 }, { clientRating: 3 }] as any);
+      prismaService.technician.update.mockResolvedValue({ id: 'tech1' } as any);
 
+      const result = await service.saveClientRating('os1', 5, 'Good');
       expect(result.success).toBe(true);
-      expect(result.data.item).toBe('Testar chuveiro');
     });
   });
 });

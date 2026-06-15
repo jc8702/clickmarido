@@ -53,7 +53,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <Topbar />
 
           {/* Área do Conteúdo Principal */}
-          <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-background text-foreground transition-colors duration-200">
+          <main id="main-content" className="flex-1 overflow-y-auto p-4 md:p-6 bg-background text-foreground transition-colors duration-200">
             {children}
           </main>
         </div>

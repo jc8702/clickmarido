@@ -3,13 +3,20 @@ import { FollowUpsService } from './follow-ups.service';
 import { JwtAuthGuard } from '../../core/auth/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { CompanyContext } from '../../common/company/company.context';
+import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiBearerAuth } from "@nestjs/swagger";
 
 @Controller('follow-ups')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
+@ApiTags('Follow-ups')
+@ApiBearerAuth('JWT-auth')
 export class FollowUpsController {
   constructor(private readonly followUpsService: FollowUpsService) {}
 
   @Get()
+    @ApiOperation({ summary: 'Listar todos Follow-ups' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   findAll() {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) throw new BadRequestException('Empresa não encontrada');
@@ -17,6 +24,10 @@ export class FollowUpsController {
   }
 
   @Post('sync')
+    @ApiOperation({ summary: 'Operation forceSync' })
+    @ApiCreatedResponse({ description: 'Follow-ups criado com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   forceSync() {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) throw new BadRequestException('Empresa não encontrada');
@@ -24,6 +35,10 @@ export class FollowUpsController {
   }
 
   @Post('trigger')
+    @ApiOperation({ summary: 'Operation triggerCronManually' })
+    @ApiCreatedResponse({ description: 'Follow-ups criado com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   triggerCronManually() {
     // Apenas para testes da API. Dispara o CRON de todo mundo
     this.followUpsService.handleDailyFollowUps();

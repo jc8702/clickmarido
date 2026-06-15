@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { ServiceOrder, addPhoto, addChecklistItem, toggleChecklistItem, finishServiceOrder, updateOrderStatus } from '@/lib/api-service-orders';
+import { ServiceOrder, addPhoto, addChecklistItem, toggleChecklistItem, finishServiceOrder, updateOrderStatus } from '@/lib/api/modules/service-orders';
 import { Send } from 'lucide-react';
+import Image from 'next/image';
 
 interface ExecutionProps {
   os: ServiceOrder;
@@ -129,7 +130,9 @@ export function ServiceOrderExecution({ os, onUpdate }: ExecutionProps) {
             <input type="file" accept="image/*" onChange={e => handlePhotoUpload(e, 'antes')} className="mb-4 text-sm" />
             <div className="flex flex-wrap gap-2 justify-center">
               {os.photos?.filter(p => p.type === 'antes').map(p => (
-                <img key={p.id} src={p.url} alt="Antes" className="w-24 h-24 object-cover rounded" />
+                <div key={p.id} className="relative w-24 h-24">
+                  <Image src={p.url} alt="Antes" fill className="object-cover rounded" />
+                </div>
               ))}
             </div>
           </div>
@@ -138,7 +141,9 @@ export function ServiceOrderExecution({ os, onUpdate }: ExecutionProps) {
             <input type="file" accept="image/*" onChange={e => handlePhotoUpload(e, 'depois')} className="mb-4 text-sm" />
             <div className="flex flex-wrap gap-2 justify-center">
               {os.photos?.filter(p => p.type === 'depois').map(p => (
-                <img key={p.id} src={p.url} alt="Depois" className="w-24 h-24 object-cover rounded" />
+                <div key={p.id} className="relative w-24 h-24">
+                  <Image src={p.url} alt="Depois" fill className="object-cover rounded" />
+                </div>
               ))}
             </div>
           </div>
@@ -151,7 +156,11 @@ export function ServiceOrderExecution({ os, onUpdate }: ExecutionProps) {
             <div className="bg-green-100 text-green-800 p-4 rounded">
               <h3 className="font-bold text-xl">OS Concluída!</h3>
               <p>Esta OS já foi finalizada e assinada.</p>
-              {os.signature && <img src={os.signature} alt="Assinatura" className="mx-auto mt-4 w-32 border bg-white" />}
+              {os.signature && (
+                <div className="relative mx-auto mt-4 w-32 h-16 border bg-white">
+                  <Image src={os.signature} alt="Assinatura" fill className="object-contain" />
+                </div>
+              )}
               <div className="mt-6 border-t border-green-200 pt-4">
                 <button 
                   onClick={() => {

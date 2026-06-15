@@ -1,7 +1,13 @@
 'use client';
 
-import { Technician } from '@/lib/api-technicians';
+import { Technician } from '@/lib/api/modules/technicians';
 import Link from 'next/link';
+import { DataTable } from '@/components/ui/data-table';
+import { ColumnDef } from '@tanstack/react-table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Edit, Trash2, ExternalLink } from 'lucide-react';
 
 interface TechniciansTableProps {
   technicians: Technician[];
@@ -10,46 +16,104 @@ interface TechniciansTableProps {
 }
 
 export function TechniciansTable({ technicians, onEdit, onDelete }: TechniciansTableProps) {
+  const columns: ColumnDef<Technician>[] = [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+          className="translate-y-[2px]"
+        />
+      ),
+      cell: ({ row }) => (
+        <div onClick={(e) => e.stopPropagation()}>
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
+            className="translate-y-[2px]"
+          />
+        </div>
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: 'name',
+      header: 'Nome',
+      cell: ({ row }) => <span className="font-bold text-foreground">{row.original.name}</span>,
+    },
+    {
+      accessorKey: 'phone',
+      header: 'Telefone',
+      cell: ({ row }) => <span className="text-muted-foreground text-sm">{row.original.phone}</span>,
+    },
+    {
+      accessorKey: 'specialty',
+      header: 'Especialidade',
+      cell: ({ row }) => <span className="text-muted-foreground text-sm">{row.original.specialty || '-'}</span>,
+      meta: { className: "hidden md:table-cell" },
+    },
+    {
+      accessorKey: 'rating',
+      header: 'Avaliação',
+      cell: ({ row }) => <span className="text-amber-400 font-bold text-sm">⭐ {row.original.rating.toFixed(1)}</span>,
+      meta: { className: "hidden lg:table-cell" },
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }) => {
+        const status = row.original.status;
+        return (
+          <Badge variant={status === 'Ativo' ? 'success' : 'destructive'} className="text-[10px] font-black uppercase tracking-tighter px-1.5 py-0">
+            {status}
+          </Badge>
+        );
+      },
+    },
+    {
+      id: 'actions',
+      cell: ({ row }) => {
+        const tech = row.original;
+        return (
+          <div className="flex justify-end gap-1">
+            <Link href={`/tecnicos/${tech.id}`} aria-label="Ver detalhes">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10">
+                <ExternalLink className="w-4 h-4" />
+              </Button>
+            </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10"
+              onClick={() => onEdit(tech)}
+              aria-label="Editar"
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+              onClick={() => { if(confirm('Excluir técnico?')) onDelete(tech.id); }}
+              aria-label="Excluir"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        );
+      },
+    },
+  ];
+
   return (
-    <div className="overflow-x-auto rounded-md border shadow-sm">
-      <table className="w-full text-sm text-left">
-        <thead className="bg-muted text-muted-foreground uppercase text-xs">
-          <tr>
-            <th className="px-4 py-3">Nome</th>
-            <th className="px-4 py-3">Telefone</th>
-            <th className="px-4 py-3">Especialidade</th>
-            <th className="px-4 py-3">Avaliação</th>
-            <th className="px-4 py-3">Status</th>
-            <th className="px-4 py-3 text-right">Ações</th>
-          </tr>
-        </thead>
-        <tbody className="bg-card">
-          {technicians.length === 0 ? (
-            <tr>
-              <td colSpan={6} className="px-4 py-4 text-center text-muted-foreground">Nenhum técnico cadastrado.</td>
-            </tr>
-          ) : (
-            technicians.map((tech) => (
-              <tr key={tech.id} className="border-t">
-                <td className="px-4 py-3 font-medium">{tech.name}</td>
-                <td className="px-4 py-3">{tech.phone}</td>
-                <td className="px-4 py-3">{tech.specialty || '-'}</td>
-                <td className="px-4 py-3">⭐ {tech.rating.toFixed(1)}</td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-1 text-xs rounded-full ${tech.status === 'Ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                    {tech.status}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <Link href={`/tecnicos/${tech.id}`} className="text-primary hover:underline mr-3 font-medium">Perfil</Link>
-                  <button onClick={() => onEdit(tech)} className="text-blue-500 hover:text-blue-700 mr-3">Editar</button>
-                  <button onClick={() => { if(confirm('Excluir técnico?')) onDelete(tech.id); }} className="text-red-500 hover:text-red-700">Excluir</button>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+    <DataTable
+      columns={columns}
+      data={technicians}
+      virtualized={technicians.length > 50}
+    />
   );
 }

@@ -13,9 +13,9 @@ interface KpiCardProps {
   className?: string;
 }
 
-export function KpiCard({ title, value, description, trend, trendLabel, icon, className }: KpiCardProps) {
-  const isPositive = trend && trend > 0;
-  const isNegative = trend && trend < 0;
+export const KpiCard = React.memo(function KpiCard({ title, value, description, trend, trendLabel, icon, className }: KpiCardProps) {
+  const isPositive = trend !== undefined && trend > 0;
+  const isNegative = trend !== undefined && trend < 0;
 
   return (
     <Card className={cn('p-6 flex flex-col gap-2', className)}>
@@ -38,8 +38,8 @@ export function KpiCard({ title, value, description, trend, trendLabel, icon, cl
                 !isPositive && !isNegative ? 'text-muted-foreground' : ''
               )}
             >
-              {isPositive && <ArrowUpIcon className="w-3 h-3 mr-1" />}
-              {isNegative && <ArrowDownIcon className="w-3 h-3 mr-1" />}
+              {isPositive ? <ArrowUpIcon className="w-3 h-3 mr-1" /> : null}
+              {isNegative ? <ArrowDownIcon className="w-3 h-3 mr-1" /> : null}
               {Math.abs(trend)}%
             </span>
           )}
@@ -50,4 +50,4 @@ export function KpiCard({ title, value, description, trend, trendLabel, icon, cl
       )}
     </Card>
   );
-}
+});

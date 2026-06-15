@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { Shield, ShieldAlert, ShieldCheck, Plus, X } from 'lucide-react';
-import { Warranty, getWarranties, createWarranty, updateWarrantyStatus } from '@/lib/api-warranties';
-import { ApiClient } from '@/lib/api-client';
-import { getServiceOrders } from '@/lib/api-service-orders';
+import { Warranty, getWarranties, createWarranty, updateWarrantyStatus } from '@/lib/api/modules/warranties';
+import { ApiClient } from '@/lib/api/client';
+import { getServiceOrders } from '@/lib/api/modules/service-orders';
 import { format, differenceInDays } from 'date-fns';
 
 export default function GarantiasPage() {

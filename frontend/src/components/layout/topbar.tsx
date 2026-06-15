@@ -76,6 +76,7 @@ export function Topbar() {
         <button
           onClick={() => setSidebarOpen(true)}
           className="rounded-lg p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 md:hidden"
+          aria-label="Abrir menu"
         >
           <Menu className="h-5 w-5 text-zinc-500 dark:text-zinc-400" />
         </button>
@@ -98,6 +99,8 @@ export function Topbar() {
             onClick={() => setTenantDropdownOpen(!tenantDropdownOpen)}
             onBlur={() => setTimeout(() => setTenantDropdownOpen(false), 200)}
             className="flex items-center gap-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 px-3 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            aria-label="Selecionar empresa"
+            aria-expanded={tenantDropdownOpen}
           >
             <Building2 className="h-3.5 w-3.5 text-amber-500" />
             <span className="hidden sm:inline max-w-[130px] truncate">
@@ -122,7 +125,7 @@ export function Topbar() {
         </div>
 
         {/* Botão de Notificações (Simulado) */}
-        <button className="rounded-lg p-2 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors relative">
+        <button className="rounded-lg p-2 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors relative" aria-label="Notificações">
           <Bell className="h-4 w-4" />
           <span className="absolute top-1 right-1 flex h-1.5 w-1.5 rounded-full bg-amber-500" />
         </button>
@@ -131,7 +134,7 @@ export function Topbar() {
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="rounded-lg p-2 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          title="Alternar tema"
+          aria-label="Alternar tema"
         >
           <Sun className="h-4 w-4 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
@@ -144,6 +147,7 @@ export function Topbar() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
+              aria-label="Open user menu"
               className="flex items-center gap-2 rounded-lg p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors outline-none"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 font-bold text-zinc-700 dark:text-zinc-300 uppercase">

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Package, Plus, Search, ArrowLeft, Trash2, Edit, TrendingUp, TrendingDown, Minus, XCircle, History, AlertTriangle } from 'lucide-react';
-import { ApiClient } from '@/lib/api-client';
+import { ApiClient } from '@/lib/api/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -424,7 +424,7 @@ export default function MateriaisPage() {
                           size="icon"
                           className="h-9 w-9 rounded-xl text-zinc-500 hover:text-amber-400 hover:bg-amber-400/10 transition-all"
                           onClick={() => handleOpenMovementModal(material)}
-                          title="Registrar Movimentação"
+                          aria-label="Registrar movimentação"
                         >
                           {material.quantity > 0 ? <TrendingUp className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                         </Button>
@@ -433,7 +433,7 @@ export default function MateriaisPage() {
                           size="icon"
                           className="h-9 w-9 rounded-xl text-zinc-500 hover:text-blue-400 hover:bg-blue-400/10 transition-all"
                           onClick={() => handleOpenHistory(material)}
-                          title="Histórico de Movimentações"
+                          aria-label="Histórico de movimentações"
                         >
                           <History className="w-4 h-4" />
                         </Button>
@@ -442,6 +442,7 @@ export default function MateriaisPage() {
                           size="icon"
                           className="h-9 w-9 rounded-xl text-zinc-500 hover:text-emerald-400 hover:bg-emerald-400/10 transition-all"
                           onClick={() => handleOpenEditModal(material)}
+                          aria-label="Editar"
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
@@ -450,6 +451,7 @@ export default function MateriaisPage() {
                           size="icon"
                           className="h-9 w-9 rounded-xl text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-all"
                           onClick={() => handleDelete(material.id)}
+                          aria-label="Excluir"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

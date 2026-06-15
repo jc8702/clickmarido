@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Lock, Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ApiClient } from "@/lib/api-client";
+import { ApiClient } from "@/lib/api/client";
 
 // Componente interno com useSearchParams envolto em Suspense para conformidade Next.js 15+
 function ResetPasswordForm() {

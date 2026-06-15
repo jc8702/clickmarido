@@ -20,14 +20,21 @@ import { JwtAuthGuard } from '../../core/auth/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
 import { CompanyContext } from '../../common/company/company.context';
+import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiBearerAuth } from "@nestjs/swagger";
 
 @Controller('clients')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
+@ApiTags('Clients')
+@ApiBearerAuth('JWT-auth')
 export class ClientsController {
   constructor(private readonly clientsService: ClientsService) {}
 
   @Post()
   @RequirePermissions('*', 'client:create')
+    @ApiOperation({ summary: 'Criar Clients' })
+    @ApiCreatedResponse({ description: 'Clients criado com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   create(@Body() createClientDto: CreateClientDto) {
     const companyId = CompanyContext.getCompanyId();
     const userId = CompanyContext.getUserId();
@@ -39,6 +46,10 @@ export class ClientsController {
 
   @Get()
   @RequirePermissions('*', 'client:read')
+    @ApiOperation({ summary: 'Listar todos Clients' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   findAll(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -58,6 +69,10 @@ export class ClientsController {
 
   @Get(':id')
   @RequirePermissions('*', 'client:read')
+    @ApiOperation({ summary: 'Buscar um Clients' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   findOne(@Param('id') id: string) {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) {
@@ -68,6 +83,10 @@ export class ClientsController {
 
   @Put(':id')
   @RequirePermissions('*', 'client:update')
+    @ApiOperation({ summary: 'Atualizar Clients' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   update(@Param('id') id: string, @Body() updateClientDto: UpdateClientDto) {
     const companyId = CompanyContext.getCompanyId();
     const userId = CompanyContext.getUserId();
@@ -80,6 +99,10 @@ export class ClientsController {
   @Delete(':id')
   @RequirePermissions('*', 'client:delete')
   @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Remover Clients' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   remove(@Param('id') id: string) {
     const companyId = CompanyContext.getCompanyId();
     const userId = CompanyContext.getUserId();
@@ -91,6 +114,10 @@ export class ClientsController {
 
   @Get(':id/history')
   @RequirePermissions('*', 'client:read')
+    @ApiOperation({ summary: 'Operation findHistory' })
+    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   findHistory(@Param('id') id: string) {
     const companyId = CompanyContext.getCompanyId();
     if (!companyId) {
@@ -101,6 +128,10 @@ export class ClientsController {
 
   @Post(':id/history')
   @RequirePermissions('*', 'client:update')
+    @ApiOperation({ summary: 'Operation createHistory' })
+    @ApiCreatedResponse({ description: 'Clients criado com sucesso.' })
+    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   createHistory(@Param('id') id: string, @Body() createHistoryDto: CreateHistoryDto) {
     const companyId = CompanyContext.getCompanyId();
     const userId = CompanyContext.getUserId();

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Technician, createTechnician, updateTechnician } from '@/lib/api-technicians';
+import { Technician, createTechnician, updateTechnician } from '@/lib/api/modules/technicians';
 
 interface TechnicianFormProps {
   initialData?: Technician | null;

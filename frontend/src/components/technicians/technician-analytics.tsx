@@ -1,6 +1,6 @@
 'use client';
 
-import { Technician } from '@/lib/api-technicians';
+import { Technician } from '@/lib/api/modules/technicians';
 
 interface TechnicianAnalyticsProps {
   ranking: Technician[];

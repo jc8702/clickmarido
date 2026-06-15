@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Conversation, Message, getConversations, getMessages, sendMessage } from '@/lib/api-whatsapp';
+import { Conversation, Message, getConversations, getMessages, sendMessage } from '@/lib/api/modules/whatsapp';
 import { Send, User, Check, CheckCheck, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 
