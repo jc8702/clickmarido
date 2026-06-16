@@ -5,7 +5,7 @@ export abstract class BaseException extends HttpException {
     public readonly code: string,
     message: string,
     status: HttpStatus,
-    public readonly details?: any,
+    public readonly details?: unknown,
   ) {
     super({ success: false, error: { code, message, details } }, status);
   }

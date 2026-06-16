@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const createPrismaMock = () => {
   const createModelMock = () => ({
     findMany: jest.fn().mockResolvedValue([]),

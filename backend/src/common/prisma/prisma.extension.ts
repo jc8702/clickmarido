@@ -17,11 +17,15 @@ export function withPerformanceMonitoring(prisma: PrismaClient) {
         const duration = Date.now() - start;
 
         // Ingestão genérica
-        logger.debug(`[DB Query] ${model || 'Raw'}.${operation} took ${duration}ms`);
+        logger.debug(
+          `[DB Query] ${model || 'Raw'}.${operation} took ${duration}ms`,
+        );
 
         // Regressão de Performance de Banco de Dados
         if (duration > QUERY_THRESHOLD_MS) {
-          logger.warn(`[SLOW QUERY ALERT] ${model || 'Raw'}.${operation} took ${duration}ms (Threshold: ${QUERY_THRESHOLD_MS}ms)`);
+          logger.warn(
+            `[SLOW QUERY ALERT] ${model || 'Raw'}.${operation} took ${duration}ms (Threshold: ${QUERY_THRESHOLD_MS}ms)`,
+          );
           // TODO: Report via Prometheus metrics exporter
         }
 

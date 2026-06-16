@@ -1,4 +1,10 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { LoggerService } from '../../core/logger/logger.service';
 import * as Sentry from '@sentry/node';
@@ -11,7 +17,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    const requestId = (request as any)['requestId'] || 'unknown';
+    const requestId =
+      (request as Request & { requestId?: string }).requestId || 'unknown';
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let code = 'INTERNAL_SERVER_ERROR';
@@ -20,17 +27,34 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
-      const exceptionResponse: any = exception.getResponse();
+      const exceptionResponse = exception.getResponse() as
+        | string
+        | Record<string, unknown>;
 
-      if (exceptionResponse && exceptionResponse.error) {
-        code = exceptionResponse.error.code || code;
-        message = exceptionResponse.error.message || exception.message;
-        details = exceptionResponse.error.details;
-      } else if (typeof exceptionResponse === 'object') {
-        message = exceptionResponse.message || exception.message;
-        code = exceptionResponse.error || HttpStatus[status];
+      if (
+        exceptionResponse &&
+        typeof exceptionResponse === 'object' &&
+        'error' in exceptionResponse
+      ) {
+        const errorObj = exceptionResponse.error as
+          | Record<string, unknown>
+          | undefined;
+        if (errorObj) {
+          code = (errorObj.code as string) || code;
+          message = (errorObj.message as string) || exception.message;
+          details = errorObj.details;
+        }
+      } else if (exceptionResponse && typeof exceptionResponse === 'object') {
+        const messageVal = exceptionResponse.message;
+        message = Array.isArray(messageVal)
+          ? messageVal.join(', ')
+          : (messageVal as string) || exception.message;
+        code = (exceptionResponse.error as string) || HttpStatus[status];
       } else {
-        message = exception.message;
+        message =
+          typeof exceptionResponse === 'string'
+            ? exceptionResponse
+            : exception.message;
         code = HttpStatus[status];
       }
     } else if (exception instanceof Error) {
@@ -49,17 +73,24 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       },
     };
 
+    const statusCode: number = status;
+
     // Logging the error
-    if (status >= 500) {
-      this.logger.error(`[${requestId}] ${request.method} ${request.url} - ${message}`, exception instanceof Error ? exception.stack : '');
+    if (statusCode >= 500) {
+      this.logger.error(
+        `[${requestId}] ${request.method} ${request.url} - ${message}`,
+        exception instanceof Error ? exception.stack : '',
+      );
       // Sentry integration for 500+
       Sentry.captureException(exception, {
         tags: { requestId, path: request.url },
       });
     } else {
-      this.logger.warn(`[${requestId}] ${request.method} ${request.url} - ${status}: ${message}`);
+      this.logger.warn(
+        `[${requestId}] ${request.method} ${request.url} - ${status}: ${message}`,
+      );
     }
 
-    response.status(status).json(errorPayload);
+    response.status(statusCode).json(errorPayload);
   }
 }

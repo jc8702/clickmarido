@@ -2,14 +2,14 @@ import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
 
 @Injectable()
 export class EmptyStringToNullPipe implements PipeTransform {
-  transform(value: any, metadata: ArgumentMetadata) {
+  transform(value: unknown, metadata: ArgumentMetadata): unknown {
     if (metadata.type === 'body' && value && typeof value === 'object') {
       return this.cleanObject(value);
     }
     return value;
   }
 
-  private cleanObject(obj: any): any {
+  private cleanObject(obj: unknown): unknown {
     if (obj === '') {
       return null;
     }
@@ -19,16 +19,18 @@ export class EmptyStringToNullPipe implements PipeTransform {
     }
 
     if (Array.isArray(obj)) {
-      return obj.map((item) => this.cleanObject(item));
+      return obj.map((item: unknown) => this.cleanObject(item));
     }
 
     if (obj instanceof Date) {
       return obj;
     }
 
-    const newObj = { ...obj };
+    const newObj = { ...(obj as Record<string, unknown>) };
     for (const key in newObj) {
-      newObj[key] = this.cleanObject(newObj[key]);
+      if (Object.prototype.hasOwnProperty.call(newObj, key)) {
+        newObj[key] = this.cleanObject(newObj[key]);
+      }
     }
     return newObj;
   }

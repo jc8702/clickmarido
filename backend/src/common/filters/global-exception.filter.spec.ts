@@ -19,7 +19,11 @@ describe('GlobalExceptionFilter', () => {
     const mockJson = jest.fn();
     const mockStatus = jest.fn().mockReturnValue({ json: mockJson });
     const mockGetResponse = jest.fn().mockReturnValue({ status: mockStatus });
-    const mockGetRequest = jest.fn().mockReturnValue({ url: '/api/test', method: 'GET', requestId: 'req-123' });
+    const mockGetRequest = jest.fn().mockReturnValue({
+      url: '/api/test',
+      method: 'GET',
+      requestId: 'req-123',
+    });
 
     const mockArgumentsHost = {
       switchToHttp: jest.fn().mockReturnValue({
@@ -28,20 +32,24 @@ describe('GlobalExceptionFilter', () => {
       }),
     } as unknown as ArgumentsHost;
 
-    const exception = new ClientException('Invalid data', 'BAD_REQUEST', { field: 'name' });
+    const exception = new ClientException('Invalid data', 'BAD_REQUEST', {
+      field: 'name',
+    });
 
     filter.catch(exception, mockArgumentsHost);
 
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
-    expect(mockJson).toHaveBeenCalledWith(expect.objectContaining({
-      success: false,
-      error: expect.objectContaining({
-        code: 'BAD_REQUEST',
-        message: 'Invalid data',
-        path: '/api/test',
-        requestId: 'req-123',
-      })
-    }));
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        error: expect.objectContaining({
+          code: 'BAD_REQUEST',
+          message: 'Invalid data',
+          path: '/api/test',
+          requestId: 'req-123',
+        }),
+      }),
+    );
     expect(loggerService.warn).toHaveBeenCalled();
   });
 
@@ -49,7 +57,11 @@ describe('GlobalExceptionFilter', () => {
     const mockJson = jest.fn();
     const mockStatus = jest.fn().mockReturnValue({ json: mockJson });
     const mockGetResponse = jest.fn().mockReturnValue({ status: mockStatus });
-    const mockGetRequest = jest.fn().mockReturnValue({ url: '/api/test', method: 'GET', requestId: 'req-123' });
+    const mockGetRequest = jest.fn().mockReturnValue({
+      url: '/api/test',
+      method: 'GET',
+      requestId: 'req-123',
+    });
 
     const mockArgumentsHost = {
       switchToHttp: jest.fn().mockReturnValue({
@@ -63,13 +75,15 @@ describe('GlobalExceptionFilter', () => {
     filter.catch(exception, mockArgumentsHost);
 
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
-    expect(mockJson).toHaveBeenCalledWith(expect.objectContaining({
-      success: false,
-      error: expect.objectContaining({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Database connection failed',
-      })
-    }));
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        error: expect.objectContaining({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Database connection failed',
+        }),
+      }),
+    );
     expect(loggerService.error).toHaveBeenCalled();
   });
 });

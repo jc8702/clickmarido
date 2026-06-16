@@ -14,13 +14,13 @@ import { CompanyContext } from '../company/company.context';
 export class PermissionsGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private prisma: PrismaService
+    private prisma: PrismaService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredPermissions = this.reflector.getAllAndOverride<string[]>(
       PERMISSIONS_KEY,
-      [context.getHandler(), context.getClass()]
+      [context.getHandler(), context.getClass()],
     );
 
     // Se nenhuma permissão específica for exigida, libera o acesso
@@ -39,7 +39,9 @@ export class PermissionsGuard implements CanActivate {
 
     // Validação multi-tenant: Garante que o usuário pertence ao tenant ativo
     if (companyId && user.companyId !== companyId) {
-      throw new ForbiddenException('Acesso negado: O usuário não pertence a esta empresa');
+      throw new ForbiddenException(
+        'Acesso negado: O usuário não pertence a esta empresa',
+      );
     }
 
     // Busca o usuário com seus papéis (Roles) e permissões (Permissions)

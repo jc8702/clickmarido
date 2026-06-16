@@ -13,7 +13,7 @@ describe('PermissionsGuard', () => {
       getAllAndOverride: jest.fn(),
       getAllAndMerge: jest.fn(),
     } as any;
-    
+
     prisma = {
       user: {
         findUnique: jest.fn(),

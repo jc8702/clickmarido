@@ -58,7 +58,10 @@ describe('EmptyStringToNullPipe', () => {
     const input = {
       name: 'John Doe',
       tags: ['active', '', 'test'],
-      objects: [{ id: '1', name: '' }, { id: '2', name: 'Valid' }],
+      objects: [
+        { id: '1', name: '' },
+        { id: '2', name: 'Valid' },
+      ],
     };
     const metadata: ArgumentMetadata = { type: 'body' };
 
@@ -67,7 +70,10 @@ describe('EmptyStringToNullPipe', () => {
     expect(result).toEqual({
       name: 'John Doe',
       tags: ['active', null, 'test'],
-      objects: [{ id: '1', name: null }, { id: '2', name: 'Valid' }],
+      objects: [
+        { id: '1', name: null },
+        { id: '2', name: 'Valid' },
+      ],
     });
   });
 
