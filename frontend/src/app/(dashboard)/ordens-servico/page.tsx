@@ -1,6 +1,6 @@
 'use client';
 
-import { Component, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ClipboardList, Search, User, Calendar, Wrench, FileText, XCircle, CheckCircle2, Award } from 'lucide-react';
@@ -8,47 +8,13 @@ import { ServiceOrder, getServiceOrders } from '@/lib/api/modules/service-orders
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { useDebounce } from '@/hooks/use-debounce';
 import { DataTable } from '@/components/ui/data-table';
 import { DataTablePagination } from '@/components/ui/data-table-pagination';
 import { SkeletonTable } from '@/components/ui/skeleton-table';
 import { FilterPanel } from '@/components/ui/filter-panel';
 import { getOSColumns } from './columns';
-
-class ErrorBoundary extends Component<{ children: React.ReactNode }> {
-  state = { hasError: false, error: null as Error | null };
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
-  }
-  componentDidCatch(error: Error, info: unknown) {
-    console.error('[ErrorBoundary] Crash na página OS:', error, info.componentStack);
-  }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="p-8 max-w-6xl mx-auto space-y-6">
-          <Card className="p-8 border-rose-500/20 bg-rose-500/5">
-            <h2 className="text-lg font-bold text-rose-400 mb-2">Erro ao carregar ordens de serviço</h2>
-            <p className="text-sm text-zinc-400 mb-4">
-              Ocorreu um erro inesperado. Recarregue a página ou tente novamente.
-            </p>
-            <p className="text-xs text-zinc-600 font-mono bg-zinc-950 p-3 rounded-xl border border-zinc-900">
-              {this.state.error?.message || 'Erro desconhecido'}
-            </p>
-            <Button
-              onClick={() => window.location.reload()}
-              className="mt-4 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white font-bold h-9 px-4 rounded-xl text-xs"
-            >
-              Recarregar Página
-            </Button>
-          </Card>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
-
 function formatCurrency(value: number | null | undefined): string {
   if (value == null) return 'R$ 0,00';
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);

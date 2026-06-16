@@ -6,17 +6,20 @@ import { ApiClient } from '@/lib/api/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 
 import { Service } from './types';
-import { ServiceFormModal } from './components/service-form-modal';
-import { ServiceImportModal } from './components/service-import-modal';
+
+const ServiceFormModal = dynamic(() => import('./components/service-form-modal').then(m => m.ServiceFormModal), { ssr: false });
+const ServiceImportModal = dynamic(() => import('./components/service-import-modal').then(m => m.ServiceImportModal), { ssr: false });
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
 
-export default function ServicosPage() {
+function ServicosPageInner() {
   // Estados de dados
   const [services, setServices] = useState<Service[]>([]);
   const [total, setTotal] = useState(0);
@@ -400,5 +403,13 @@ export default function ServicosPage() {
         onSuccess={fetchServices}
       />
     </div>
+  );
+}
+
+export default function ServicosPage() {
+  return (
+    <ErrorBoundary>
+      <ServicosPageInner />
+    </ErrorBoundary>
   );
 }

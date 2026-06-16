@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, Plus, Search, Trash2, Edit, Printer, Share2, Award, DollarSign, User, Calendar, Trash, CheckCircle2, XCircle, Clock, ShieldAlert, BookOpen, Wrench } from 'lucide-react';
+import { FileText, Plus, Printer, Share2 } from 'lucide-react';
 import { ApiClient } from '@/lib/api/client';
 import Image from 'next/image';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -13,12 +13,15 @@ import { DataTable } from '@/components/ui/data-table';
 import { DataTablePagination } from '@/components/ui/data-table-pagination';
 import { SkeletonTable } from '@/components/ui/skeleton-table';
 import { FilterPanel } from '@/components/ui/filter-panel';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { getQuoteColumns } from './columns';
-import { SignatureModal } from './components/signature-modal';
-import { ViewQuoteModal } from './components/view-quote-modal';
-import { QuoteFormModal } from './components/quote-form-modal';
 import { useAuth } from '@/contexts/auth-context';
 import { generateFromQuote } from '@/lib/api/modules/service-orders';
+import dynamic from 'next/dynamic';
+
+const SignatureModal = dynamic(() => import('./components/signature-modal').then(m => m.SignatureModal), { ssr: false });
+const ViewQuoteModal = dynamic(() => import('./components/view-quote-modal').then(m => m.ViewQuoteModal), { ssr: false });
+const QuoteFormModal = dynamic(() => import('./components/quote-form-modal').then(m => m.QuoteFormModal), { ssr: false });
 
 interface Client {
   id: string;
@@ -83,7 +86,7 @@ function formatDate(dateString: string): string {
   });
 }
 
-export default function OrcamentosPage() {
+function OrcamentosPageInner() {
   const { user } = useAuth();
   const router = useRouter();
 
@@ -495,5 +498,13 @@ export default function OrcamentosPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function OrcamentosPage() {
+  return (
+    <ErrorBoundary>
+      <OrcamentosPageInner />
+    </ErrorBoundary>
   );
 }

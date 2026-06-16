@@ -6,13 +6,16 @@ import { ApiClient } from '@/lib/api/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
+import dynamic from 'next/dynamic';
 
-import { UserFormModal } from './components/user-form-modal';
 import { Role, User } from './types';
 
-export default function UsuariosPage() {
+const UserFormModal = dynamic(() => import('./components/user-form-modal').then(m => m.UserFormModal), { ssr: false });
+
+function UsuariosPageInner() {
   const { user: currentUser } = useAuth();
 
   // Estados de dados
@@ -331,5 +334,13 @@ export default function UsuariosPage() {
         roles={roles}
       />
     </div>
+  );
+}
+
+export default function UsuariosPage() {
+  return (
+    <ErrorBoundary>
+      <UsuariosPageInner />
+    </ErrorBoundary>
   );
 }

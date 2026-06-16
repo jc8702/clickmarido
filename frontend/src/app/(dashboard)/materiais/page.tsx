@@ -1,19 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Package, Search, Plus, Loader2, ArrowRightLeft, 
-  Trash2, AlertTriangle, AlertCircle, Edit, Filter, History
+  Trash2, AlertTriangle, Edit, Filter, History
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { ApiClient } from '@/lib/api/client';
+import dynamic from 'next/dynamic';
 
 import { Material } from './types';
-import { MaterialFormModal } from './components/material-form-modal';
-import { MaterialMovementModal } from './components/material-movement-modal';
-import { MaterialHistoryModal } from './components/material-history-modal';
+
+const MaterialFormModal = dynamic(() => import('./components/material-form-modal').then(m => m.MaterialFormModal), { ssr: false });
+const MaterialMovementModal = dynamic(() => import('./components/material-movement-modal').then(m => m.MaterialMovementModal), { ssr: false });
+const MaterialHistoryModal = dynamic(() => import('./components/material-history-modal').then(m => m.MaterialHistoryModal), { ssr: false });
 
 const CATEGORIES = [
   'Hidráulico',
@@ -32,7 +35,7 @@ function formatNumber(value: number): string {
   return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
 }
 
-export default function MateriaisPage() {
+function MateriaisPageInner() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -50,7 +53,7 @@ export default function MateriaisPage() {
   const [totalPages, setTotalPages] = useState(1);
   const limit = 10;
 
-  const fetchMaterials = async () => {
+  const fetchMaterials = useCallback(async () => {
     setLoading(true);
     try {
       const data = await ApiClient.get<{
@@ -74,11 +77,11 @@ export default function MateriaisPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, search, categoryFilter]);
 
   useEffect(() => {
     fetchMaterials();
-  }, [page, search, categoryFilter]);
+  }, [fetchMaterials]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este material? Esta ação não pode ser desfeita.')) {
@@ -344,5 +347,13 @@ export default function MateriaisPage() {
       />
 
     </div>
+  );
+}
+
+export default function MateriaisPage() {
+  return (
+    <ErrorBoundary>
+      <MateriaisPageInner />
+    </ErrorBoundary>
   );
 }
