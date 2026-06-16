@@ -34,10 +34,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       return (
         <IMaskInput
           {...maskOptions}
-          {...(props as any)}
+          {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
           type={type}
           className={classes}
-          inputRef={ref as any}
+          inputRef={ref as React.Ref<HTMLInputElement>}
           aria-invalid={error ? "true" : undefined}
         />
       );

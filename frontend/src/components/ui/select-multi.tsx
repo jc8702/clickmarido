@@ -8,11 +8,11 @@ export interface SelectMultiProps extends SelectProps {
   error?: boolean;
 }
 
-function VirtualizedMenuList(props: MenuListProps<any>) {
+function VirtualizedMenuList(props: MenuListProps<Option>) {
   const { children, maxHeight } = props;
   const parentRef = React.useRef<HTMLDivElement>(null);
   const items = React.Children.toArray(children);
-
+  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,
@@ -50,7 +50,7 @@ function VirtualizedMenuList(props: MenuListProps<any>) {
 }
 
 export function SelectMulti({ className, error, ...props }: SelectMultiProps) {
-  const { theme } = useTheme();
+  
   
   return (
     <Select

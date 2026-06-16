@@ -36,7 +36,7 @@ export default function FinancialTransactionsPage() {
     fetchTx();
   }, []);
 
-  const handleCreate = async (e: any) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     await createTransaction({
       companyId: COMPANY_ID,
@@ -138,7 +138,7 @@ export default function FinancialTransactionsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold block mb-1">Tipo</label>
-                  <select value={type} onChange={e => setType(e.target.value as any)} className="w-full border p-2 rounded bg-background">
+                  <select value={type} onChange={e => setType(e.target.value as never)} className="w-full border p-2 rounded bg-background">
                     <option value="RECEITA">RECEITA (+)</option>
                     <option value="DESPESA">DESPESA (-)</option>
                   </select>
@@ -183,7 +183,7 @@ export default function FinancialTransactionsPage() {
 
               <div>
                 <label className="text-xs font-bold block mb-1">Status do Pagamento</label>
-                <select value={status} onChange={e => setStatus(e.target.value as any)} className="w-full border p-2 rounded bg-background">
+                <select value={status} onChange={e => setStatus(e.target.value as never)} className="w-full border p-2 rounded bg-background">
                   <option value="PAGO">PAGO / RECEBIDO</option>
                   <option value="PENDENTE">PENDENTE (A Vencer)</option>
                 </select>

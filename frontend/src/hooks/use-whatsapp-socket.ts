@@ -7,9 +7,9 @@ const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001';
 
 interface UseWhatsAppSocketOptions {
   companyId?: string;
-  onNewMessage?: (data: { conversation: any; message: any }) => void;
+  onNewMessage?: (data: { conversation: unknown; message: unknown }) => void;
   onInstanceStatus?: (data: { instanceId: string; status: string; qrCode?: string }) => void;
-  onConversationUpdate?: (data: any) => void;
+  onConversationUpdate?: (data: unknown) => void;
   enabled?: boolean;
 }
 
@@ -53,8 +53,9 @@ export function useWhatsAppSocket(options: UseWhatsAppSocketOptions) {
     };
   }, [companyId, enabled]);
 
-  const emit = useCallback((event: string, data: any) => {
+  const emit = useCallback((event: string, data: unknown) => {
     socketRef.current?.emit(event, data);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { socket: socketRef.current, emit };

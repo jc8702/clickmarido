@@ -20,7 +20,7 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }> {
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
   }
-  componentDidCatch(error: Error, info: any) {
+  componentDidCatch(error: Error, info: unknown) {
     console.error('[ErrorBoundary] Crash na página OS:', error, info.componentStack);
   }
   render() {
@@ -101,7 +101,7 @@ function OrdensServicoPageInner() {
       setOrders(result?.items ?? []);
       setTotal(result?.total ?? 0);
       setTotalPages(result?.totalPages ?? 1);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('Erro ao buscar ordens de serviço:', e.message);
     } finally {
       setLoading(false);
@@ -278,7 +278,7 @@ function OrdensServicoPageInner() {
                     <div className="text-center">Qtd</div>
                     <div className="text-right">Total</div>
                   </div>
-                  {viewedOrder.services.map((s: any, idx: number) => (
+                  {viewedOrder.services.map((s: Record<string, unknown>, idx: number) => (
                     <div key={idx} className="grid grid-cols-4 p-2.5 border-b border-zinc-900/50 text-zinc-300">
                       <div className="col-span-2 font-bold leading-tight self-center">
                         {s.name}
@@ -303,7 +303,7 @@ function OrdensServicoPageInner() {
                     <div className="text-center">Qtd</div>
                     <div className="text-right">Total</div>
                   </div>
-                  {viewedOrder.materials.map((m: any, idx: number) => (
+                  {viewedOrder.materials.map((m: Record<string, unknown>, idx: number) => (
                     <div key={idx} className="grid grid-cols-4 p-2.5 border-b border-zinc-900/50 text-zinc-300">
                       <div className="col-span-2 font-bold self-center">{m.description}</div>
                       <div className="text-center font-bold self-center">{m.quantity}</div>
@@ -321,7 +321,7 @@ function OrdensServicoPageInner() {
               <div className="space-y-2">
                 <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Checklist</p>
                 <div className="border border-zinc-900 rounded-xl overflow-hidden text-xs">
-                  {viewedOrder.checklists.map((c: any, idx: number) => (
+                  {viewedOrder.checklists.map((c: Record<string, unknown>, idx: number) => (
                     <div key={idx} className="flex items-center gap-3 p-2.5 border-b border-zinc-900/50">
                       <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
                         c.checked ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600'
@@ -342,7 +342,7 @@ function OrdensServicoPageInner() {
               <div className="space-y-2">
                 <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Fotos</p>
                 <div className="grid grid-cols-3 gap-2">
-                  {viewedOrder.photos.map((p: any, idx: number) => (
+                  {viewedOrder.photos.map((p: Record<string, unknown>, idx: number) => (
                     <div key={idx} className="relative rounded-lg overflow-hidden border border-zinc-800 aspect-square">
                       <Image src={p.url} alt={`Foto ${p.type}`} fill className="object-cover" />
                       <span className={`absolute top-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded ${

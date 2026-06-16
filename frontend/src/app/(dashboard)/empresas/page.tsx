@@ -52,10 +52,10 @@ export default function EmpresasPage() {
 
   const { data: swrData, isLoading, mutate: fetchCompanies } = useSWR(
     swrKey,
-    ([url, p, l, s, a, st]: any) => {
+    ([url, p, l, s, a, st]: [string, number, number, string, string, string]) => {
       if (!user || !user.roles.includes('Administrador')) return null;
       const activeParam = a === 'active' ? 'true' : a === 'inactive' ? 'false' : '';
-      return ApiClient.get<any>(url, {
+      return ApiClient.get<Record<string, unknown>>(url, {
         params: {
           page: String(p),
           limit: String(l),
@@ -191,7 +191,7 @@ export default function EmpresasPage() {
           fetchCompanies();
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setFormError(err.message || 'Erro ao salvar empresa.');
     } finally {
       setFormLoading(false);
@@ -206,7 +206,7 @@ export default function EmpresasPage() {
       if (res.success) {
         fetchCompanies();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       alert(err.message || 'Erro ao excluir empresa.');
     }
   };

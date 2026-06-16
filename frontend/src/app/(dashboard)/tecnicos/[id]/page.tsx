@@ -19,7 +19,7 @@ export default function TechnicianProfilePage({ params }: { params: Promise<{ id
   const [technician, setTechnician] = useState<Technician | null>(null);
   const [loading, setLoading] = useState(true);
   
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<Record<string, unknown>[]>([]);
   const [eventsLoading, setEventsLoading] = useState(false);
 
   const fetchTech = useCallback(async () => {
@@ -60,7 +60,7 @@ export default function TechnicianProfilePage({ params }: { params: Promise<{ id
     fetchEvents();
   }, [fetchTech, fetchEvents]);
 
-  const handleEventMove = async (event: any, start: Date, end: Date) => {
+  const handleEventMove = async (event: Record<string, unknown>, start: Date, end: Date) => {
     const updatedEvent = { ...event, start, end };
     setEvents((prev) => prev.map((e) => (e.id === event.id ? updatedEvent : e)));
 
@@ -70,7 +70,7 @@ export default function TechnicianProfilePage({ params }: { params: Promise<{ id
         endTime: end.toISOString(),
       });
       toast.success('Horário do agendamento atualizado com sucesso.');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
       toast.error(error.response?.data?.message || error.message || 'Erro ao reagendar.');
       fetchEvents();
@@ -99,7 +99,7 @@ export default function TechnicianProfilePage({ params }: { params: Promise<{ id
         toast.success('Agendamento criado com sucesso.');
       }
       await fetchEvents();
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
       toast.error(e.response?.data?.message || e.message || 'Erro ao processar o evento.');
     }

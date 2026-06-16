@@ -12,14 +12,14 @@ export interface Quote {
   client: { name: string; phone: string; whatsapp?: string; email?: string; address?: string; city?: string };
   discount: number;
   travelFee: number;
-  materials: any[] | null;
+  materials: Record<string, unknown>[] | null;
   totalValue: number;
   status: string;
   signature?: string | null;
   signedAt?: string | null;
   createdAt: string;
   updatedAt: string;
-  services: any[];
+  services: Record<string, unknown>[];
 }
 
 function formatCurrency(value: number): string {

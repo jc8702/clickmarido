@@ -19,7 +19,7 @@ export const useClientsData = () => {
 
   const { data: swrData, isLoading, mutate: fetchClients } = useSWR(
     swrKey,
-    ([url, p, l, s, ls, c]: any) => ApiClient.get<any>(url, { params: { page: String(p), limit: String(l), search: s, leadSource: ls, city: c } }),
+    ([url, p, l, s, ls, c]: [string, number, number, string, string, string]) => ApiClient.get<Record<string, unknown>>(url, { params: { page: String(p), limit: String(l), search: s, leadSource: ls, city: c } }),
     { keepPreviousData: true, dedupingInterval: 300000 }
   );
 

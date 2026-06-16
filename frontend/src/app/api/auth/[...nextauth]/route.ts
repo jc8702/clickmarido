@@ -35,7 +35,7 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
-    async session({ session, token }: any) {
+    async session({ session, token }: { session: Record<string, unknown>, token: Record<string, unknown> }) {
       session.accessToken = token.accessToken;
       return session;
     }

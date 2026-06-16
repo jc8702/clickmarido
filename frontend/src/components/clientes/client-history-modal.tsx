@@ -34,23 +34,24 @@ export function ClientHistoryModal() {
     if (isHistoryModalOpen && historyClient) {
       fetchHistory(historyClient.id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHistoryModalOpen, historyClient]);
 
-  const fetchHistory = async (clientId: string) => {
+  async function fetchHistory(clientId: string) {
     setHistoryLoading(true);
     try {
       const res = await ApiClient.get<{ success: boolean; data: HistoryItem[] }>(`/clients/${clientId}/history`);
       if (res.success) {
         setHistoryItems(res.data);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro ao carregar histórico:', err.message);
     } finally {
       setHistoryLoading(false);
     }
   };
 
-  const handleAddNote = async (e: React.FormEvent) => {
+  async function handleAddNote(e: React.FormEvent) {
     e.preventDefault();
     if (!newNote.trim() || !historyClient) return;
 
@@ -66,7 +67,7 @@ export function ClientHistoryModal() {
         setNewNote('');
         await fetchHistory(historyClient.id);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setNoteError(err.message || 'Erro ao registrar nota.');
     } finally {
       setNoteLoading(false);

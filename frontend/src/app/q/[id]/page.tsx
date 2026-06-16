@@ -12,7 +12,7 @@ import Image from "next/image";
 
 export default function PublicQuotePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const [quote, setQuote] = useState<any>(null);
+  const [quote, setQuote] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -24,9 +24,9 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
   useEffect(() => {
     const fetchQuote = async () => {
       try {
-        const data = await ApiClient.get<any>(`/public/quotes/${resolvedParams.id}`);
+        const data = await ApiClient.get<Record<string, unknown>>(`/public/quotes/${resolvedParams.id}`);
         setQuote(data);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err.message || "Orçamento não encontrado ou expirado.");
       } finally {
         setLoading(false);
@@ -113,7 +113,7 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
       });
       toast.success("Orçamento aprovado com sucesso!");
       setQuote({ ...quote, status: "Aprovado" });
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(err.message || "Erro ao aprovar orçamento.");
     } finally {
       setSubmitting(false);
@@ -188,7 +188,7 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
             <div>
               <h3 className="font-semibold mb-3 border-b pb-2">Serviços</h3>
               <div className="space-y-3">
-                {quote.services?.map((item: any, idx: number) => (
+                {quote.services?.map((item: Record<string, unknown>, idx: number) => (
                   <div key={idx} className="flex justify-between items-start text-sm">
                     <div>
                       <p className="font-medium">{item.service?.name}</p>
@@ -210,7 +210,7 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
               <div>
                 <h3 className="font-semibold mb-3 border-b pb-2">Materiais Estimados</h3>
                 <div className="space-y-3">
-                  {quote.materials.map((item: any, idx: number) => (
+                  {quote.materials.map((item: Record<string, unknown>, idx: number) => (
                     <div key={idx} className="flex justify-between items-start text-sm">
                       <div>
                         <p className="font-medium">{item.name}</p>

@@ -90,7 +90,7 @@ export class ApiClient {
       }
     }
 
-    let lastError: any;
+    let lastError: unknown;
 
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
@@ -148,7 +148,7 @@ export class ApiClient {
     return this.request<T>(endpoint, { ...options, method: 'GET' });
   }
 
-  static post<T>(endpoint: string, body?: any, options: RequestOptions = {}): Promise<T> {
+  static post<T>(endpoint: string, body?: unknown, options: RequestOptions = {}): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'POST',
@@ -156,7 +156,7 @@ export class ApiClient {
     });
   }
 
-  static put<T>(endpoint: string, body?: any, options: RequestOptions = {}): Promise<T> {
+  static put<T>(endpoint: string, body?: unknown, options: RequestOptions = {}): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'PUT',
@@ -164,7 +164,7 @@ export class ApiClient {
     });
   }
 
-  static patch<T>(endpoint: string, body?: any, options: RequestOptions = {}): Promise<T> {
+  static patch<T>(endpoint: string, body?: unknown, options: RequestOptions = {}): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'PATCH',

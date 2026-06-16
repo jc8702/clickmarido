@@ -104,7 +104,7 @@ export default function WhatsAppSettingsPage() {
         <div className="bg-card border rounded-lg p-8 flex flex-col items-center justify-center">
           <h4 className="text-xl font-bold mb-4">Leia o QR Code com seu WhatsApp</h4>
           <p className="text-sm text-muted-foreground mb-6 text-center max-w-sm">
-            Abra o WhatsApp no seu celular, vá em "Aparelhos conectados" e aponte a câmera para o QR Code abaixo.
+            Abra o WhatsApp no seu celular, vá em &quot;Aparelhos conectados&quot; e aponte a câmera para o QR Code abaixo.
           </p>
           <div className="bg-white p-4 rounded-xl shadow-lg border">
             {/* O qrcode vem em formato de string base64 */}

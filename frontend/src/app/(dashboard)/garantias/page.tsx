@@ -13,8 +13,8 @@ export default function GarantiasPage() {
   const [showModal, setShowModal] = useState(false);
 
   // Aux data for Modal
-  const [clients, setClients] = useState<any[]>([]);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [clients, setClients] = useState<Record<string, unknown>[]>([]);
+  const [orders, setOrders] = useState<Record<string, unknown>[]>([]);
 
   const [formData, setFormData] = useState({
     clientId: '',
@@ -53,7 +53,7 @@ export default function GarantiasPage() {
     };
   }, [showModal]);
 
-  const handleCreate = async (e: any) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await createWarranty(formData);

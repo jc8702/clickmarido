@@ -48,7 +48,7 @@ export default function ConversasPage() {
     }
   };
 
-  const handleSendMessage = async (e: any) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim() || !selectedChat) return;
 

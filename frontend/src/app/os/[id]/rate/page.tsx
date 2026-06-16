@@ -11,7 +11,7 @@ import Image from "next/image";
 
 export default function PublicRatePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -23,13 +23,13 @@ export default function PublicRatePage({ params }: { params: Promise<{ id: strin
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const data = await ApiClient.get<any>(`/public/service-orders/${resolvedParams.id}`);
+        const data = await ApiClient.get<Record<string, unknown>>(`/public/service-orders/${resolvedParams.id}`);
         setOrder(data);
         if (data.clientRating) {
           setRating(data.clientRating);
           setReview(data.clientReview || "");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err.message || "Ordem de serviço não encontrada ou link expirado.");
       } finally {
         setLoading(false);
@@ -53,7 +53,7 @@ export default function PublicRatePage({ params }: { params: Promise<{ id: strin
       });
       toast.success("Avaliação enviada com sucesso!");
       setOrder({ ...order, clientRating: rating, clientReview: review });
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(err.message || "Erro ao enviar avaliação.");
     } finally {
       setSubmitting(false);

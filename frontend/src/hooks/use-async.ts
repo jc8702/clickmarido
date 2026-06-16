@@ -11,12 +11,12 @@ export function useAsync<T, E = Error>(asyncFunction: () => Promise<T>, immediat
     setError(null);
 
     return asyncFunction()
-      .then((response: any) => {
+      .then((response: T) => {
         setValue(response);
         setStatus('success');
       })
-      .catch((error: any) => {
-        setError(error);
+      .catch((error: unknown) => {
+        setError(error as E);
         setStatus('error');
       });
   }, [asyncFunction]);

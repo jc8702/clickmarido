@@ -5,7 +5,7 @@ import { createGoogleEvent, updateGoogleEvent } from '@/lib/google-calendar';
 
 export async function POST(req: Request) {
   try {
-    const session: any = await getServerSession(authOptions);
+    const session: { user?: { accessToken?: string } } | null = await getServerSession(authOptions);
     if (!session?.accessToken) {
       return NextResponse.json({ error: 'Você não está conectado ao Google Agenda' }, { status: 401 });
     }
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true, googleEventId: googleEvent.id });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Erro na API de calendário:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

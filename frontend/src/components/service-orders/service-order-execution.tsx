@@ -15,7 +15,7 @@ export function ServiceOrderExecution({ os, onUpdate }: ExecutionProps) {
   const [newItem, setNewItem] = useState('');
   
   // Handlers for Photos (Simulating Base64 upload for MVP)
-  const handlePhotoUpload = async (e: any, type: 'antes' | 'depois') => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'antes' | 'depois') => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -166,7 +166,7 @@ export function ServiceOrderExecution({ os, onUpdate }: ExecutionProps) {
                   onClick={() => {
                     const link = `${window.location.origin}/os/${os.id}/rate`;
                     const text = `Olá, ${os.client?.name}! Sua Ordem de Serviço #${os.number} foi concluída com sucesso. Por favor, avalie o atendimento do nosso técnico através deste link: ${link}`;
-                    const phone = (os.client as any)?.whatsapp || (os.client as any)?.phone || '';
+                    const phone = (os.client as Record<string, string>)?.whatsapp || (os.client as Record<string, string>)?.phone || '';
                     const cleanPhone = phone.replace(/\D/g, '');
                     window.open(`https://api.whatsapp.com/send?phone=55${cleanPhone}&text=${encodeURIComponent(text)}`, '_blank');
                   }}

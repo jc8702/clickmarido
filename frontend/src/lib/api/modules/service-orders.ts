@@ -12,12 +12,12 @@ export interface ServiceOrder {
   status: string;
   observations?: string;
   signature?: string;
-  client?: { name: string; phone: string; [key: string]: any };
-  technician?: { name: string; [key: string]: any };
-  services?: any[];
-  materials?: any[];
-  photos?: any[];
-  checklists?: any[];
+  client?: { name: string; phone: string; [key: string]: unknown };
+  technician?: { name: string; [key: string]: unknown };
+  services?: unknown[];
+  materials?: unknown[];
+  photos?: unknown[];
+  checklists?: unknown[];
   createdAt: string;
   updatedAt: string;
 }

@@ -19,7 +19,7 @@ import { EventDialogData } from '@/components/appointments/event-dialog';
 export default function AgendaPage() {
   const { data: session } = useSession();
   
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchEvents = useCallback(async () => {
@@ -47,7 +47,7 @@ export default function AgendaPage() {
     fetchEvents();
   }, [fetchEvents]);
 
-  const handleEventMove = async (event: any, start: Date, end: Date) => {
+  const handleEventMove = async (event: Record<string, unknown>, start: Date, end: Date) => {
     const updatedEvent = { ...event, start, end };
     setEvents((prev) => prev.map((e) => (e.id === event.id ? updatedEvent : e)));
 
@@ -57,7 +57,7 @@ export default function AgendaPage() {
         endTime: end.toISOString(),
       });
       toast.success('Horário do agendamento atualizado com sucesso.');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
       toast.error(error.response?.data?.message || error.message || 'Erro ao reagendar.');
       fetchEvents(); // rollback
@@ -125,7 +125,7 @@ export default function AgendaPage() {
 
       // Puxa os dados do servidor para garantir sincronia final
       await fetchEvents();
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
       toast.error(e.response?.data?.message || e.message || 'Erro ao processar o evento.');
     }

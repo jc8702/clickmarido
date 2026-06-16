@@ -10,7 +10,7 @@ export interface EventDialogData {
   start: Date;
   end: Date;
   technicianId?: string;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 interface EventDialogProps {

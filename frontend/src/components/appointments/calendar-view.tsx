@@ -24,28 +24,28 @@ const localizer = dateFnsLocalizer({
 const DnDCalendar = withDragAndDrop(Calendar);
 
 interface CalendarViewProps {
-  events: any[];
+  events: Record<string, unknown>[];
   loading: boolean;
-  onEventMove: (event: any, start: Date, end: Date) => Promise<void>;
+  onEventMove: (event: Record<string, unknown>, start: Date, end: Date) => Promise<void>;
   onEventSave: (data: import('./event-dialog').EventDialogData) => Promise<void>;
 }
 
 export function CalendarView({ events, loading, onEventMove, onEventSave }: CalendarViewProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<any>(null);
+  const [selectedSlot, setSelectedSlot] = useState<Record<string, unknown> | null>(null);
 
-  const moveEvent = async ({ event, start, end }: any) => {
+  const moveEvent = async ({ event, start, end }: { event: Record<string, unknown>, start: Date, end: Date }) => {
     await onEventMove(event, start, end);
   };
 
-  const handleSelectSlot = ({ start, end }: any) => {
+  const handleSelectSlot = ({ start, end }: { start: Date, end: Date }) => {
     setSelectedSlot({ start, end, title: '', data: null });
     setIsEditMode(false);
     setDialogOpen(true);
   };
 
-  const handleSelectEvent = (event: any) => {
+  const handleSelectEvent = (event: Record<string, unknown>) => {
     setSelectedSlot({
       title: event.title,
       start: event.start,
@@ -62,7 +62,7 @@ export function CalendarView({ events, loading, onEventMove, onEventSave }: Cale
     setDialogOpen(false);
   };
 
-  const eventStyleGetter = (event: any, start: Date, end: Date, isSelected: boolean) => {
+  const eventStyleGetter = (event: Record<string, unknown>, start: Date, end: Date, isSelected: boolean) => {
     return {
       style: {
         backgroundColor: 'rgba(var(--primary-rgb, 15, 23, 42), 0.85)',
@@ -85,8 +85,8 @@ export function CalendarView({ events, loading, onEventMove, onEventSave }: Cale
       <DnDCalendar
         localizer={localizer}
         events={events}
-        startAccessor={(event) => (event as any).start}
-        endAccessor={(event) => (event as any).end}
+        startAccessor={(event) => (event as Record<string, unknown>).start}
+        endAccessor={(event) => (event as Record<string, unknown>).end}
         style={{ height: '100%', width: '100%', minHeight: '600px' }}
         onEventDrop={moveEvent}
         onEventResize={moveEvent}

@@ -12,8 +12,9 @@ export function TimeSlotPicker({ startTime, setStartTime, endTime, setEndTime, e
   return (
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-1">
-        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Início</label>
+        <label htmlFor="start-time" className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Início</label>
         <input
+          id="start-time"
           type="datetime-local"
           required
           value={startTime}
@@ -22,8 +23,9 @@ export function TimeSlotPicker({ startTime, setStartTime, endTime, setEndTime, e
         />
       </div>
       <div className="space-y-1">
-        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Término</label>
+        <label htmlFor="end-time" className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Término</label>
         <input
+          id="end-time"
           type="datetime-local"
           required
           value={endTime}

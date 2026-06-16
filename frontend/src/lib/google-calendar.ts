@@ -1,4 +1,4 @@
-import { google } from 'googleapis';
+import { google, calendar_v3 } from 'googleapis';
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -23,7 +23,7 @@ export async function syncEvents(accessToken: string) {
   return res.data.items;
 }
 
-export async function createGoogleEvent(accessToken: string, eventData: any) {
+export async function createGoogleEvent(accessToken: string, eventData: calendar_v3.Schema$Event) {
   const calendar = getCalendarClient(accessToken);
   const res = await calendar.events.insert({
     calendarId: 'primary',
@@ -32,7 +32,7 @@ export async function createGoogleEvent(accessToken: string, eventData: any) {
   return res.data;
 }
 
-export async function updateGoogleEvent(accessToken: string, eventId: string, eventData: any) {
+export async function updateGoogleEvent(accessToken: string, eventId: string, eventData: calendar_v3.Schema$Event) {
   const calendar = getCalendarClient(accessToken);
   const res = await calendar.events.update({
     calendarId: 'primary',

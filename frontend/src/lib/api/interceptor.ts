@@ -14,7 +14,7 @@ const parseErrorResponse = async (response: Response): Promise<ApiError> => {
     if (data && data.error) {
       return data.error as ApiError;
     }
-  } catch (e) {
+  } catch {
     // Falha ao parsear JSON
   }
   
@@ -59,7 +59,7 @@ export const apiFetch = async (url: string, options: FetchOptions = {}): Promise
         });
         throw new Error(errorData.message);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Erro de rede (offline)
       if (!window.navigator.onLine) {
         useErrorStore.getState().addOfflineError({

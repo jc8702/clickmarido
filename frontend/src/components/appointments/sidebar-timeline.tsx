@@ -7,7 +7,7 @@ import { Calendar as CalendarIcon, Clock } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface SidebarTimelineProps {
-  events: any[];
+  events: Record<string, unknown>[];
   loading: boolean;
 }
 
@@ -20,7 +20,7 @@ export function SidebarTimeline({ events, loading }: SidebarTimelineProps) {
     .sort((a, b) => a.start.getTime() - b.start.getTime());
 
   // Agrupar por data
-  const groupedEvents = upcomingEvents.reduce((acc: any, event) => {
+  const groupedEvents = upcomingEvents.reduce((acc: Record<string, unknown[]>, event: Record<string, unknown>) => {
     const dateStr = format(event.start, 'yyyy-MM-dd');
     if (!acc[dateStr]) acc[dateStr] = [];
     acc[dateStr].push(event);
@@ -71,7 +71,7 @@ export function SidebarTimeline({ events, loading }: SidebarTimelineProps) {
                       {isToday ? 'Hoje' : format(parsedDate, "EEEE, d 'de' MMM", { locale: ptBR })}
                     </h4>
                     <div className="space-y-3">
-                      {dateEvents.map((event: any, idx: number) => (
+                      {dateEvents.map((event: Record<string, unknown>, idx: number) => (
                         <div key={event.id} className="relative flex gap-3 group">
                           {/* Linha conectora da timeline */}
                           {idx !== dateEvents.length - 1 && (

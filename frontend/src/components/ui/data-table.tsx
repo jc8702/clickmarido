@@ -43,6 +43,7 @@ export function DataTable<TData, TValue>({
   virtualized = false,
   onRowClick,
 }: DataTableProps<TData, TValue>) {
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,
@@ -84,7 +85,7 @@ export function DataTable<TData, TValue>({
                 return (
                   <TableHead 
                     key={header.id}
-                    className={(header.column.columnDef.meta as any)?.className}
+                    className={(header.column.columnDef.meta as { className?: string })?.className}
                   >
                     {header.isPlaceholder
                       ? null
@@ -140,7 +141,7 @@ export function DataTable<TData, TValue>({
                       {row.getVisibleCells().map((cell) => (
                         <TableCell 
                           key={cell.id}
-                          className={(cell.column.columnDef.meta as any)?.className}
+                          className={(cell.column.columnDef.meta as { className?: string })?.className}
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
@@ -180,7 +181,7 @@ export function DataTable<TData, TValue>({
                       {row.getVisibleCells().map((cell) => (
                         <TableCell 
                           key={cell.id}
-                          className={(cell.column.columnDef.meta as any)?.className}
+                          className={(cell.column.columnDef.meta as { className?: string })?.className}
                         >
                           {flexRender(
                             cell.column.columnDef.cell,

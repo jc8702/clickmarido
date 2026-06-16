@@ -86,7 +86,7 @@ export function ClientFormModal() {
           fetchClients();
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setFormError(err.message || 'Erro ao salvar dados do cliente.');
     } finally {
       setFormLoading(false);

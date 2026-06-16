@@ -20,7 +20,7 @@ export function ClientSelector({ clientId, setClientId, selectedClientName, setS
     return clients.filter((c) => c.name.toLowerCase().includes(clientSearch.toLowerCase()));
   }, [clients, clientSearch]);
 
-  function selectClient(client: any) {
+  function selectClient(client: unknown) {
     setClientId(client.id);
     setSelectedClientName(client.name);
     setClientDropdownOpen(false);

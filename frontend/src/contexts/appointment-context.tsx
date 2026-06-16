@@ -43,9 +43,9 @@ export function AppointmentProvider({ children }: { children: ReactNode }) {
     setDataLoading(true);
     try {
       const [resClients, resTechs, resOrders] = await Promise.all([
-        ApiClient.get<any>('/clients', { params: { limit: '100' } }).catch(() => ({ success: false, data: { items: [] } })),
-        ApiClient.get<any>('/users', { params: { limit: '100', active: 'true' } }).catch(() => ({ success: false, data: { items: [] } })),
-        ApiClient.get<any>('/service-orders', { params: { limit: '100' } }).catch(() => ({ success: false, data: { items: [] } }))
+        ApiClient.get<Record<string, unknown>>('/clients', { params: { limit: '100' } }).catch(() => ({ success: false, data: { items: [] } })),
+        ApiClient.get<Record<string, unknown>>('/users', { params: { limit: '100', active: 'true' } }).catch(() => ({ success: false, data: { items: [] } })),
+        ApiClient.get<Record<string, unknown>>('/service-orders', { params: { limit: '100' } }).catch(() => ({ success: false, data: { items: [] } }))
       ]);
 
       if (resClients.success) setClients(resClients.data.items);

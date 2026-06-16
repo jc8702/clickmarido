@@ -40,47 +40,48 @@ const setCookie = (name: string, value: string, days: number) => {
   document.cookie = `${name}=${value || ""}${expires}; path=/; SameSite=Lax`;
 };
 
-const getCookie = (name: string): string | null => {
-  if (typeof window === "undefined") return null;
-  const nameEQ = name + "=";
-  const ca = document.cookie.split(";");
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i].trim();
-    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-  }
-  return null;
-};
+  const getCookie = (name: string): string | null => {
+    if (typeof window === "undefined") return null;
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(";");
+    for (let i = 0; i < ca.length; i++) {
+      const c = ca[i].trim();
+      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+  };
 
-const eraseCookie = (name: string) => {
-  if (typeof window === "undefined") return;
-  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
-};
+  const eraseCookie = (name: string) => {
+    if (typeof window === "undefined") return;
+    document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
+  };
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [company, setCompany] = useState<Company | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  export function AuthProvider({ children }: { children: React.ReactNode }) {
+    const router = useRouter();
+    const [user, setUser] = useState<User | null>(null);
+    const [company, setCompany] = useState<Company | null>(null);
+    const [accessToken, setAccessToken] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
 
-  // Inicializa o estado de autenticação (Silent Refresh) no carregamento inicial da página
-  useEffect(() => {
-    const initializeAuth = async () => {
-      const storedRefreshToken = getCookie("clickmarido_refresh_token");
-      
-      if (storedRefreshToken) {
-        try {
-          await refreshSession();
-        } catch (e) {
-          // Token inválido/expirado, limpa sessões
-          clearAuthData();
+    // Inicializa o estado de autenticação (Silent Refresh) no carregamento inicial da página
+    useEffect(() => {
+      const initializeAuth = async () => {
+        const storedRefreshToken = getCookie("clickmarido_refresh_token");
+        
+        if (storedRefreshToken) {
+          try {
+            await refreshSession();
+          } catch (e) {
+            // Token inválido/expirado, limpa sessões
+            clearAuthData();
+          }
         }
-      }
-      setLoading(false);
-    };
+        setLoading(false);
+      };
 
-    initializeAuth();
-  }, []);
+      initializeAuth();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
   // Monitora expiração de tokens e intercepta falhas silenciosas de rede
   useEffect(() => {
@@ -97,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [accessToken, company]);
 
-  const clearAuthData = () => {
+  function clearAuthData() {
     setUser(null);
     setCompany(null);
     setAccessToken(null);
@@ -109,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string) => {
+  async function login(email: string, password: string) {
     try {
       const data = await ApiClient.post<{
         accessToken: string;
@@ -135,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const refreshSession = async (): Promise<string | null> => {
+  async function refreshSession(): Promise<string | null> {
     const currentRefreshToken = getCookie("clickmarido_refresh_token");
     if (!currentRefreshToken) {
       clearAuthData();
@@ -174,7 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = async () => {
+  async function logout() {
     const currentRefreshToken = getCookie("clickmarido_refresh_token");
     if (currentRefreshToken) {
       await ApiClient.post("/auth/logout", { refreshToken: currentRefreshToken }).catch(() => {});

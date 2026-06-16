@@ -37,9 +37,9 @@ export function TechnicianForm({ initialData, companyId, onSuccess, onCancel }: 
 
     try {
       if (initialData) {
-        await updateTechnician(initialData.id, payload as any);
+        await updateTechnician(initialData.id, payload as unknown as Parameters<typeof updateTechnician>[1]);
       } else {
-        await createTechnician({ ...payload, companyId, rating: 0 } as any);
+        await createTechnician({ ...payload, companyId, rating: 0 } as unknown as Parameters<typeof createTechnician>[0]);
       }
       onSuccess();
     } catch (error) {

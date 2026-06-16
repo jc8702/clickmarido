@@ -9,21 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 
-interface Role {
-  id: string;
-  name: string;
-  description?: string;
-}
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  isActive: boolean;
-  companyId: string;
-  createdAt: string;
-  roles: Role[];
-}
+import { UserFormModal } from './components/user-form-modal';
+import { Role, User } from './types';
 
 export default function UsuariosPage() {
   const { user: currentUser } = useAuth();
@@ -45,15 +32,7 @@ export default function UsuariosPage() {
   // Estados de formulário/modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    roleIds: [] as string[],
-    isActive: true,
-  });
-  const [formError, setFormError] = useState('');
-  const [formLoading, setFormLoading] = useState(false);
+
 
   // Carrega os dados da API
   const fetchData = async () => {
@@ -93,7 +72,7 @@ export default function UsuariosPage() {
         setTotal(usersRes.data.total);
         setTotalPages(usersRes.data.totalPages);
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('Erro ao buscar dados:', e.message);
     } finally {
       setLoading(false);
@@ -137,88 +116,15 @@ export default function UsuariosPage() {
 
   const handleOpenCreateModal = () => {
     setSelectedUser(null);
-    setFormData({
-      name: '',
-      email: '',
-      password: '',
-      roleIds: [],
-      isActive: true,
-    });
-    setFormError('');
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (targetUser: User) => {
     setSelectedUser(targetUser);
-    setFormData({
-      name: targetUser.name,
-      email: targetUser.email,
-      password: '', // Senha vazia por padrão ao editar
-      roleIds: targetUser.roles.map((r) => r.id),
-      isActive: targetUser.isActive,
-    });
-    setFormError('');
     setIsModalOpen(true);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
 
-  const handleRoleToggle = (roleId: string) => {
-    setFormData((prev) => {
-      const isSelected = prev.roleIds.includes(roleId);
-      const newRoleIds = isSelected 
-        ? prev.roleIds.filter((id) => id !== roleId)
-        : [...prev.roleIds, roleId];
-      return { ...prev, roleIds: newRoleIds };
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError('');
-    setFormLoading(true);
-
-    if (formData.roleIds.length === 0) {
-      setFormError('Selecione pelo menos um perfil para o usuário.');
-      setFormLoading(false);
-      return;
-    }
-
-    try {
-      if (selectedUser) {
-        // Editar
-        // Se a senha estiver em branco na edição, não a enviamos para a API
-        const payload: any = { ...formData };
-        if (!payload.password) {
-          delete payload.password;
-        }
-        const res = await ApiClient.put<{ success: boolean }>(`/users/${selectedUser.id}`, payload);
-        if (res.success) {
-          setIsModalOpen(false);
-          fetchData();
-        }
-      } else {
-        // Criar
-        if (!formData.password) {
-          setFormError('A senha é obrigatória para novos usuários.');
-          setFormLoading(false);
-          return;
-        }
-        const res = await ApiClient.post<{ success: boolean }>('/users', formData);
-        if (res.success) {
-          setIsModalOpen(false);
-          fetchData();
-        }
-      }
-    } catch (err: any) {
-      setFormError(err.message || 'Erro ao salvar usuário.');
-    } finally {
-      setFormLoading(false);
-    }
-  };
 
   const handleDelete = async (id: string) => {
     if (id === currentUser?.id) {
@@ -232,7 +138,7 @@ export default function UsuariosPage() {
       if (res.success) {
         fetchData();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       alert(err.message || 'Erro ao excluir usuário.');
     }
   };
@@ -417,130 +323,13 @@ export default function UsuariosPage() {
         </div>
       )}
 
-      {/* Modal CRUD de Usuários */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in-fade">
-          <div className="relative w-full max-w-md rounded-2xl bg-zinc-950 border border-zinc-900 shadow-2xl p-6 space-y-6">
-            <div>
-              <h3 className="text-xl font-bold text-white tracking-tight">
-                {selectedUser ? 'Editar Usuário' : 'Adicionar Novo Usuário'}
-              </h3>
-              <p className="text-zinc-500 text-xs mt-1">
-                {selectedUser ? 'Edite as informações e perfis do colaborador.' : 'Cadastre um novo membro no time.'}
-              </p>
-            </div>
-
-            {formError && (
-              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs font-medium text-red-500 flex items-center gap-2">
-                <XCircle className="w-4 h-4 shrink-0" />
-                {formError}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Nome Completo</label>
-                  <input
-                    type="text"
-                    name="name"
-                    required
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">E-mail</label>
-                  <input
-                    type="email"
-                    name="email"
-                    required
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
-                    {selectedUser ? 'Senha (deixe em branco para manter)' : 'Senha de Acesso'}
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    required={!selectedUser}
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50"
-                    placeholder={selectedUser ? '••••••••' : 'No mínimo 6 caracteres'}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">Perfil de Acesso</label>
-                  <div className="grid grid-cols-2 gap-2 bg-zinc-900/40 p-3 rounded-lg border border-zinc-900">
-                    {roles.map((role) => {
-                      const isSelected = formData.roleIds.includes(role.id);
-                      return (
-                        <div 
-                          key={role.id}
-                          onClick={() => handleRoleToggle(role.id)}
-                          className={`flex items-center gap-2 p-2 rounded-md border text-xs font-medium cursor-pointer transition-all ${
-                            isSelected 
-                              ? 'bg-blue-500/10 border-blue-500/40 text-blue-400 font-bold' 
-                              : 'bg-zinc-900/50 border-zinc-850 hover:bg-zinc-800 text-zinc-400'
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            readOnly
-                            className="hidden"
-                          />
-                          <span>{role.name}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 pt-2">
-                <input
-                  type="checkbox"
-                  id="userActive"
-                  name="isActive"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, isActive: e.target.checked }))}
-                  className="rounded bg-zinc-900 border-zinc-800 text-blue-600 focus:ring-0 cursor-pointer w-4 h-4"
-                />
-                <label htmlFor="userActive" className="text-xs font-bold text-zinc-300 uppercase tracking-wider cursor-pointer">
-                  Usuário Ativo e Habilitado
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-zinc-900">
-                <Button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white font-bold h-10 px-5 rounded-lg text-xs"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={formLoading}
-                  className="bg-blue-600 hover:bg-blue-500 text-white font-bold h-10 px-5 rounded-lg text-xs disabled:opacity-50"
-                >
-                  {formLoading ? 'Salvando...' : 'Salvar Usuário'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <UserFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchData}
+        user={selectedUser}
+        roles={roles}
+      />
     </div>
   );
 }

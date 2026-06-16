@@ -6,10 +6,14 @@ describe('ApiClient', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn());
     localStorage.clear();
+    // Evita chamadas extras de fetch para obter o CSRF token nas mutações
+    vi.spyOn(ApiClient as any, 'getCsrfToken').mockResolvedValue('mock-csrf-token');
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    // Limpa o cache estático do token para evitar vazamento de estado entre testes
+    (ApiClient as any).csrfToken = null;
   });
 
   it('should make a GET request successfully', async () => {

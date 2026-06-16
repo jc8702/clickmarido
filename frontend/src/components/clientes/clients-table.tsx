@@ -20,7 +20,7 @@ export function ClientsTable() {
       if (res.success) {
         fetchClients();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       alert(err.message || 'Erro ao excluir cliente.');
     }
   };

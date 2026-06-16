@@ -55,7 +55,7 @@ function ResetPasswordForm() {
       setTimeout(() => {
         router.push("/login");
       }, 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || "Houve um erro ao atualizar sua senha. O token pode ter expirado.");
     } finally {
       setLoading(false);

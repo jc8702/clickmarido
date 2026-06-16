@@ -8,7 +8,7 @@ import {
 
 const COLORS = ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899'];
 
-export const CommercialChart = React.memo(function CommercialChart({ data }: { data: any[] }) {
+export const CommercialChart = React.memo(function CommercialChart({ data }: { data: Record<string, string | number>[] }) {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={data}>
@@ -22,7 +22,7 @@ export const CommercialChart = React.memo(function CommercialChart({ data }: { d
   );
 });
 
-export const OperationalChart = React.memo(function OperationalChart({ data }: { data: any[] }) {
+export const OperationalChart = React.memo(function OperationalChart({ data }: { data: Record<string, string | number>[] }) {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <PieChart>
@@ -46,7 +46,7 @@ export const OperationalChart = React.memo(function OperationalChart({ data }: {
   );
 });
 
-export const FinancialChart = React.memo(function FinancialChart({ data }: { data: any[] }) {
+export const FinancialChart = React.memo(function FinancialChart({ data }: { data: Record<string, string | number>[] }) {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={data}>

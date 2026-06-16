@@ -14,6 +14,9 @@ import { DataTablePagination } from '@/components/ui/data-table-pagination';
 import { SkeletonTable } from '@/components/ui/skeleton-table';
 import { FilterPanel } from '@/components/ui/filter-panel';
 import { getQuoteColumns } from './columns';
+import { SignatureModal } from './components/signature-modal';
+import { ViewQuoteModal } from './components/view-quote-modal';
+import { QuoteFormModal } from './components/quote-form-modal';
 import { useAuth } from '@/contexts/auth-context';
 import { generateFromQuote } from '@/lib/api/modules/service-orders';
 
@@ -101,21 +104,7 @@ export default function OrcamentosPage() {
   // Estados do Modal de Criação / Edição
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
-  
-  const [formClientId, setFormClientId] = useState('');
-  const [formDiscount, setFormDiscount] = useState('0');
-  const [formTravelFee, setFormTravelFee] = useState('0');
-  const [formStatus, setFormStatus] = useState('Rascunho');
-  const [formServices, setFormServices] = useState<QuoteServiceItem[]>([]);
-  const [formMaterials, setFormMaterials] = useState<QuoteMaterialItem[]>([]);
-  
-  // Estados de materiais auxiliares para adicionar no formulário
-  const [newMaterialDesc, setNewMaterialDesc] = useState('');
-  const [newMaterialQty, setNewMaterialQty] = useState('1');
-  const [newMaterialVal, setNewMaterialVal] = useState('0');
 
-  const [formError, setFormError] = useState('');
-  const [formLoading, setFormLoading] = useState(false);
 
   // Estado do Visualizador Detalhado
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -123,10 +112,6 @@ export default function OrcamentosPage() {
 
   // Estados da Assinatura Digital
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [sigError, setSigError] = useState('');
-  const [sigLoading, setSigLoading] = useState(false);
 
   // Carrega orçamentos, clientes e serviços
   const fetchQuotes = async () => {
@@ -155,7 +140,7 @@ export default function OrcamentosPage() {
         setTotal(res.data.total);
         setTotalPages(res.data.totalPages);
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('Erro ao buscar orçamentos:', e.message);
     } finally {
       setLoading(false);
@@ -177,7 +162,7 @@ export default function OrcamentosPage() {
       if (resServices.success) {
         setCatalogServices(resServices.data.items);
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('Erro ao carregar dados auxiliares:', e.message);
     }
   };
@@ -198,143 +183,16 @@ export default function OrcamentosPage() {
     fetchQuotes();
   }, [debouncedSearch]);
 
-  // Cálculo de valor final reativo no frontend
-  const calculateTotal = () => {
-    const servicesTotal = formServices.reduce((sum, s) => sum + (s.quantity * s.value), 0);
-    const materialsTotal = formMaterials.reduce((sum, m) => sum + (m.quantity * m.value), 0);
-    const discount = parseFloat(formDiscount) || 0;
-    const travelFee = parseFloat(formTravelFee) || 0;
-    const finalVal = servicesTotal + materialsTotal + travelFee - discount;
-    return Math.max(0, finalVal);
-  };
-
   // Modais de Criação e Edição
   const handleOpenCreateModal = () => {
     setSelectedQuote(null);
-    setFormClientId(clients[0]?.id || '');
-    setFormDiscount('0');
-    setFormTravelFee('0');
-    setFormStatus('Rascunho');
-    setFormServices([]);
-    setFormMaterials([]);
-    setFormError('');
     setIsFormModalOpen(true);
   };
 
   const handleOpenEditModal = (quote: Quote, e: React.MouseEvent) => {
     e.stopPropagation(); // Evita abrir o visualizador de detalhes ao mesmo tempo
     setSelectedQuote(quote);
-    setFormClientId(quote.clientId);
-    setFormDiscount(String(quote.discount));
-    setFormTravelFee(String(quote.travelFee));
-    setFormStatus(quote.status);
-    setFormServices(quote.services.map(s => ({
-      serviceId: s.serviceId,
-      quantity: s.quantity,
-      value: s.value,
-    })));
-    setFormMaterials(quote.materials || []);
-    setFormError('');
     setIsFormModalOpen(true);
-  };
-
-  const handleAddServiceRow = () => {
-    if (catalogServices.length === 0) return;
-    const firstSrv = catalogServices[0];
-    setFormServices([...formServices, {
-      serviceId: firstSrv.id,
-      quantity: 1,
-      value: firstSrv.value,
-    }]);
-  };
-
-  const handleUpdateServiceRow = (index: number, key: 'serviceId' | 'quantity' | 'value', val: any) => {
-    const updated = [...formServices];
-    if (key === 'serviceId') {
-      const srv = catalogServices.find(s => s.id === val);
-      updated[index] = {
-        ...updated[index],
-        serviceId: val,
-        value: srv ? srv.value : updated[index].value,
-      };
-    } else if (key === 'quantity') {
-      updated[index] = { ...updated[index], quantity: parseInt(val, 10) || 1 };
-    } else if (key === 'value') {
-      updated[index] = { ...updated[index], value: parseFloat(val) || 0 };
-    }
-    setFormServices(updated);
-  };
-
-  const handleRemoveServiceRow = (index: number) => {
-    setFormServices(formServices.filter((_, i) => i !== index));
-  };
-
-  const handleAddMaterialItem = () => {
-    if (!newMaterialDesc) {
-      alert('Por favor, informe a descrição do material.');
-      return;
-    }
-    const qty = parseInt(newMaterialQty, 10) || 1;
-    const val = parseFloat(newMaterialVal) || 0;
-    setFormMaterials([...formMaterials, {
-      description: newMaterialDesc,
-      quantity: qty,
-      value: val,
-    }]);
-    setNewMaterialDesc('');
-    setNewMaterialQty('1');
-    setNewMaterialVal('0');
-  };
-
-  const handleRemoveMaterialItem = (index: number) => {
-    setFormMaterials(formMaterials.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formClientId) {
-      setFormError('Selecione um cliente.');
-      return;
-    }
-    if (formServices.length === 0) {
-      setFormError('Adicione pelo menos um serviço ao orçamento.');
-      return;
-    }
-
-    const payload = {
-      clientId: formClientId,
-      discount: parseFloat(formDiscount) || 0,
-      travelFee: parseFloat(formTravelFee) || 0,
-      materials: formMaterials,
-      status: formStatus,
-      services: formServices,
-    };
-
-    setFormLoading(true);
-    try {
-      if (selectedQuote) {
-        const res = await ApiClient.put<{ success: boolean }>(`/quotes/${selectedQuote.id}`, payload);
-        if (res.success) {
-          setIsFormModalOpen(false);
-          fetchQuotes();
-          if (viewedQuote && viewedQuote.id === selectedQuote.id) {
-            // Atualiza visualizador se estiver aberto
-            const updated = await ApiClient.get<{ success: boolean; data: Quote }>(`/quotes/${selectedQuote.id}`);
-            setViewedQuote(updated.data);
-          }
-        }
-      } else {
-        const res = await ApiClient.post<{ success: boolean }>('/quotes', payload);
-        if (res.success) {
-          setIsFormModalOpen(false);
-          fetchQuotes();
-        }
-      }
-    } catch (err: any) {
-      setFormError(err.message || 'Erro ao salvar orçamento.');
-    } finally {
-      setFormLoading(false);
-    }
   };
 
   // Excluir Orçamento
@@ -350,7 +208,7 @@ export default function OrcamentosPage() {
           setIsViewModalOpen(false);
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       alert(err.message || 'Erro ao arquivar orçamento.');
     }
   };
@@ -379,115 +237,14 @@ export default function OrcamentosPage() {
 
   // Canvas da Assinatura Digital Local
   const handleOpenSignatureModal = () => {
-    setSigError('');
     setIsSignatureModalOpen(true);
-  };
-
-  useEffect(() => {
-    if (isSignatureModalOpen && canvasRef.current) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.strokeStyle = '#5b21b6'; // Cor violeta escura para a caneta
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height); // Limpa com fundo branco
-      }
-    }
-  }, [isSignatureModalOpen]);
-
-  const getCanvasCoords = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
-    const rect = canvas.getBoundingClientRect();
-    
-    // Suporte para touch (mobile)
-    if ('touches' in e) {
-      if (e.touches.length === 0) return { x: 0, y: 0 };
-      return {
-        x: e.touches[0].clientX - rect.left,
-        y: e.touches[0].clientY - rect.top,
-      };
-    } else {
-      return {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      };
-    }
-  };
-
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const coords = getCanvasCoords(e);
-    ctx.beginPath();
-    ctx.moveTo(coords.x, coords.y);
-    setIsDrawing(true);
-  };
-
-  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return;
-    e.preventDefault();
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const coords = getCanvasCoords(e);
-    ctx.lineTo(coords.x, coords.y);
-    ctx.stroke();
-  };
-
-  const stopDrawing = () => {
-    setIsDrawing(false);
-  };
-
-  const clearCanvas = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-  };
-
-  const saveSignature = async () => {
-    const canvas = canvasRef.current;
-    if (!canvas || !viewedQuote) return;
-
-    // Converte canvas para Base64
-    const dataUrl = canvas.toDataURL('image/png');
-
-    setSigLoading(true);
-    setSigError('');
-    try {
-      const res = await ApiClient.post<{ success: boolean; data: Quote }>(`/quotes/${viewedQuote.id}/sign`, {
-        signature: dataUrl,
-      });
-
-      if (res.success) {
-        setViewedQuote(res.data);
-        setIsSignatureModalOpen(false);
-        fetchQuotes();
-      }
-    } catch (err: any) {
-      setSigError(err.message || 'Erro ao registrar assinatura.');
-    } finally {
-      setSigLoading(false);
-    }
   };
 
   const handleGenerateOS = async (quoteId: string) => {
     try {
       const os = await generateFromQuote(quoteId);
       router.push(`/ordens-servico/${os.id}`);
-    } catch(e: any) {
+    } catch(e: unknown) {
       alert(e.message || 'Erro ao gerar OS.');
     }
   };
@@ -673,9 +430,9 @@ export default function OrcamentosPage() {
           <div className="space-y-4">
             <DataTable
               columns={getQuoteColumns({
-                onEdit: handleOpenEditModal as any,
-                onDelete: handleDelete as any,
-              }) as any}
+                onEdit: handleOpenEditModal as never,
+                onDelete: handleDelete as never,
+              }) as never}
               data={quotes}
               isLoading={loading}
               virtualized={quotes.length > 50}
@@ -697,453 +454,45 @@ export default function OrcamentosPage() {
         )}
       </div>
 
-      {/* Modal de Formulário (Criação / Edição) */}
-      {isFormModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in-fade">
-          <div className="relative w-full max-w-2xl rounded-2xl bg-zinc-950 border border-zinc-900 shadow-2xl p-6 space-y-6 max-h-[90vh] overflow-y-auto">
-            <div>
-              <h3 className="text-xl font-bold text-white tracking-tight">
-                {selectedQuote ? `Editar Orçamento #${selectedQuote.number}` : 'Novo Orçamento'}
-              </h3>
-              <p className="text-zinc-500 text-xs mt-1">
-                Configure os serviços, materiais e descontos para fechar a proposta comercial.
-              </p>
-            </div>
-
-            {formError && (
-              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs font-medium text-red-500 flex items-center gap-2 animate-in-fade">
-                <ShieldAlert className="w-4 h-4 shrink-0" />
-                {formError}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Cliente e Status */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Cliente</label>
-                  <select
-                    value={formClientId}
-                    onChange={(e) => setFormClientId(e.target.value)}
-                    required
-                    className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50"
-                  >
-                    <option value="" disabled>Selecione um cliente...</option>
-                    {clients.map(c => (
-                      <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Status Inicial</label>
-                  <select
-                    value={formStatus}
-                    onChange={(e) => setFormStatus(e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50"
-                  >
-                    <option value="Rascunho">Rascunho</option>
-                    <option value="Enviado">Enviado</option>
-                    <option value="Visualizado">Visualizado</option>
-                    <option value="Aprovado">Aprovado</option>
-                    <option value="Rejeitado">Rejeitado</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Lista Dinâmica de Serviços */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-                    Serviços Contratados
-                  </label>
-                  <Button
-                    type="button"
-                    onClick={handleAddServiceRow}
-                    className="bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-violet-400 text-[11px] font-bold h-7 px-3 rounded-lg flex items-center gap-1"
-                  >
-                    <Plus className="w-3.5 h-3.5" /> Adicionar Serviço
-                  </Button>
-                </div>
-
-                {formServices.length === 0 ? (
-                  <div className="text-center p-6 border border-dashed border-zinc-900 rounded-lg text-xs text-zinc-550">
-                    Nenhum serviço adicionado. Clique no botão acima para adicionar.
-                  </div>
-                ) : (
-                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    {formServices.map((row, index) => (
-                      <div key={index} className="flex gap-2 items-center bg-zinc-900/30 p-2 border border-zinc-900 rounded-xl">
-                        <select
-                          value={row.serviceId}
-                          onChange={(e) => handleUpdateServiceRow(index, 'serviceId', e.target.value)}
-                          className="flex-1 h-9 px-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none"
-                        >
-                          {catalogServices.map(cs => (
-                            <option key={cs.id} value={cs.id}>{cs.name} ({formatCurrency(cs.value)})</option>
-                          ))}
-                        </select>
-                        <input
-                          type="number"
-                          min="1"
-                          placeholder="Qtd"
-                          value={row.quantity}
-                          onChange={(e) => handleUpdateServiceRow(index, 'quantity', e.target.value)}
-                          className="w-14 h-9 px-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-center text-white focus:outline-none"
-                        />
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          placeholder="Valor Cobrado"
-                          value={row.value}
-                          onChange={(e) => handleUpdateServiceRow(index, 'value', e.target.value)}
-                          className="w-24 h-9 px-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-right text-white focus:outline-none"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => handleRemoveServiceRow(index)}
-                          className="h-9 w-9 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg p-0"
-                        >
-                          <Trash className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Lista Dinâmica de Materiais */}
-              <div className="space-y-3">
-                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">Materiais Fornecidos</label>
-                
-                {/* Inputs para adicionar novo material */}
-                <div className="flex flex-col md:flex-row gap-2 bg-zinc-900/20 p-3 border border-zinc-900 rounded-xl">
-                  <input
-                    type="text"
-                    placeholder="Descrição do material..."
-                    value={newMaterialDesc}
-                    onChange={(e) => setNewMaterialDesc(e.target.value)}
-                    className="flex-1 h-9 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none"
-                  />
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      min="1"
-                      placeholder="Qtd"
-                      value={newMaterialQty}
-                      onChange={(e) => setNewMaterialQty(e.target.value)}
-                      className="w-16 h-9 px-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-center text-white focus:outline-none"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="Valor Unit."
-                      value={newMaterialVal}
-                      onChange={(e) => setNewMaterialVal(e.target.value)}
-                      className="w-24 h-9 px-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-right text-white focus:outline-none"
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleAddMaterialItem}
-                      className="bg-zinc-800 hover:bg-zinc-700 text-white text-[11px] font-bold h-9 px-3 rounded-lg"
-                    >
-                      Inserir
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Exibição dos materiais adicionados */}
-                {formMaterials.length > 0 && (
-                  <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
-                    {formMaterials.map((m, index) => (
-                      <div key={index} className="flex justify-between items-center bg-zinc-900/40 p-2 border border-zinc-900 rounded-xl text-xs">
-                        <div className="font-bold text-zinc-350">{m.description}</div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-zinc-500 font-semibold">{m.quantity}x {formatCurrency(m.value)}</div>
-                          <div className="font-bold text-zinc-300">{formatCurrency(m.quantity * m.value)}</div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={() => handleRemoveMaterialItem(index)}
-                            className="h-7 w-7 text-zinc-650 hover:text-red-400 rounded-lg p-0"
-                          >
-                            <Trash className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Valores Adicionais */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-zinc-900 pt-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Valor de Deslocamento (Visita)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formTravelFee}
-                    onChange={(e) => setFormTravelFee(e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Desconto Especial</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formDiscount}
-                    onChange={(e) => setFormDiscount(e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50"
-                  />
-                </div>
-              </div>
-
-              {/* Totalizador Geral e Botões de Submissão */}
-              <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-zinc-950 border border-zinc-900 p-4 rounded-xl">
-                <div>
-                  <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Valor Final Estimado</p>
-                  <p className="text-2xl font-black text-emerald-400">{formatCurrency(calculateTotal())}</p>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setIsFormModalOpen(false)}
-                    className="text-zinc-400 hover:bg-zinc-900 rounded-xl h-10 px-4 font-bold text-xs"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={formLoading}
-                    className="bg-violet-600 hover:bg-violet-500 text-white rounded-xl h-10 px-5 font-bold text-xs"
-                  >
-                    {formLoading ? 'Salvando...' : 'Salvar Orçamento'}
-                  </Button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <QuoteFormModal
+        isOpen={isFormModalOpen}
+        onClose={() => setIsFormModalOpen(false)}
+        quote={selectedQuote}
+        clients={clients}
+        catalogServices={catalogServices}
+        onSuccess={async (updatedQuoteId) => {
+          setIsFormModalOpen(false);
+          await fetchQuotes();
+          if (updatedQuoteId && viewedQuote && viewedQuote.id === updatedQuoteId) {
+            const updated = await ApiClient.get<{ success: boolean; data: Quote }>(`/quotes/${updatedQuoteId}`);
+            if (updated.success) setViewedQuote(updated.data);
+          }
+        }}
+      />
 
       {/* Modal do Visualizador de Detalhes */}
-      {isViewModalOpen && viewedQuote && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in-fade print:hidden">
-          <div className="relative w-full max-w-2xl rounded-2xl bg-zinc-950 border border-zinc-900 shadow-2xl p-6 space-y-6 max-h-[95vh] overflow-y-auto">
-            
-            {/* Header de Detalhes */}
-            <div className="flex justify-between items-start border-b border-zinc-900 pb-4">
-              <div>
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  Orçamento #{viewedQuote.number}
-                  {getStatusBadge(viewedQuote.status)}
-                </h3>
-                <p className="text-zinc-500 text-xs mt-1">Emitido em: {formatDate(viewedQuote.createdAt)}</p>
-              </div>
-
-              <Button
-                onClick={() => setIsViewModalOpen(false)}
-                variant="ghost"
-                className="h-8 w-8 text-zinc-500 hover:text-white rounded-lg p-0"
-              >
-                <XCircle className="w-5 h-5" />
-              </Button>
-            </div>
-
-            {/* Ações Rápidas */}
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={handlePrint}
-                className="bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-300 font-bold h-9 px-4 rounded-xl text-xs flex items-center gap-1.5"
-              >
-                <Printer className="w-4 h-4 text-zinc-400" /> Imprimir / PDF
-              </Button>
-
-              <Button
-                onClick={() => handleShareWhatsApp(viewedQuote)}
-                className="bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/20 text-emerald-400 font-bold h-9 px-4 rounded-xl text-xs flex items-center gap-1.5"
-              >
-                <Share2 className="w-4 h-4 text-emerald-500" /> WhatsApp
-              </Button>
-
-              {viewedQuote.status !== 'Aprovado' && !viewedQuote.signature && (
-                <Button
-                  onClick={handleOpenSignatureModal}
-                  className="bg-violet-650 hover:bg-violet-600 text-white font-bold h-9 px-4 rounded-xl text-xs flex items-center gap-1.5"
-                >
-                  <Award className="w-4 h-4" /> Assinar Digitalmente
-                </Button>
-              )}
-
-              {viewedQuote.status === 'Aprovado' && (
-                <Button
-                  onClick={() => handleGenerateOS(viewedQuote.id)}
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-9 px-4 rounded-xl text-xs flex items-center gap-1.5"
-                >
-                  <Wrench className="w-4 h-4" /> Gerar Ordem de Serviço
-                </Button>
-              )}
-            </div>
-
-            {/* Informações do Cliente */}
-            <div className="p-4 rounded-xl bg-zinc-900/30 border border-zinc-900 space-y-1.5">
-              <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Cliente</p>
-              <h4 className="text-sm font-bold text-zinc-300">{viewedQuote.client.name}</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-zinc-500">
-                <p>Telefone: {viewedQuote.client.phone}</p>
-                {viewedQuote.client.email && <p>Email: {viewedQuote.client.email}</p>}
-                {viewedQuote.client.address && <p className="md:col-span-2">Endereço: {viewedQuote.client.address}</p>}
-              </div>
-            </div>
-
-            {/* Tabela de Serviços */}
-            <div className="space-y-2">
-              <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Serviços Contratados</p>
-              <div className="border border-zinc-900 rounded-xl overflow-hidden text-xs">
-                <div className="grid grid-cols-4 bg-zinc-900/40 p-2.5 border-b border-zinc-900 font-black text-zinc-400 uppercase tracking-wider">
-                  <div className="col-span-2">Serviço</div>
-                  <div className="text-center">Qtd</div>
-                  <div className="text-right">Total</div>
-                </div>
-                {viewedQuote.services.map((s, idx) => (
-                  <div key={idx} className="grid grid-cols-4 p-2.5 border-b border-zinc-900/50 text-zinc-300">
-                    <div className="col-span-2 font-bold leading-tight">
-                      <p>{s.service?.name || 'Serviço Personalizado'}</p>
-                      <p className="text-[10px] text-zinc-550 mt-0.5">{s.service?.category}</p>
-                    </div>
-                    <div className="text-center font-bold self-center">{s.quantity}</div>
-                    <div className="text-right font-black text-zinc-350 self-center">
-                      {formatCurrency(s.quantity * s.value)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Tabela de Materiais se existirem */}
-            {viewedQuote.materials && viewedQuote.materials.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Materiais Fornecidos</p>
-                <div className="border border-zinc-900 rounded-xl overflow-hidden text-xs">
-                  <div className="grid grid-cols-4 bg-zinc-900/40 p-2.5 border-b border-zinc-900 font-black text-zinc-400 uppercase tracking-wider">
-                    <div className="col-span-2">Material</div>
-                    <div className="text-center">Qtd</div>
-                    <div className="text-right">Total</div>
-                  </div>
-                  {viewedQuote.materials.map((m, idx) => (
-                    <div key={idx} className="grid grid-cols-4 p-2.5 border-b border-zinc-900/50 text-zinc-300">
-                      <div className="col-span-2 font-bold self-center">{m.description}</div>
-                      <div className="text-center font-bold self-center">{m.quantity}</div>
-                      <div className="text-right font-black text-zinc-350 self-center">
-                        {formatCurrency(m.quantity * m.value)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Totais Gerais */}
-            <div className="flex justify-end pt-2">
-              <div className="w-64 space-y-2 bg-zinc-900/20 p-4 border border-zinc-900 rounded-xl text-xs font-semibold text-zinc-400">
-                <div className="flex justify-between">
-                  <span>Deslocamento:</span>
-                  <span className="text-zinc-300">{formatCurrency(viewedQuote.travelFee)}</span>
-                </div>
-                <div className="flex justify-between text-rose-400">
-                  <span>Desconto:</span>
-                  <span>- {formatCurrency(viewedQuote.discount)}</span>
-                </div>
-                <div className="flex justify-between border-t border-zinc-900 pt-2 text-sm font-black text-zinc-200">
-                  <span>Valor Final:</span>
-                  <span className="text-emerald-400">{formatCurrency(viewedQuote.totalValue)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Assinatura se tiver */}
-            {viewedQuote.signature && (
-              <div className="pt-4 flex flex-col items-center justify-center space-y-2 border-t border-zinc-900">
-                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Assinatura Digital Local</p>
-                <div className="relative border border-zinc-800 rounded-xl p-2 bg-white w-64 h-32 flex items-center justify-center">
-                  <Image src={viewedQuote.signature} alt="Assinatura" fill className="object-contain" unoptimized />
-                </div>
-                <p className="text-[10px] text-zinc-500 font-medium">Assinado em: {viewedQuote.signedAt ? formatDate(viewedQuote.signedAt) : ''}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <ViewQuoteModal
+        isOpen={isViewModalOpen}
+        quote={viewedQuote}
+        onClose={() => setIsViewModalOpen(false)}
+        onPrint={handlePrint}
+        onShare={handleShareWhatsApp}
+        onSign={handleOpenSignatureModal}
+        onGenerateOS={handleGenerateOS}
+      />
 
       {/* Modal do Canvas de Assinatura */}
-      {isSignatureModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-in-fade">
-          <div className="relative w-full max-w-md rounded-2xl bg-zinc-950 border border-zinc-900 shadow-2xl p-6 space-y-5">
-            <div>
-              <h4 className="text-md font-bold text-white">Assinar Proposta Eletrônica</h4>
-              <p className="text-zinc-500 text-[11px] mt-0.5">Assine usando o mouse ou desenhando na tela.</p>
-            </div>
-
-            {sigError && (
-              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs font-medium text-red-500">
-                {sigError}
-              </div>
-            )}
-
-            {/* Canvas Container */}
-            <div className="flex justify-center">
-              <canvas
-                ref={canvasRef}
-                width={360}
-                height={180}
-                onMouseDown={startDrawing}
-                onMouseMove={draw}
-                onMouseUp={stopDrawing}
-                onMouseLeave={stopDrawing}
-                onTouchStart={startDrawing}
-                onTouchMove={draw}
-                onTouchEnd={stopDrawing}
-                className="border border-zinc-700 bg-white rounded-xl cursor-crosshair touch-none"
-              />
-            </div>
-
-            <div className="flex justify-between items-center">
-              <Button
-                type="button"
-                onClick={clearCanvas}
-                className="bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-400 font-bold h-9 px-4 rounded-xl text-xs"
-              >
-                Limpar Tela
-              </Button>
-
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  onClick={() => setIsSignatureModalOpen(false)}
-                  className="text-zinc-500 hover:text-white text-xs font-bold"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="button"
-                  onClick={saveSignature}
-                  disabled={sigLoading}
-                  className="bg-violet-600 hover:bg-violet-500 text-white font-bold h-9 px-4 rounded-xl text-xs"
-                >
-                  {sigLoading ? 'Aprovando...' : 'Confirmar e Aprovar'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+      {viewedQuote && (
+        <SignatureModal
+          isOpen={isSignatureModalOpen}
+          onClose={() => setIsSignatureModalOpen(false)}
+          quoteId={viewedQuote.id}
+          onSuccess={(updatedQuote) => {
+            setViewedQuote(updatedQuote);
+            setIsSignatureModalOpen(false);
+            fetchQuotes();
+          }}
+        />
       )}
     </div>
   );

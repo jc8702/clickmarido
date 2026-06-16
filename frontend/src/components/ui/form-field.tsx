@@ -35,7 +35,7 @@ export function FormField({
       <div className="relative">
         {React.Children.map(children, child => {
           if (React.isValidElement(child)) {
-            return React.cloneElement(child, { error: !!error } as any);
+            return React.cloneElement(child as React.ReactElement, { error: !!error } as React.HTMLAttributes<HTMLElement>);
           }
           return child;
         })}
