@@ -5,8 +5,7 @@ import { AppModule } from './app.module';
 import { XssSanitizePipe } from './common/pipes/xss-sanitize.pipe';
 import { EmptyStringToNullPipe } from './common/pipes/empty-string-to-null.pipe';
 import { setupSwagger } from './core/config/swagger.config';
-import * as cookieParser from 'cookie-parser';
-import { doubleCsrfProtection } from './core/security/csrf';
+import cookieParser from 'cookie-parser';
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
@@ -15,28 +14,31 @@ async function bootstrap() {
 
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
-    integrations: [
-      nodeProfilingIntegration(),
-    ],
+    integrations: [nodeProfilingIntegration()],
     tracesSampleRate: 1.0,
     profilesSampleRate: 1.0,
     environment: process.env.NODE_ENV || 'development',
   });
 
-  app.use((cookieParser as any)(process.env.COOKIE_SECRET || 'cookie-secret'));
+  app.use(cookieParser(process.env.COOKIE_SECRET || 'cookie-secret'));
 
   // Headers de segurança HTTP (XSS, Clickjacking, MIME sniffing, etc.)
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'", process.env.CORS_ORIGIN || 'http://localhost:3000'],
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: [
+            "'self'",
+            process.env.CORS_ORIGIN || 'http://localhost:3000',
+          ],
+        },
       },
-    },
-  }));
+    }),
+  );
 
   // Configura um prefixo global para as rotas da API (ex: http://localhost:3001/api/v1/...)
   app.setGlobalPrefix('api');
@@ -44,9 +46,6 @@ async function bootstrap() {
     type: VersioningType.URI,
     defaultVersion: '1',
   });
-
-  // CSRF Protection middleware
-  app.use(doubleCsrfProtection);
 
   // Habilita validação de dados globalmente para DTOs
   app.useGlobalPipes(
@@ -76,5 +75,4 @@ async function bootstrap() {
   await app.listen(port);
   console.log(`🚀 Click Marido API rodando em: http://localhost:${port}/api`);
 }
-bootstrap();
-
+void bootstrap();

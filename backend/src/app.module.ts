@@ -1,4 +1,9 @@
-import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import {
+  Module,
+  NestModule,
+  MiddlewareConsumer,
+  RequestMethod,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -33,6 +38,7 @@ import { AiModule } from './modules/ai/ai.module';
 import { GeolocationModule } from './core/geolocation/geolocation.module';
 import { LoggerModule } from './core/logger/logger.module';
 import { RequestIdMiddleware } from './common/middlewares/request-id.middleware';
+import { CsrfMiddleware } from './common/middlewares/csrf.middleware';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { APP_FILTER } from '@nestjs/core';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
@@ -46,10 +52,12 @@ import { envValidationSchema } from './core/config/env-validation';
       isGlobal: true,
       validationSchema: envValidationSchema,
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     PrismaModule,
     EmailModule,
     PdfModule,
@@ -111,7 +119,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     // Registra middlewares globais
     consumer
-      .apply(RequestIdMiddleware, CompanyMiddleware)
+      .apply(RequestIdMiddleware, CompanyMiddleware, CsrfMiddleware)
       .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }
