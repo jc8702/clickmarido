@@ -184,159 +184,33 @@ async function main() {
   }
 
   // 5. Semeando Catálogo de Serviços padrão
-  console.log('🛠️ Semeando Catálogo de Serviços padrão da Click Marido...');
-  const servicesDefs = [
-    // Elétrica
-    {
-      category: 'Elétrica',
-      name: 'Instalação de Chuveiro Elétrico',
-      description: 'Substituição ou instalação nova de chuveiro, incluindo conexão elétrica e testes de fluxo/temperatura.',
-      value: 120.00,
-      averageTime: 45,
-      complexity: 'Média',
-      warranty: 90,
-      specialty: 'Eletricista Residencial',
-    },
-    {
-      category: 'Elétrica',
-      name: 'Instalação de Ventilador de Teto',
-      description: 'Montagem e fixação de ventilador de teto com instalação de chave controladora na parede.',
-      value: 180.00,
-      averageTime: 90,
-      complexity: 'Alta',
-      warranty: 90,
-      specialty: 'Eletricista Residencial',
-    },
-    {
-      category: 'Elétrica',
-      name: 'Troca de Disjuntor ou Tomada',
-      description: 'Substituição de tomadas antigas ou disjuntores avariados no quadro de distribuição.',
-      value: 50.00,
-      averageTime: 25,
-      complexity: 'Baixa',
-      warranty: 90,
-      specialty: 'Eletricista Residencial',
-    },
-    // Hidráulica
-    {
-      category: 'Hidráulica',
-      name: 'Conserto de Vazamento em Torneira',
-      description: 'Substituição de reparo (carrapeta) ou troca completa da torneira ou misturador.',
-      value: 70.00,
-      averageTime: 30,
-      complexity: 'Baixa',
-      warranty: 90,
-      specialty: 'Encanador',
-    },
-    {
-      category: 'Hidráulica',
-      name: 'Desentupimento de Vaso Sanitário ou Ralo',
-      description: 'Desobstrução de encanamento de esgoto interno utilizando equipamentos manuais específicos.',
-      value: 160.00,
-      averageTime: 60,
-      complexity: 'Média',
-      warranty: 30,
-      specialty: 'Encanador de Esgoto',
-    },
-    {
-      category: 'Hidráulica',
-      name: 'Limpeza de Caixa d\'Água',
-      description: 'Esvaziamento, higienização interna e desinfecção de reservatórios de até 1.000 litros.',
-      value: 250.00,
-      averageTime: 120,
-      complexity: 'Média',
-      warranty: 180,
-      specialty: 'Auxiliar Hidráulico',
-    },
-    // Instalações
-    {
-      category: 'Instalações',
-      name: 'Instalação de Suporte de TV',
-      description: 'Fixação de suporte fixo ou articulado em parede de alvenaria ou painel de madeira com passador de cabos.',
-      value: 90.00,
-      averageTime: 40,
-      complexity: 'Baixa',
-      warranty: 90,
-      specialty: 'Instalador de Painéis',
-    },
-    {
-      category: 'Instalações',
-      name: 'Instalação de Cortina ou Persiana',
-      description: 'Marcação, furação e fixação de suportes e trilhos para cortinas e persianas residenciais.',
-      value: 80.00,
-      averageTime: 45,
-      complexity: 'Baixa',
-      warranty: 90,
-      specialty: 'Instalador Geral',
-    },
-    {
-      category: 'Instalações',
-      name: 'Instalação de Purificador de Água',
-      description: 'Conexão hidráulica no ponto de água, fixação do purificador e ativação do refil.',
-      value: 60.00,
-      averageTime: 30,
-      complexity: 'Baixa',
-      warranty: 90,
-      specialty: 'Instalador Geral',
-    },
-    // Marcenaria
-    {
-      category: 'Marcenaria',
-      name: 'Regulagem de Portas e Gavetas',
-      description: 'Ajuste de dobradiças, troca de corrediças telescópicas simples e alinhamento de portas de armários.',
-      value: 110.00,
-      averageTime: 60,
-      complexity: 'Média',
-      warranty: 90,
-      specialty: 'Marceneiro de Ajustes',
-    },
-    {
-      category: 'Marcenaria',
-      name: 'Montagem de Guarda-Roupa (Até 6 Portas)',
-      description: 'Montagem completa de guarda-roupa de casal a partir do manual do fabricante.',
-      value: 290.00,
-      averageTime: 240,
-      complexity: 'Alta',
-      warranty: 90,
-      specialty: 'Montador Profissional',
-    },
-    {
-      category: 'Marcenaria',
-      name: 'Troca de Puxadores ou Dobradiças',
-      description: 'Substituição de puxadores de armários e gavetas ou troca de dobradiças do tipo caneco.',
-      value: 70.00,
-      averageTime: 40,
-      complexity: 'Baixa',
-      warranty: 90,
-      specialty: 'Auxiliar de Marcenaria',
-    },
-  ];
+  console.log('🛠️ Removendo catálogo antigo e semeando 83 novos serviços...');
+
+  // Remove todos os serviços existentes da empresa (hard delete para limpeza do seed)
+  await prisma.service.deleteMany({
+    where: { companyId: company.id },
+  });
+
+  // Importa os 83 serviços do arquivo de dados
+  const servicesDefs: Array<{
+    name: string;
+    category: string;
+    description: string;
+    value: number;
+    averageTime: number;
+    complexity: string;
+    warranty: number;
+  }> = require('./services-data.json');
 
   for (const sDef of servicesDefs) {
-    const existing = await prisma.service.findFirst({
-      where: {
-        name: sDef.name,
-        category: sDef.category,
+    await prisma.service.create({
+      data: {
+        ...sDef,
         companyId: company.id,
-        deletedAt: null,
       },
     });
-
-    if (existing) {
-      await prisma.service.update({
-        where: { id: existing.id },
-        data: sDef,
-      });
-    } else {
-      await prisma.service.create({
-        data: {
-          ...sDef,
-          companyId: company.id,
-        },
-      });
-    }
   }
-  console.log(` - Semeados/atualizados ${servicesDefs.length} serviços no catálogo base Click Marido.`);
+  console.log(` - Semeados ${servicesDefs.length} serviços no catálogo Click Marido.`);
 
   console.log('✅ Semeadura concluída com sucesso!');
 }
