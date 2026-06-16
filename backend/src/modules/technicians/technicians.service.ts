@@ -55,7 +55,7 @@ export class TechniciansService {
     });
 
     // Ordena primariamente pelo maior número de OS concluídas, secundariamente por rating
-    const sorted = technicians.sort((a: any, b: any) => {
+    const sorted = technicians.sort((a, b) => {
       if (b._count.serviceOrders !== a._count.serviceOrders) {
         return b._count.serviceOrders - a._count.serviceOrders;
       }

@@ -28,7 +28,9 @@ describe('ClientsService', () => {
         {
           provide: GeolocationService,
           useValue: {
-            geocodeAddress: jest.fn().mockResolvedValue({ lat: -23.5, lng: -46.6 }),
+            geocodeAddress: jest
+              .fn()
+              .mockResolvedValue({ lat: -23.5, lng: -46.6 }),
           },
         },
       ],
@@ -49,12 +51,16 @@ describe('ClientsService', () => {
     it('should create a new client successfully', async () => {
       const client = ClientFactory.build();
       prismaService.client.findFirst.mockResolvedValue(null);
-      prismaService.client.create.mockResolvedValue(client as any);
+      prismaService.client.create.mockResolvedValue(client);
 
-      const result = await service.create(client.companyId, {
-        name: client.name,
-        phone: client.phone,
-      } as any, 'user-id');
+      const result = await service.create(
+        client.companyId,
+        {
+          name: client.name,
+          phone: client.phone,
+        } as any,
+        'user-id',
+      );
 
       expect(result.data.id).toBe(client.id);
     });
@@ -63,7 +69,7 @@ describe('ClientsService', () => {
   describe('findAll', () => {
     it('should return an array of clients', async () => {
       const client = ClientFactory.build();
-      prismaService.client.findMany.mockResolvedValue([client] as any);
+      prismaService.client.findMany.mockResolvedValue([client]);
       prismaService.client.count.mockResolvedValue(1);
 
       const result = await service.findAll(client.companyId, 1, 10);
@@ -76,7 +82,7 @@ describe('ClientsService', () => {
   describe('findOne', () => {
     it('should return a client if found', async () => {
       const client = ClientFactory.build();
-      prismaService.client.findFirst.mockResolvedValue(client as any);
+      prismaService.client.findFirst.mockResolvedValue(client);
 
       const result = await service.findOne(client.companyId, client.id);
 
@@ -86,7 +92,9 @@ describe('ClientsService', () => {
     it('should throw NotFoundException if client not found', async () => {
       prismaService.client.findFirst.mockResolvedValue(null);
 
-      await expect(service.findOne('company', 'client')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('company', 'client')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

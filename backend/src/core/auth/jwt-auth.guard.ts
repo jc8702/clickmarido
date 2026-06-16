@@ -1,4 +1,8 @@
-import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
@@ -8,9 +12,16 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest(err: any, user: any, info: any) {
+  handleRequest<TUser = unknown>(
+    err: unknown,
+    user: TUser,
+    _info: unknown,
+  ): TUser {
     if (err || !user) {
-      throw err || new UnauthorizedException('Sessão expirada ou inválida');
+      throw (
+        (err instanceof Error ? err : null) ||
+        new UnauthorizedException('Sessão expirada ou inválida')
+      );
     }
     return user;
   }

@@ -32,17 +32,22 @@ describe('QuotesService', () => {
       prismaMock.client.findFirst = jest.fn().mockResolvedValue(null);
 
       await expect(
-        service.create({
-          clientId: 'client-1',
-          services: [],
-        }, 'company-1')
+        service.create(
+          {
+            clientId: 'client-1',
+            services: [],
+          },
+          'company-1',
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
     it('should calculate total quote value including services, materials, fee, and discount', async () => {
-      prismaMock.client.findFirst = jest.fn().mockResolvedValue({ id: 'client-1', companyId: 'company-1' });
+      prismaMock.client.findFirst = jest
+        .fn()
+        .mockResolvedValue({ id: 'client-1', companyId: 'company-1' });
       prismaMock.quote.findFirst = jest.fn().mockResolvedValue(null); // sem quotes anteriores, number=1
-      
+
       prismaMock.service.findFirst = jest.fn().mockImplementation((args) => {
         if (args.where.id === 'service-1') {
           return { id: 'service-1', price: 100 };
@@ -60,31 +65,32 @@ describe('QuotesService', () => {
       };
 
       // Mock da transaction do Prisma
-      prismaMock.$transaction = jest.fn().mockImplementation(async (callback) => {
-        const txMock = {
-          quote: {
-            create: jest.fn().mockResolvedValue(mockQuote),
-            findUnique: jest.fn().mockResolvedValue(mockQuote),
-          },
-          quoteService: {
-            createMany: jest.fn().mockResolvedValue({ count: 1 }),
-          },
-        };
-        return callback(txMock);
-      });
+      prismaMock.$transaction = jest
+        .fn()
+        .mockImplementation(async (callback) => {
+          const txMock = {
+            quote: {
+              create: jest.fn().mockResolvedValue(mockQuote),
+              findUnique: jest.fn().mockResolvedValue(mockQuote),
+            },
+            quoteService: {
+              createMany: jest.fn().mockResolvedValue({ count: 1 }),
+            },
+          };
+          return callback(txMock);
+        });
 
-      const result = await service.create({
-        clientId: 'client-1',
-        services: [
-          { serviceId: 'service-1', quantity: 1, value: 150 },
-        ],
-        materials: [
-          { name: 'Fita', quantity: 1, value: 80 },
-        ],
-        travelFee: 50,
-        discount: 30,
-        status: 'Rascunho',
-      }, 'company-1');
+      const result = await service.create(
+        {
+          clientId: 'client-1',
+          services: [{ serviceId: 'service-1', quantity: 1, value: 150 }],
+          materials: [{ name: 'Fita', quantity: 1, value: 80 }],
+          travelFee: 50,
+          discount: 30,
+          status: 'Rascunho',
+        },
+        'company-1',
+      );
 
       expect(result.success).toBe(true);
       expect(result.data.totalValue).toBe(250);
@@ -93,17 +99,26 @@ describe('QuotesService', () => {
 
   describe('findAll', () => {
     it('should query quotes with filter and return pagination details', async () => {
-      prismaMock.quote.findMany = jest.fn().mockResolvedValue([
-        { id: '1', number: 1, client: { name: 'João' } },
-      ]);
+      prismaMock.quote.findMany = jest
+        .fn()
+        .mockResolvedValue([{ id: '1', number: 1, client: { name: 'João' } }]);
       prismaMock.quote.count = jest.fn().mockResolvedValue(1);
 
-      prismaMock.$transaction = jest.fn().mockResolvedValue([
-        [{ id: '1', number: 1, client: { name: 'João' } }],
-        1,
-      ]);
+      prismaMock.$transaction = jest
+        .fn()
+        .mockResolvedValue([
+          [{ id: '1', number: 1, client: { name: 'João' } }],
+          1,
+        ]);
 
-      const result = await service.findAll('company-1', 1, 10, 'João', 'Rascunho', 'client-1');
+      const result = await service.findAll(
+        'company-1',
+        1,
+        10,
+        'João',
+        'Rascunho',
+        'client-1',
+      );
 
       expect(result.success).toBe(true);
       expect(result.data.items.length).toBe(1);
@@ -115,9 +130,9 @@ describe('QuotesService', () => {
     it('should throw NotFoundException if quote not found', async () => {
       prismaMock.quote.findFirst = jest.fn().mockResolvedValue(null);
 
-      await expect(
-        service.findOne('quote-1', 'company-1')
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('quote-1', 'company-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should return the quote if it exists', async () => {
@@ -133,8 +148,12 @@ describe('QuotesService', () => {
 
   describe('remove', () => {
     it('should soft delete a quote', async () => {
-      prismaMock.quote.findFirst = jest.fn().mockResolvedValue({ id: 'quote-1' });
-      prismaMock.quote.update = jest.fn().mockResolvedValue({ id: 'quote-1', deletedAt: new Date() });
+      prismaMock.quote.findFirst = jest
+        .fn()
+        .mockResolvedValue({ id: 'quote-1' });
+      prismaMock.quote.update = jest
+        .fn()
+        .mockResolvedValue({ id: 'quote-1', deletedAt: new Date() });
 
       const result = await service.remove('quote-1', 'company-1');
 

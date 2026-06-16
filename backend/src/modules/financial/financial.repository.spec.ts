@@ -37,7 +37,9 @@ describe('FinancialRepository', () => {
   });
 
   it('should get summary aggregates without N+1', async () => {
-    (prismaService.$queryRaw as jest.Mock).mockResolvedValue([{ type: 'RECEITA', total: 100 }]);
+    (prismaService.$queryRaw as jest.Mock).mockResolvedValue([
+      { type: 'RECEITA', total: 100 },
+    ]);
     const result = await repository.getSummaryAggregates('comp-1');
     expect(result).toEqual([{ type: 'RECEITA', total: 100 }]);
   });

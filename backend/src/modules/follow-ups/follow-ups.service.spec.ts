@@ -47,9 +47,11 @@ describe('FollowUpsService', () => {
 
   describe('syncCompletedOrders', () => {
     it('should create followUps for Concluído service orders that lack one', async () => {
-      prismaMock.serviceOrder.findMany = jest.fn().mockResolvedValue([
-        { id: 'os-1', companyId: 'company-1', clientId: 'client-1' },
-      ]);
+      prismaMock.serviceOrder.findMany = jest
+        .fn()
+        .mockResolvedValue([
+          { id: 'os-1', companyId: 'company-1', clientId: 'client-1' },
+        ]);
       prismaMock.followUp.create = jest.fn().mockResolvedValue({ id: 'f-1' });
 
       await service.syncCompletedOrders();
@@ -68,7 +70,7 @@ describe('FollowUpsService', () => {
   describe('handleDailyFollowUps', () => {
     it('should trigger whatsapp messages and update followUp status based on time offsets', async () => {
       const today = new Date();
-      
+
       // Criar mock do findMany retornado
       prismaMock.followUp.findMany = jest.fn().mockResolvedValue([
         {
@@ -90,8 +92,12 @@ describe('FollowUpsService', () => {
         },
       ]);
 
-      prismaMock.conversation.findFirst = jest.fn().mockResolvedValue({ id: 'conv-1' });
-      prismaMock.followUp.update = jest.fn().mockResolvedValue({ id: 'f-updated' });
+      prismaMock.conversation.findFirst = jest
+        .fn()
+        .mockResolvedValue({ id: 'conv-1' });
+      prismaMock.followUp.update = jest
+        .fn()
+        .mockResolvedValue({ id: 'f-updated' });
       prismaMock.serviceOrder.findMany = jest.fn().mockResolvedValue([]); // mock da sync inicial
 
       await service.handleDailyFollowUps();

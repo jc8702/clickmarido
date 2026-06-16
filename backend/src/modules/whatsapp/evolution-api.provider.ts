@@ -8,8 +8,11 @@ export class EvolutionApiProvider {
   private readonly logger = new Logger(EvolutionApiProvider.name);
 
   constructor(private configService: ConfigService) {
-    const baseURL = this.configService.get<string>('EVOLUTION_API_URL') || 'http://localhost:8080';
-    const globalApiKey = this.configService.get<string>('EVOLUTION_API_KEY') || '1234567890'; // Use the correct Global API Key here
+    const baseURL =
+      this.configService.get<string>('EVOLUTION_API_URL') ||
+      'http://localhost:8080';
+    const globalApiKey =
+      this.configService.get<string>('EVOLUTION_API_KEY') || '1234567890'; // Use the correct Global API Key here
 
     this.api = axios.create({
       baseURL,
@@ -31,12 +34,14 @@ export class EvolutionApiProvider {
         webhook_events: [
           'QRCODE_UPDATED',
           'MESSAGES_UPSERT',
-          'CONNECTION_UPDATE'
+          'CONNECTION_UPDATE',
         ],
       });
       return response.data;
-    } catch (error: any) {
-      this.logger.error(`Error creating instance ${instanceName}: ${error.message}`);
+    } catch (error) {
+      this.logger.error(
+        `Error creating instance ${instanceName}: ${error instanceof Error ? error.message : String(error)}`,
+      );
       throw error;
     }
   }
@@ -45,46 +50,72 @@ export class EvolutionApiProvider {
     try {
       const response = await this.api.get('/instance/fetchInstances');
       return response.data;
-    } catch (error: any) {
-      this.logger.error(`Error fetching instances: ${error.message}`);
+    } catch (error) {
+      this.logger.error(
+        `Error fetching instances: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return [];
     }
   }
 
   async sendText(instanceName: string, number: string, text: string) {
     try {
-      const response = await this.api.post(`/message/sendText/${instanceName}`, {
-        number,
-        options: { delay: 1200, presence: 'composing' },
-        textMessage: { text },
-      });
+      const response = await this.api.post(
+        `/message/sendText/${instanceName}`,
+        {
+          number,
+          options: { delay: 1200, presence: 'composing' },
+          textMessage: { text },
+        },
+      );
       return response.data;
-    } catch (error: any) {
-      this.logger.error(`Error sending text: ${error.message}`);
+    } catch (error) {
+      this.logger.error(
+        `Error sending text: ${error instanceof Error ? error.message : String(error)}`,
+      );
       throw error;
     }
   }
 
-  async sendMedia(instanceName: string, number: string, mediaMessage: { mediatype: string, mimetype: string, fileName?: string, caption?: string, media: string }) {
+  async sendMedia(
+    instanceName: string,
+    number: string,
+    mediaMessage: {
+      mediatype: string;
+      mimetype: string;
+      fileName?: string;
+      caption?: string;
+      media: string;
+    },
+  ) {
     try {
-      const response = await this.api.post(`/message/sendMedia/${instanceName}`, {
-        number,
-        options: { delay: 1200, presence: 'composing' },
-        mediaMessage,
-      });
+      const response = await this.api.post(
+        `/message/sendMedia/${instanceName}`,
+        {
+          number,
+          options: { delay: 1200, presence: 'composing' },
+          mediaMessage,
+        },
+      );
       return response.data;
-    } catch (error: any) {
-      this.logger.error(`Error sending media: ${error.message}`);
+    } catch (error) {
+      this.logger.error(
+        `Error sending media: ${error instanceof Error ? error.message : String(error)}`,
+      );
       throw error;
     }
   }
 
   async deleteInstance(instanceName: string) {
     try {
-      const response = await this.api.delete(`/instance/delete/${instanceName}`);
+      const response = await this.api.delete(
+        `/instance/delete/${instanceName}`,
+      );
       return response.data;
-    } catch (error: any) {
-      this.logger.error(`Error deleting instance ${instanceName}: ${error.message}`);
+    } catch (error) {
+      this.logger.error(
+        `Error deleting instance ${instanceName}: ${error instanceof Error ? error.message : String(error)}`,
+      );
       throw error;
     }
   }
@@ -93,8 +124,10 @@ export class EvolutionApiProvider {
     try {
       const response = await this.api.get(`/instance/connect/${instanceName}`);
       return response.data;
-    } catch (error: any) {
-      this.logger.error(`Error getting connect status for ${instanceName}: ${error.message}`);
+    } catch (error) {
+      this.logger.error(
+        `Error getting connect status for ${instanceName}: ${error instanceof Error ? error.message : String(error)}`,
+      );
       throw error;
     }
   }

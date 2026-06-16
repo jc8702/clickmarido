@@ -47,11 +47,16 @@ describe('AiService', () => {
         },
       });
 
-      const messages = ['Cliente: Oi, tem vazamento na pia', 'Atendente: Vamos agendar'];
+      const messages = [
+        'Cliente: Oi, tem vazamento na pia',
+        'Atendente: Vamos agendar',
+      ];
       const result = await service.summarizeConversation(messages);
 
       expect(mockGenerateContent).toHaveBeenCalled();
-      expect(result).toEqual({ summary: 'Resumo: Cliente precisa consertar vazamento.' });
+      expect(result).toEqual({
+        summary: 'Resumo: Cliente precisa consertar vazamento.',
+      });
     });
   });
 
@@ -71,7 +76,9 @@ describe('AiService', () => {
         },
       });
 
-      const result = await service.generateQuote('Quero consertar torneira que pinga');
+      const result = await service.generateQuote(
+        'Quero consertar torneira que pinga',
+      );
 
       expect(mockGenerateContent).toHaveBeenCalled();
       expect(result).toEqual(mockQuoteJson);
@@ -92,7 +99,9 @@ describe('AiService', () => {
         },
       });
 
-      const result = await service.classifyTicket('Cano estourado vazando muito na sala');
+      const result = await service.classifyTicket(
+        'Cano estourado vazando muito na sala',
+      );
 
       expect(mockGenerateContent).toHaveBeenCalled();
       expect(result).toEqual(mockClassification);
@@ -123,7 +132,8 @@ describe('AiService', () => {
     it('should return a cross-sell recommendation and pitch', async () => {
       const mockCrossSell = {
         serviceName: 'Impermeabilização de parede de drywall',
-        pitch: 'Como arrumamos o vazamento do vaso, secar e vedar evita mofo na pintura.',
+        pitch:
+          'Como arrumamos o vazamento do vaso, secar e vedar evita mofo na pintura.',
       };
 
       mockGenerateContent.mockResolvedValue({
@@ -132,7 +142,9 @@ describe('AiService', () => {
         },
       });
 
-      const result = await service.suggestCrossSell(['Reparo de vazamento hidráulico']);
+      const result = await service.suggestCrossSell([
+        'Reparo de vazamento hidráulico',
+      ]);
 
       expect(mockGenerateContent).toHaveBeenCalled();
       expect(result).toEqual(mockCrossSell);

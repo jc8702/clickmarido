@@ -3,7 +3,6 @@ import { PrometheusController } from '@willsoto/nestjs-prometheus';
 
 @Controller()
 export class MetricsController extends PrometheusController {
-  
   @Get('health')
   checkHealth() {
     return {
@@ -13,8 +12,8 @@ export class MetricsController extends PrometheusController {
         api: 'up',
         // O Redis/DB checking idealmente iria no Terminus/Nest HealthCheck,
         // mas aqui mantemos simples para status page.
-        database: 'up' 
-      }
+        database: 'up',
+      },
     };
   }
 }

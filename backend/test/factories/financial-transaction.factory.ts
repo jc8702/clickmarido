@@ -6,7 +6,7 @@ export const FinancialTransactionFactory = {
       id: 'financial-transaction-uuid-1',
       type: 'INCOME',
       category: 'SERVICE',
-      value: 150.00,
+      value: 150.0,
       description: 'Service Payment',
       transactionDate: new Date(),
       dueDate: null,

@@ -9,7 +9,12 @@ import { PrismaModule } from '../../core/prisma/prisma.module';
 @Module({
   imports: [PrismaModule],
   controllers: [AppointmentsController],
-  providers: [AppointmentsService, AppointmentsRepository, ConflictDetectionService, AvailabilityService],
+  providers: [
+    AppointmentsService,
+    AppointmentsRepository,
+    ConflictDetectionService,
+    AvailabilityService,
+  ],
   exports: [AppointmentsService],
 })
 export class AppointmentsModule {}

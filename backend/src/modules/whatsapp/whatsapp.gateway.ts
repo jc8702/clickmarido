@@ -14,7 +14,9 @@ import { Server, Socket } from 'socket.io';
   },
   namespace: '/ws/whatsapp',
 })
-export class WhatsAppGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class WhatsAppGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -27,7 +29,7 @@ export class WhatsAppGateway implements OnGatewayConnection, OnGatewayDisconnect
         this.companySockets.set(companyId, new Set());
       }
       this.companySockets.get(companyId)!.add(client.id);
-      client.join(`company:${companyId}`);
+      void client.join(`company:${companyId}`);
     }
   }
 
@@ -43,22 +45,31 @@ export class WhatsAppGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   @SubscribeMessage('join-company')
   handleJoinCompany(client: Socket, companyId: string) {
-    client.join(`company:${companyId}`);
+    void client.join(`company:${companyId}`);
     if (!this.companySockets.has(companyId)) {
       this.companySockets.set(companyId, new Set());
     }
     this.companySockets.get(companyId)!.add(client.id);
   }
 
-  emitNewMessage(companyId: string, data: { conversation: any; message: any }) {
+  emitNewMessage(
+    companyId: string,
+    data: {
+      conversation: Record<string, unknown>;
+      message: Record<string, unknown>;
+    },
+  ) {
     this.server.to(`company:${companyId}`).emit('new-message', data);
   }
 
-  emitInstanceStatus(companyId: string, data: { instanceId: string; status: string; qrCode?: string }) {
+  emitInstanceStatus(
+    companyId: string,
+    data: { instanceId: string; status: string; qrCode?: string },
+  ) {
     this.server.to(`company:${companyId}`).emit('instance-status', data);
   }
 
-  emitConversationUpdate(companyId: string, data: any) {
+  emitConversationUpdate(companyId: string, data: Record<string, unknown>) {
     this.server.to(`company:${companyId}`).emit('conversation-update', data);
   }
 }

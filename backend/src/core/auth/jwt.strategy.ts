@@ -9,11 +9,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'clickmarido-super-secret-key-change-in-production-12345',
+      secretOrKey:
+        process.env.JWT_SECRET ||
+        'clickmarido-super-secret-key-change-in-production-12345',
     });
   }
 
-  async validate(payload: any) {
+  async validate(payload: { sub: string; email?: string }) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
       select: {

@@ -42,7 +42,7 @@ describe('FinancialService', () => {
   describe('create', () => {
     it('should create a financial transaction', async () => {
       const tx = FinancialTransactionFactory.build();
-      prismaService.financialTransaction.create.mockResolvedValue(tx as any);
+      prismaService.financialTransaction.create.mockResolvedValue(tx);
 
       const dto = {
         companyId: tx.companyId,
@@ -52,7 +52,7 @@ describe('FinancialService', () => {
         transactionDate: tx.transactionDate.toISOString(),
       };
 
-      const result = await service.create(dto as any);
+      const result = await service.create(dto);
       expect(result.id).toBe(tx.id);
     });
   });
@@ -60,7 +60,7 @@ describe('FinancialService', () => {
   describe('findAll', () => {
     it('should return transactions for a company', async () => {
       const tx = FinancialTransactionFactory.build();
-      prismaService.financialTransaction.findMany.mockResolvedValue([tx] as any);
+      prismaService.financialTransaction.findMany.mockResolvedValue([tx]);
 
       const result = await service.findAll(tx.companyId);
       expect(result.length).toBe(1);
@@ -70,7 +70,7 @@ describe('FinancialService', () => {
   describe('findOne', () => {
     it('should return a transaction', async () => {
       const tx = FinancialTransactionFactory.build();
-      prismaService.financialTransaction.findUnique.mockResolvedValue(tx as any);
+      prismaService.financialTransaction.findUnique.mockResolvedValue(tx);
 
       const result = await service.findOne(tx.id);
       expect(result.id).toBe(tx.id);
@@ -85,10 +85,10 @@ describe('FinancialService', () => {
   describe('update', () => {
     it('should update a transaction', async () => {
       const tx = FinancialTransactionFactory.build();
-      prismaService.financialTransaction.findUnique.mockResolvedValue(tx as any);
-      prismaService.financialTransaction.update.mockResolvedValue(tx as any);
+      prismaService.financialTransaction.findUnique.mockResolvedValue(tx);
+      prismaService.financialTransaction.update.mockResolvedValue(tx);
 
-      const result = await service.update(tx.id, { value: 100 } as any);
+      const result = await service.update(tx.id, { value: 100 });
       expect(result.id).toBe(tx.id);
     });
   });
@@ -96,8 +96,8 @@ describe('FinancialService', () => {
   describe('remove', () => {
     it('should remove a transaction', async () => {
       const tx = FinancialTransactionFactory.build();
-      prismaService.financialTransaction.findUnique.mockResolvedValue(tx as any);
-      prismaService.financialTransaction.update.mockResolvedValue(tx as any);
+      prismaService.financialTransaction.findUnique.mockResolvedValue(tx);
+      prismaService.financialTransaction.update.mockResolvedValue(tx);
 
       const result = await service.remove(tx.id);
       expect(result.id).toBe(tx.id);
@@ -109,7 +109,7 @@ describe('FinancialService', () => {
       prismaService.$queryRaw = jest.fn().mockResolvedValue([
         { type: 'RECEITA', status: 'PAGO', total: 100 },
         { type: 'DESPESA', status: 'PAGO', total: 50 },
-        { type: 'RECEITA', status: 'PENDENTE', total: 200 }
+        { type: 'RECEITA', status: 'PENDENTE', total: 200 },
       ]);
 
       const result = await service.getSummary('company-1');
@@ -121,8 +121,10 @@ describe('FinancialService', () => {
   describe('generatePix', () => {
     it('should throw if not RECEITA', async () => {
       const tx = FinancialTransactionFactory.build({ type: 'DESPESA' });
-      prismaService.financialTransaction.findUnique.mockResolvedValue(tx as any);
-      await expect(service.generatePix(tx.id)).rejects.toThrow(BadRequestException);
+      prismaService.financialTransaction.findUnique.mockResolvedValue(tx);
+      await expect(service.generatePix(tx.id)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -131,7 +133,7 @@ describe('FinancialService', () => {
       prismaService.$queryRaw = jest.fn().mockResolvedValue([
         { type: 'RECEITA', category: 'Vendas', total: 1000 },
         { type: 'DESPESA', category: 'Taxas', total: 100 },
-        { type: 'OUTRO', category: 'Indef', total: 50 }
+        { type: 'OUTRO', category: 'Indef', total: 50 },
       ]);
 
       const result = await service.getDre('company-1', 1, 2026);
@@ -142,10 +144,26 @@ describe('FinancialService', () => {
 
   describe('getCashFlowProjection', () => {
     it('should return projection', async () => {
-      const pending = FinancialTransactionFactory.build({ type: 'RECEITA', value: 500, dueDate: new Date() });
-      const pendingExp = FinancialTransactionFactory.build({ type: 'DESPESA', value: 200, dueDate: new Date() });
-      const pendingNoDate = FinancialTransactionFactory.build({ type: 'RECEITA', value: 100, dueDate: null });
-      prismaService.financialTransaction.findMany.mockResolvedValue([pending, pendingExp, pendingNoDate] as any);
+      const pending = FinancialTransactionFactory.build({
+        type: 'RECEITA',
+        value: 500,
+        dueDate: new Date(),
+      });
+      const pendingExp = FinancialTransactionFactory.build({
+        type: 'DESPESA',
+        value: 200,
+        dueDate: new Date(),
+      });
+      const pendingNoDate = FinancialTransactionFactory.build({
+        type: 'RECEITA',
+        value: 100,
+        dueDate: null,
+      });
+      prismaService.financialTransaction.findMany.mockResolvedValue([
+        pending,
+        pendingExp,
+        pendingNoDate,
+      ]);
 
       const result = await service.getCashFlowProjection('company-1', 30);
       expect(result.length).toBeGreaterThan(0);
@@ -160,12 +178,23 @@ describe('FinancialService', () => {
   });
 
   it('should throw if transaction is already paid in generatePix', async () => {
-    prismaService.financialTransaction.findUnique.mockResolvedValue({ id: '1', type: 'RECEITA', status: 'PAGO' } as any);
-    await expect(service.generatePix('1')).rejects.toThrow('A transação já está paga.');
+    prismaService.financialTransaction.findUnique.mockResolvedValue({
+      id: '1',
+      type: 'RECEITA',
+      status: 'PAGO',
+    } as any);
+    await expect(service.generatePix('1')).rejects.toThrow(
+      'A transação já está paga.',
+    );
   });
 
   it('should generate Pix for RECEITA', async () => {
-    prismaService.financialTransaction.findUnique.mockResolvedValue({ id: '1', type: 'RECEITA', status: 'PENDENTE', value: 100 } as any);
+    prismaService.financialTransaction.findUnique.mockResolvedValue({
+      id: '1',
+      type: 'RECEITA',
+      status: 'PENDENTE',
+      value: 100,
+    } as any);
     jest.mock('mercadopago');
     const result = await service.generatePix('1').catch(() => null);
     // Even if it throws due to mercadopago mock, it touches the lines. Let's mock the actual payment.
@@ -173,8 +202,11 @@ describe('FinancialService', () => {
   });
 
   it('should handle mercadopago webhook', async () => {
-    prismaService.financialTransaction.findFirst.mockResolvedValue({ id: '1', status: 'PENDENTE' } as any);
-    await service.handleWebhook({ data: { id: 'ext-1' } } as any, {});
+    prismaService.financialTransaction.findFirst.mockResolvedValue({
+      id: '1',
+      status: 'PENDENTE',
+    } as any);
+    await service.handleWebhook({ data: { id: 'ext-1' } }, {});
     expect(prismaService.financialTransaction.updateMany).toBeDefined();
   });
 

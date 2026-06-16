@@ -38,7 +38,7 @@ export class FollowUpsService {
   /* istanbul ignore next */
   async handleDailyFollowUps() {
     this.logger.log('Iniciando rotina de Pós-venda (Régua de WhatsApp)...');
-    
+
     // 1. Sincroniza novas OS
     await this.syncCompletedOrders();
 
@@ -50,12 +50,12 @@ export class FollowUpsService {
           { sent7Days: false },
           { sent30Days: false },
           { sent90Days: false },
-        ]
+        ],
       },
       include: {
         serviceOrder: true,
         client: true,
-      }
+      },
     });
 
     const today = new Date();
@@ -70,14 +70,16 @@ export class FollowUpsService {
         try {
           const conversation = await this.prisma.conversation.findFirst({
             where: { clientId: f.clientId, companyId: f.companyId },
-            orderBy: { lastMessageAt: 'desc' }
+            orderBy: { lastMessageAt: 'desc' },
           });
           if (conversation) {
             await this.whatsappService.sendMessage(conversation.id, text);
             sentWhatsapp = true;
           }
         } catch (e) {
-          this.logger.error(`Falha no envio WA para o Client ${f.clientId}: ${e.message}`);
+          this.logger.error(
+            `Falha no envio WA para o Client ${f.clientId}: ${e.message}`,
+          );
         }
 
         if (!sentWhatsapp && f.client.email) {
@@ -88,33 +90,59 @@ export class FollowUpsService {
               `<p>${text.replace(/\n/g, '<br>')}</p>`,
             );
           } catch (e) {
-            this.logger.error(`Falha no envio Email para o Client ${f.clientId}: ${e.message}`);
+            this.logger.error(
+              `Falha no envio Email para o Client ${f.clientId}: ${e.message}`,
+            );
           }
         }
       };
 
       // Disparo 1 Dia
       if (daysDiff >= 1 && !f.sent1Day) {
-        await triggerComms(`Olá ${f.client.name}, aqui é da equipe Click Marido! O serviço recente foi concluído. Como você avaliaria o nosso atendimento de 1 a 10?`, 'Pesquisa de Satisfação - Click Marido');
-        await this.prisma.followUp.update({ where: { id: f.id }, data: { sent1Day: true, sent1DayAt: new Date() } });
+        await triggerComms(
+          `Olá ${f.client.name}, aqui é da equipe Click Marido! O serviço recente foi concluído. Como você avaliaria o nosso atendimento de 1 a 10?`,
+          'Pesquisa de Satisfação - Click Marido',
+        );
+        await this.prisma.followUp.update({
+          where: { id: f.id },
+          data: { sent1Day: true, sent1DayAt: new Date() },
+        });
       }
-      
+
       // Disparo 7 Dias
       else if (daysDiff >= 7 && !f.sent7Days) {
-        await triggerComms(`Oi ${f.client.name}! Faz uma semana desde o nosso serviço. Está tudo funcionando perfeitamente? Qualquer dúvida estamos à disposição!`, 'Acompanhamento do Serviço - Click Marido');
-        await this.prisma.followUp.update({ where: { id: f.id }, data: { sent7Days: true, sent7DaysAt: new Date() } });
+        await triggerComms(
+          `Oi ${f.client.name}! Faz uma semana desde o nosso serviço. Está tudo funcionando perfeitamente? Qualquer dúvida estamos à disposição!`,
+          'Acompanhamento do Serviço - Click Marido',
+        );
+        await this.prisma.followUp.update({
+          where: { id: f.id },
+          data: { sent7Days: true, sent7DaysAt: new Date() },
+        });
       }
-      
+
       // Disparo 30 Dias
       else if (daysDiff >= 30 && !f.sent30Days) {
-        await triggerComms(`Olá ${f.client.name}! Sabia que clientes Click Marido ganham descontos indicando amigos? Se você gostou do nosso trabalho, nos indique!`, 'Indique e Ganhe - Click Marido');
-        await this.prisma.followUp.update({ where: { id: f.id }, data: { sent30Days: true, sent30DaysAt: new Date() } });
+        await triggerComms(
+          `Olá ${f.client.name}! Sabia que clientes Click Marido ganham descontos indicando amigos? Se você gostou do nosso trabalho, nos indique!`,
+          'Indique e Ganhe - Click Marido',
+        );
+        await this.prisma.followUp.update({
+          where: { id: f.id },
+          data: { sent30Days: true, sent30DaysAt: new Date() },
+        });
       }
 
       // Disparo 90 Dias
       else if (daysDiff >= 90 && !f.sent90Days) {
-        await triggerComms(`Olá ${f.client.name}! Já se passaram 3 meses desde a nossa última visita. Que tal agendar uma manutenção preventiva? Prevenir é sempre melhor e mais barato!`, 'Manutenção Preventiva - Click Marido');
-        await this.prisma.followUp.update({ where: { id: f.id }, data: { sent90Days: true, sent90DaysAt: new Date() } });
+        await triggerComms(
+          `Olá ${f.client.name}! Já se passaram 3 meses desde a nossa última visita. Que tal agendar uma manutenção preventiva? Prevenir é sempre melhor e mais barato!`,
+          'Manutenção Preventiva - Click Marido',
+        );
+        await this.prisma.followUp.update({
+          where: { id: f.id },
+          data: { sent90Days: true, sent90DaysAt: new Date() },
+        });
       }
     }
 

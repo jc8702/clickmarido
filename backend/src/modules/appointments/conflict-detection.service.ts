@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { AppointmentsRepository } from './appointments.repository';
 
 @Injectable()
@@ -42,7 +46,9 @@ export class ConflictDetectionService {
       );
 
       if (conflicting) {
-        throw new ConflictException(`O técnico ${conflicting.technician?.name} possui um conflito com o compromisso "${conflicting.title}" neste período.`);
+        throw new ConflictException(
+          `O técnico ${conflicting.technician?.name} possui um conflito com o compromisso "${conflicting.title}" neste período.`,
+        );
       }
     }
   }

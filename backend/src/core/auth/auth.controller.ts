@@ -1,4 +1,13 @@
-import { Controller, Post, Get, Body, Req, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import * as express from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
@@ -23,7 +32,10 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(@Body() refreshTokenDto: RefreshTokenDto, @Req() req: express.Request) {
+  async refresh(
+    @Body() refreshTokenDto: RefreshTokenDto,
+    @Req() req: express.Request,
+  ) {
     const ipAddress = req.ip || req.connection.remoteAddress;
     const userAgent = req.headers['user-agent'];
     return this.authService.refresh(refreshTokenDto, ipAddress, userAgent);
@@ -49,7 +61,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async me(@Req() req: any) {
+  async me(@Req() req: express.Request & { user: { id: string } }) {
     // req.user é injetado pelo JwtAuthGuard após a validação do token
     return this.authService.getMe(req.user.id);
   }

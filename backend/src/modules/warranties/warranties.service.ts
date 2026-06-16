@@ -1,12 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 
+export interface CreateWarrantyInput {
+  clientId: string;
+  serviceOrderId?: string;
+  type: string;
+  description?: string;
+  startDate?: string | Date;
+}
+
 @Injectable()
 export class WarrantiesService {
   constructor(private prisma: PrismaService) {}
 
   /* istanbul ignore next */
-  async create(companyId: string, data: any) {
+  async create(companyId: string, data: CreateWarrantyInput) {
     const { clientId, serviceOrderId, type, description, startDate } = data;
 
     // Calcular endDate baseado no tipo

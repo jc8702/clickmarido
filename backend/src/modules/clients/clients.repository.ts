@@ -59,7 +59,7 @@ export class ClientsRepository {
 
   async findManyWithCount(filters: ClientFilters) {
     const where = this.buildWhereClause(filters);
-    
+
     return this.prisma.$transaction([
       this.prisma.client.findMany({
         where,
@@ -71,7 +71,10 @@ export class ClientsRepository {
     ]);
   }
 
-  async createWithHistory(clientData: Prisma.ClientUncheckedCreateInput, historyData: Prisma.ClientHistoryUncheckedCreateInput) {
+  async createWithHistory(
+    clientData: Prisma.ClientUncheckedCreateInput,
+    historyData: Prisma.ClientHistoryUncheckedCreateInput,
+  ) {
     return this.prisma.$transaction(async (tx) => {
       const createdClient = await tx.client.create({
         data: clientData,
@@ -88,7 +91,11 @@ export class ClientsRepository {
     });
   }
 
-  async updateWithHistory(clientId: string, dataToUpdate: Prisma.ClientUpdateInput, historyData: Prisma.ClientHistoryUncheckedCreateInput) {
+  async updateWithHistory(
+    clientId: string,
+    dataToUpdate: Prisma.ClientUpdateInput,
+    historyData: Prisma.ClientHistoryUncheckedCreateInput,
+  ) {
     return this.prisma.$transaction(async (tx) => {
       const dbClient = await tx.client.update({
         where: { id: clientId },
@@ -106,7 +113,10 @@ export class ClientsRepository {
     });
   }
 
-  async softDeleteWithHistory(clientId: string, historyData: Prisma.ClientHistoryUncheckedCreateInput) {
+  async softDeleteWithHistory(
+    clientId: string,
+    historyData: Prisma.ClientHistoryUncheckedCreateInput,
+  ) {
     return this.prisma.$transaction(async (tx) => {
       await tx.client.update({
         where: { id: clientId },

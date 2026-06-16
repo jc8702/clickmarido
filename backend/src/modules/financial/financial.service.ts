@@ -1,10 +1,16 @@
-import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Logger,
+  BadRequestException,
+} from '@nestjs/common';
 import { FinancialRepository } from './financial.repository';
 import { CalculationService } from './calculation.service';
 import { ReportGeneratorService } from './report-generator.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class FinancialService {
@@ -16,7 +22,9 @@ export class FinancialService {
     private readonly calculationService: CalculationService,
     private readonly reportGenerator: ReportGeneratorService,
   ) {
-    this.client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || 'TEST-dummy-token' });
+    this.client = new MercadoPagoConfig({
+      accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || 'TEST-dummy-token',
+    });
   }
 
   /* istanbul ignore next */
@@ -27,7 +35,7 @@ export class FinancialService {
       dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
       paidAt: dto.paidAt ? new Date(dto.paidAt) : null,
       status: dto.status || 'PENDENTE',
-    } as any);
+    } as Prisma.FinancialTransactionCreateInput);
   }
 
   /* istanbul ignore next */
@@ -38,16 +46,18 @@ export class FinancialService {
   /* istanbul ignore next */
   async findOne(id: string) {
     const tx = await this.repo.findById(id);
-    if (!tx || tx.deletedAt) throw new NotFoundException('Transaction not found');
+    if (!tx || tx.deletedAt)
+      throw new NotFoundException('Transaction not found');
     return tx;
   }
 
   /* istanbul ignore next */
   async update(id: string, dto: UpdateTransactionDto) {
     await this.findOne(id);
-    
-    const updateData: any = { ...dto };
-    if (dto.transactionDate) updateData.transactionDate = new Date(dto.transactionDate);
+
+    const updateData: Prisma.FinancialTransactionUpdateInput = { ...dto };
+    if (dto.transactionDate)
+      updateData.transactionDate = new Date(dto.transactionDate);
     if (dto.dueDate) updateData.dueDate = new Date(dto.dueDate);
     if (dto.paidAt) updateData.paidAt = new Date(dto.paidAt);
 
@@ -68,8 +78,12 @@ export class FinancialService {
   /* istanbul ignore next */
   async generatePix(id: string) {
     const tx = await this.findOne(id);
-    if (tx.type !== 'RECEITA') throw new BadRequestException('Apenas receitas podem gerar cobrança Pix.');
-    if (tx.status === 'PAGO') throw new BadRequestException('A transação já está paga.');
+    if (tx.type !== 'RECEITA')
+      throw new BadRequestException(
+        'Apenas receitas podem gerar cobrança Pix.',
+      );
+    if (tx.status === 'PAGO')
+      throw new BadRequestException('A transação já está paga.');
 
     try {
       const payment = new Payment(this.client);
@@ -82,12 +96,13 @@ export class FinancialService {
             email: 'cliente@exemplo.com',
           },
           external_reference: tx.id,
-        }
+        },
       });
 
       return {
         qr_code: response.point_of_interaction?.transaction_data?.qr_code,
-        qr_code_base64: response.point_of_interaction?.transaction_data?.qr_code_base64,
+        qr_code_base64:
+          response.point_of_interaction?.transaction_data?.qr_code_base64,
         ticket_url: response.point_of_interaction?.transaction_data?.ticket_url,
       };
     } catch (error) {
@@ -107,15 +122,21 @@ export class FinancialService {
   }
 
   /* istanbul ignore next */
-  async handleWebhook(req: any, body: any) {
+  async handleWebhook(
+    req: Record<string, unknown>,
+    body: { type?: string; data?: { id?: string } },
+  ) {
     this.logger.log('Recebido webhook do Mercado Pago', JSON.stringify(body));
-    
+
     if (body.type === 'payment' && body.data?.id) {
       try {
         const payment = new Payment(this.client);
         const paymentData = await payment.get({ id: body.data.id });
-        
-        if (paymentData.status === 'approved' && paymentData.external_reference) {
+
+        if (
+          paymentData.status === 'approved' &&
+          paymentData.external_reference
+        ) {
           const txId = paymentData.external_reference;
           await this.repo.update(txId, {
             status: 'PAGO',

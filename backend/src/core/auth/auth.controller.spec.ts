@@ -32,10 +32,15 @@ describe('AuthController', () => {
 
   it('should login', async () => {
     service.login.mockResolvedValue({ access_token: 'token', user: {} } as any);
-    const req = { ip: '127.0.0.1', headers: {}, connection: { remoteAddress: '127.0.0.1' } };
-    const result = await controller.login({ email: 'a@b.com', password: '123' }, req as any);
+    const req = {
+      ip: '127.0.0.1',
+      headers: {},
+      connection: { remoteAddress: '127.0.0.1' },
+    };
+    const result = await controller.login(
+      { email: 'a@b.com', password: '123' },
+      req as any,
+    );
     expect(result.access_token).toBe('token');
   });
-
-
 });

@@ -6,8 +6,8 @@ export class AvailabilityService {
   constructor(private readonly repo: AppointmentsRepository) {}
 
   // Lógica futura para checar disponibilidade baseada em grade de horários
-  async getAvailableSlots(technicianId: string, date: Date) {
+  getAvailableSlots(_technicianId: string, _date: Date): Promise<unknown[]> {
     // Implementação de disponibilidade
-    return [];
+    return Promise.resolve([]);
   }
 }

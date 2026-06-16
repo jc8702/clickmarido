@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
@@ -59,11 +64,11 @@ export class AuthService {
     }
 
     // Emite o Access Token JWT (curta duração: 15m a 1h, usamos 1h por padrão ou o configurado)
-    const payload = { 
-      sub: user.id, 
-      email: user.email, 
+    const payload = {
+      sub: user.id,
+      email: user.email,
       companyId: user.companyId,
-      roles: user.roles.map(r => r.name),
+      roles: user.roles.map((r) => r.name),
       permissions: Array.from(permissions),
     };
     const accessToken = this.jwtService.sign(payload);
@@ -95,7 +100,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
-        roles: user.roles.map(r => r.name),
+        roles: user.roles.map((r) => r.name),
         permissions: Array.from(permissions),
       },
       company: {
@@ -106,7 +111,11 @@ export class AuthService {
     };
   }
 
-  async refresh(refreshTokenDto: RefreshTokenDto, ipAddress?: string, userAgent?: string) {
+  async refresh(
+    refreshTokenDto: RefreshTokenDto,
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
     const { refreshToken } = refreshTokenDto;
     const hashedToken = this.hashToken(refreshToken);
 
@@ -134,7 +143,9 @@ export class AuthService {
 
     if (new Date() > session.expiresAt) {
       // Remove a sessão expirada do banco
-      await this.prisma.session.delete({ where: { id: session.id } }).catch(() => {});
+      await this.prisma.session
+        .delete({ where: { id: session.id } })
+        .catch(() => {});
       throw new UnauthorizedException('Sessão expirada');
     }
 
@@ -149,11 +160,11 @@ export class AuthService {
     }
 
     // Gera novo Access Token
-    const payload = { 
-      sub: user.id, 
-      email: user.email, 
+    const payload = {
+      sub: user.id,
+      email: user.email,
       companyId: user.companyId,
-      roles: user.roles.map(r => r.name),
+      roles: user.roles.map((r) => r.name),
       permissions: Array.from(permissions),
     };
     const accessToken = this.jwtService.sign(payload);
@@ -185,11 +196,13 @@ export class AuthService {
   async logout(refreshToken: string) {
     const hashedToken = this.hashToken(refreshToken);
     // Remove a sessão do banco de dados (revogação imediata)
-    await this.prisma.session.delete({
-      where: { token: hashedToken },
-    }).catch(() => {
-      // Ignora erro se a sessão já tiver sido deletada
-    });
+    await this.prisma.session
+      .delete({
+        where: { token: hashedToken },
+      })
+      .catch(() => {
+        // Ignora erro se a sessão já tiver sido deletada
+      });
     return { success: true };
   }
 
@@ -209,7 +222,7 @@ export class AuthService {
     // Gera token de redefinição (válido por 1 hora)
     const resetToken = crypto.randomBytes(32).toString('hex');
     const hashedResetToken = this.hashToken(resetToken);
-    
+
     const resetExpires = new Date();
     resetExpires.setHours(resetExpires.getHours() + 1);
 
@@ -224,7 +237,7 @@ export class AuthService {
 
     // Envia o e-mail via Resend
     const resetLink = `${this.configService.get('FRONTEND_URL') || 'http://localhost:3000'}/recuperar-senha?token=${resetToken}`;
-    
+
     // Log para auditoria
     await this.prisma.appLog.create({
       data: {
@@ -261,7 +274,9 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new BadRequestException('Token de redefinição inválido ou expirado');
+      throw new BadRequestException(
+        'Token de redefinição inválido ou expirado',
+      );
     }
 
     // Gera o hash da nova senha
@@ -333,7 +348,7 @@ export class AuthService {
       name: user.name,
       isActive: user.isActive,
       company: user.company,
-      roles: user.roles.map(r => r.name),
+      roles: user.roles.map((r) => r.name),
       permissions: Array.from(permissions),
     };
   }

@@ -1,8 +1,13 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -13,7 +18,9 @@ export class UsersService {
     const { email, name, password, roleIds, isActive } = createUserDto;
 
     if (!companyId) {
-      throw new BadRequestException('A empresa (companyId) deve ser informada.');
+      throw new BadRequestException(
+        'A empresa (companyId) deve ser informada.',
+      );
     }
 
     // Verifica se a empresa existe e está ativa
@@ -29,7 +36,9 @@ export class UsersService {
       where: { email },
     });
     if (existingUser && !existingUser.deletedAt) {
-      throw new BadRequestException('Já existe um usuário cadastrado com este e-mail.');
+      throw new BadRequestException(
+        'Já existe um usuário cadastrado com este e-mail.',
+      );
     }
 
     // Criptografa a senha
@@ -81,7 +90,7 @@ export class UsersService {
   ) {
     const skip = (page - 1) * limit;
 
-    const where: any = {
+    const where: Prisma.UserWhereInput = {
       deletedAt: null,
     };
 
@@ -148,7 +157,7 @@ export class UsersService {
 
   /* istanbul ignore next */
   async findOne(id: string, companyId?: string) {
-    const where: any = { id, deletedAt: null };
+    const where: Prisma.UserWhereInput = { id, deletedAt: null };
     if (companyId) {
       where.companyId = companyId;
     }
@@ -182,9 +191,8 @@ export class UsersService {
     };
   }
 
-  /* istanbul ignore next */
   async update(id: string, updateUserDto: UpdateUserDto, companyId?: string) {
-    const where: any = { id, deletedAt: null };
+    const where: Prisma.UserWhereInput = { id, deletedAt: null };
     if (companyId) {
       where.companyId = companyId;
     }
@@ -194,8 +202,8 @@ export class UsersService {
       throw new NotFoundException('Usuário não encontrado.');
     }
 
-    const updateData: any = { ...updateUserDto };
-    delete updateData.roleIds;
+    const { roleIds, password, ...rest } = updateUserDto;
+    const updateData: Prisma.UserUpdateInput = { ...rest };
 
     // Se for alterar e-mail, valida unicidade
     if (updateUserDto.email && updateUserDto.email !== user.email) {
@@ -203,19 +211,21 @@ export class UsersService {
         where: { email: updateUserDto.email },
       });
       if (existingUser && !existingUser.deletedAt) {
-        throw new BadRequestException('E-mail já cadastrado por outro usuário.');
+        throw new BadRequestException(
+          'E-mail já cadastrado por outro usuário.',
+        );
       }
     }
 
     // Se for alterar senha, gera o hash
-    if (updateUserDto.password) {
-      updateData.password = await bcrypt.hash(updateUserDto.password, 10);
+    if (password) {
+      updateData.password = await bcrypt.hash(password, 10);
     }
 
     // Se houver alteração de papéis (roles)
-    if (updateUserDto.roleIds) {
+    if (roleIds) {
       updateData.roles = {
-        set: updateUserDto.roleIds.map((id) => ({ id })),
+        set: roleIds.map((id) => ({ id })),
       };
     }
 
@@ -247,7 +257,7 @@ export class UsersService {
 
   /* istanbul ignore next */
   async remove(id: string, companyId?: string) {
-    const where: any = { id, deletedAt: null };
+    const where: Prisma.UserWhereInput = { id, deletedAt: null };
     if (companyId) {
       where.companyId = companyId;
     }

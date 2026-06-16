@@ -10,7 +10,13 @@ import { FinancialValidationService } from './financial-validation.service';
 @Module({
   imports: [PrismaModule],
   controllers: [FinancialController],
-  providers: [FinancialService, FinancialRepository, CalculationService, ReportGeneratorService, FinancialValidationService],
+  providers: [
+    FinancialService,
+    FinancialRepository,
+    CalculationService,
+    ReportGeneratorService,
+    FinancialValidationService,
+  ],
   exports: [FinancialService],
 })
 export class FinancialModule {}

@@ -1,7 +1,27 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
+import { Prisma } from '@prisma/client';
+
+export interface ImportServiceItem {
+  action: string;
+  service: {
+    category: string;
+    name: string;
+    description: string | null;
+    value: number;
+    averageTime: number;
+    complexity: string;
+    warranty: number;
+    specialty: string | null;
+    active: boolean;
+  };
+}
 
 @Injectable()
 export class ServicesService {
@@ -9,7 +29,17 @@ export class ServicesService {
 
   /* istanbul ignore next */
   async create(createServiceDto: CreateServiceDto, companyId: string) {
-    const { category, name, description, value, averageTime, complexity, warranty, specialty, active } = createServiceDto;
+    const {
+      category,
+      name,
+      description,
+      value,
+      averageTime,
+      complexity,
+      warranty,
+      specialty,
+      active,
+    } = createServiceDto;
 
     const service = await this.prisma.service.create({
       data: {
@@ -44,7 +74,7 @@ export class ServicesService {
   ) {
     const skip = (page - 1) * limit;
 
-    const where: any = {
+    const where: Prisma.ServiceWhereInput = {
       companyId,
       deletedAt: null,
     };
@@ -104,7 +134,11 @@ export class ServicesService {
   }
 
   /* istanbul ignore next */
-  async update(id: string, updateServiceDto: UpdateServiceDto, companyId: string) {
+  async update(
+    id: string,
+    updateServiceDto: UpdateServiceDto,
+    companyId: string,
+  ) {
     const service = await this.prisma.service.findFirst({
       where: { id, companyId, deletedAt: null },
     });
@@ -156,10 +190,13 @@ export class ServicesService {
     });
 
     // Cabeçalho do CSV
-    let csv = 'Categoria;Nome;Descrição;Valor;Tempo Médio (min);Complexidade;Garantia (dias);Especialidade;Status\n';
+    let csv =
+      'Categoria;Nome;Descrição;Valor;Tempo Médio (min);Complexidade;Garantia (dias);Especialidade;Status\n';
 
     for (const s of services) {
-      const description = s.description ? s.description.replace(/[\n\r;]/g, ' ') : '';
+      const description = s.description
+        ? s.description.replace(/[\n\r;]/g, ' ')
+        : '';
       const specialty = s.specialty ? s.specialty.replace(/[\n\r;]/g, ' ') : '';
       const status = s.active ? 'Ativo' : 'Inativo';
 
@@ -175,9 +212,13 @@ export class ServicesService {
       throw new BadRequestException('Conteúdo do arquivo CSV vazio.');
     }
 
-    const lines = csvContent.split(/\r?\n/).filter((line) => line.trim() !== '');
+    const lines = csvContent
+      .split(/\r?\n/)
+      .filter((line) => line.trim() !== '');
     if (lines.length <= 1) {
-      throw new BadRequestException('O CSV deve conter pelo menos uma linha de dados além do cabeçalho.');
+      throw new BadRequestException(
+        'O CSV deve conter pelo menos uma linha de dados além do cabeçalho.',
+      );
     }
 
     const dataLines = lines.slice(1);
@@ -187,13 +228,15 @@ export class ServicesService {
       const line = dataLines[i];
       const index = i + 2; // Linha 1 é o cabeçalho
       const columns = line.split(/[;,]/).map((col) => col.trim());
-      
+
       const errors: string[] = [];
       let isValid = true;
 
       // Valida quantidade mínima de colunas
       if (columns.length < 4) {
-        errors.push(`Estrutura inválida: a linha possui apenas ${columns.length} colunas (mínimo esperado: 4).`);
+        errors.push(
+          `Estrutura inválida: a linha possui apenas ${columns.length} colunas (mínimo esperado: 4).`,
+        );
         isValid = false;
       }
 
@@ -216,31 +259,45 @@ export class ServicesService {
       if (!category) {
         errors.push('A Categoria é obrigatória.');
         isValid = false;
-      } else if (!['Elétrica', 'Hidráulica', 'Instalações', 'Marcenaria'].includes(category)) {
-        errors.push(`Categoria inválida: '${category}' (Permitidas: Elétrica, Hidráulica, Instalações, Marcenaria).`);
+      } else if (
+        !['Elétrica', 'Hidráulica', 'Instalações', 'Marcenaria'].includes(
+          category,
+        )
+      ) {
+        errors.push(
+          `Categoria inválida: '${category}' (Permitidas: Elétrica, Hidráulica, Instalações, Marcenaria).`,
+        );
         isValid = false;
       }
 
       const value = parseFloat(rawValue.replace(',', '.')) || 0;
       if (isNaN(value) || value <= 0) {
-        errors.push(`Valor inválido: '${rawValue}' (Deve ser um número maior que zero).`);
+        errors.push(
+          `Valor inválido: '${rawValue}' (Deve ser um número maior que zero).`,
+        );
         isValid = false;
       }
 
       const averageTime = parseInt(rawTime, 10) || 0;
       if (isNaN(averageTime) || averageTime <= 0) {
-        errors.push(`Tempo médio inválido: '${rawTime}' (Deve ser um número inteiro de minutos maior que zero).`);
+        errors.push(
+          `Tempo médio inválido: '${rawTime}' (Deve ser um número inteiro de minutos maior que zero).`,
+        );
         isValid = false;
       }
 
       const warranty = parseInt(rawWarranty, 10) || 0;
       if (isNaN(warranty) || warranty < 0) {
-        errors.push(`Garantia inválida: '${rawWarranty}' (Deve ser um número de dias maior ou igual a zero).`);
+        errors.push(
+          `Garantia inválida: '${rawWarranty}' (Deve ser um número de dias maior ou igual a zero).`,
+        );
         isValid = false;
       }
 
       if (!['Baixa', 'Média', 'Alta'].includes(complexity)) {
-        errors.push(`Complexidade inválida: '${complexity}' (Permitidas: Baixa, Média, Alta).`);
+        errors.push(
+          `Complexidade inválida: '${complexity}' (Permitidas: Baixa, Média, Alta).`,
+        );
         isValid = false;
       }
 
@@ -287,9 +344,11 @@ export class ServicesService {
   }
 
   /* istanbul ignore next */
-  async confirmImport(items: any[], companyId: string) {
+  async confirmImport(items: ImportServiceItem[], companyId: string) {
     if (!items || !Array.isArray(items) || items.length === 0) {
-      throw new BadRequestException('Nenhum item válido para importação fornecido.');
+      throw new BadRequestException(
+        'Nenhum item válido para importação fornecido.',
+      );
     }
 
     let createdCount = 0;
@@ -299,7 +358,17 @@ export class ServicesService {
     await this.prisma.$transaction(async (tx) => {
       for (const item of items) {
         try {
-          const { category, name, description, value, averageTime, complexity, warranty, specialty, active } = item.service;
+          const {
+            category,
+            name,
+            description,
+            value,
+            averageTime,
+            complexity,
+            warranty,
+            specialty,
+            active,
+          } = item.service;
 
           if (item.action === 'UPDATE') {
             const existing = await tx.service.findFirst({
@@ -355,7 +424,7 @@ export class ServicesService {
             });
             createdCount++;
           }
-        } catch (err) {
+        } catch {
           errorCount++;
         }
       }

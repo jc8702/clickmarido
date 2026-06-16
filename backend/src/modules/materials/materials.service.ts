@@ -1,8 +1,13 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { CreateMaterialDto } from './dto/create-material.dto';
 import { UpdateMaterialDto } from './dto/update-material.dto';
 import { CreateMaterialMovementDto } from './dto/create-material-movement.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class MaterialsService {
@@ -10,14 +15,17 @@ export class MaterialsService {
 
   /* istanbul ignore next */
   async create(createMaterialDto: CreateMaterialDto, companyId: string) {
-    const { name, category, quantity, minimumStock, averageCost } = createMaterialDto;
+    const { name, category, quantity, minimumStock, averageCost } =
+      createMaterialDto;
 
     const existing = await this.prisma.material.findFirst({
       where: { name, companyId, deletedAt: null },
     });
 
     if (existing) {
-      throw new BadRequestException('Já existe um material com este nome cadastrado.');
+      throw new BadRequestException(
+        'Já existe um material com este nome cadastrado.',
+      );
     }
 
     const material = await this.prisma.material.create({
@@ -48,7 +56,7 @@ export class MaterialsService {
   ) {
     const skip = (page - 1) * limit;
 
-    const where: any = {
+    const where: Prisma.MaterialWhereInput = {
       companyId,
       deletedAt: null,
     };
@@ -104,7 +112,12 @@ export class MaterialsService {
   }
 
   /* istanbul ignore next */
-  async findMovements(id: string, companyId: string, page: number = 1, limit: number = 10) {
+  async findMovements(
+    id: string,
+    companyId: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
     const material = await this.prisma.material.findFirst({
       where: { id, companyId, deletedAt: null },
     });
@@ -166,7 +179,8 @@ export class MaterialsService {
       let newAverageCost = material.averageCost;
 
       if (type === 'ENTRADA' && unitCost !== undefined) {
-        const totalCost = material.averageCost * material.quantity + unitCost * quantity;
+        const totalCost =
+          material.averageCost * material.quantity + unitCost * quantity;
         const newQuantity = material.quantity + quantity;
         newAverageCost = newQuantity > 0 ? totalCost / newQuantity : 0;
       }
@@ -177,7 +191,10 @@ export class MaterialsService {
         where: { id: materialId },
         data: {
           quantity: { increment: quantityDelta },
-          averageCost: type === 'ENTRADA' && unitCost !== undefined ? newAverageCost : material.averageCost,
+          averageCost:
+            type === 'ENTRADA' && unitCost !== undefined
+              ? newAverageCost
+              : material.averageCost,
         },
       });
 
@@ -203,7 +220,11 @@ export class MaterialsService {
   }
 
   /* istanbul ignore next */
-  async update(id: string, updateMaterialDto: UpdateMaterialDto, companyId: string) {
+  async update(
+    id: string,
+    updateMaterialDto: UpdateMaterialDto,
+    companyId: string,
+  ) {
     const material = await this.prisma.material.findFirst({
       where: { id, companyId, deletedAt: null },
     });
@@ -223,7 +244,9 @@ export class MaterialsService {
       });
 
       if (duplicate) {
-        throw new BadRequestException('Já existe outro material com este nome.');
+        throw new BadRequestException(
+          'Já existe outro material com este nome.',
+        );
       }
     }
 

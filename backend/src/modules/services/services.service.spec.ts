@@ -29,16 +29,21 @@ describe('ServicesService', () => {
 
   describe('create', () => {
     it('should create a service in catalog', async () => {
-      prismaMock.service.create = jest.fn().mockImplementation((args) => Promise.resolve(args.data));
+      prismaMock.service.create = jest
+        .fn()
+        .mockImplementation((args) => Promise.resolve(args.data));
 
-      const result = await service.create({
-        category: 'Elétrica',
-        name: 'Troca de Disjuntor',
-        value: 120,
-        averageTime: 30,
-        complexity: 'Baixa',
-        warranty: 90,
-      }, 'company-1');
+      const result = await service.create(
+        {
+          category: 'Elétrica',
+          name: 'Troca de Disjuntor',
+          value: 120,
+          averageTime: 30,
+          complexity: 'Baixa',
+          warranty: 90,
+        },
+        'company-1',
+      );
 
       expect(result.data.name).toBe('Troca de Disjuntor');
     });
@@ -48,7 +53,9 @@ describe('ServicesService', () => {
     it('should throw NotFoundException if service not found', async () => {
       prismaMock.service.findFirst = jest.fn().mockResolvedValue(null);
 
-      await expect(service.findOne('s-1', 'company-1')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('s-1', 'company-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

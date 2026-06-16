@@ -16,7 +16,7 @@ export class ServiceOrdersRepository {
       orderBy: { createdAt: 'desc' },
       include: {
         client: { select: { id: true, name: true } },
-      }
+      },
     });
   }
 
@@ -26,7 +26,7 @@ export class ServiceOrdersRepository {
       include: {
         client: true,
         appointments: true,
-      }
+      },
     });
   }
 

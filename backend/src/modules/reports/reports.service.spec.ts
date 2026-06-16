@@ -31,7 +31,7 @@ describe('ReportsService', () => {
     it('should aggregate metrics from clients, quotes, transactions, technicians and warranties', async () => {
       // Mock client.count
       prismaMock.client.count = jest.fn().mockResolvedValue(10);
-      
+
       // Mock quote.findMany
       prismaMock.quote.findMany = jest.fn().mockResolvedValue([
         { id: 1, status: 'Aprovado' },
@@ -44,7 +44,8 @@ describe('ReportsService', () => {
       prismaMock.serviceOrder.count = jest.fn().mockResolvedValue(5);
 
       // Mock financialTransaction.findMany (receitas e despesas)
-      prismaMock.financialTransaction.findMany = jest.fn()
+      prismaMock.financialTransaction.findMany = jest
+        .fn()
         .mockImplementation(async (args) => {
           if (args.where.type === 'RECEITA') {
             return [{ value: 500 }, { value: 300 }];
@@ -83,9 +84,9 @@ describe('ReportsService', () => {
         { id: 2, status: 'Pendente' },
       ]);
 
-      prismaMock.financialTransaction.findMany = jest.fn().mockResolvedValue([
-        { value: 1000 },
-      ]);
+      prismaMock.financialTransaction.findMany = jest
+        .fn()
+        .mockResolvedValue([{ value: 1000 }]);
 
       prismaMock.serviceOrder.count = jest.fn().mockResolvedValue(2);
 
@@ -100,9 +101,7 @@ describe('ReportsService', () => {
         },
         {
           id: 2,
-          services: [
-            { name: 'Chuveiro', quantity: 1 },
-          ],
+          services: [{ name: 'Chuveiro', quantity: 1 }],
         },
       ]);
 

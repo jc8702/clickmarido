@@ -46,7 +46,9 @@ describe('Backend Integration Test Suite (e2e)', () => {
       prismaMock.client.count = jest.fn().mockResolvedValue(5);
       prismaMock.quote.findMany = jest.fn().mockResolvedValue([]);
       prismaMock.serviceOrder.count = jest.fn().mockResolvedValue(2);
-      prismaMock.financialTransaction.findMany = jest.fn().mockResolvedValue([]);
+      prismaMock.financialTransaction.findMany = jest
+        .fn()
+        .mockResolvedValue([]);
       prismaMock.technician.count = jest.fn().mockResolvedValue(1);
       prismaMock.warranty.count = jest.fn().mockResolvedValue(0);
 
@@ -65,7 +67,9 @@ describe('Backend Integration Test Suite (e2e)', () => {
     it('POST /ai/tickets/classify - should call ticket classifier pipeline', async () => {
       const response = await request(app.getHttpServer())
         .post('/ai/tickets/classify')
-        .send({ description: 'Torneira da cozinha quebrou e está jorrando água' })
+        .send({
+          description: 'Torneira da cozinha quebrou e está jorrando água',
+        })
         .expect(201);
 
       expect(response.body.data).toEqual({
@@ -74,7 +78,7 @@ describe('Backend Integration Test Suite (e2e)', () => {
         reason: 'Vazamento ativo detectado',
       });
       expect(mockAiService.classifyTicket).toHaveBeenCalledWith(
-        'Torneira da cozinha quebrou e está jorrando água'
+        'Torneira da cozinha quebrou e está jorrando água',
       );
     });
   });

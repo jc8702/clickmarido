@@ -29,7 +29,9 @@ describe('WarrantiesService', () => {
 
   describe('create', () => {
     it('should calculate 90 days endDate for ELETRICA', async () => {
-      prismaMock.warranty.create = jest.fn().mockImplementation((args) => Promise.resolve(args.data));
+      prismaMock.warranty.create = jest
+        .fn()
+        .mockImplementation((args) => Promise.resolve(args.data));
 
       const start = new Date('2026-06-12T00:00:00Z');
       const result = await service.create('company-1', {
@@ -41,7 +43,7 @@ describe('WarrantiesService', () => {
       });
 
       expect(prismaMock.warranty.create).toHaveBeenCalled();
-      
+
       const expectedEnd = new Date(start);
       expectedEnd.setDate(expectedEnd.getDate() + 90);
       expect(result.endDate.getTime()).toBe(expectedEnd.getTime());
@@ -49,7 +51,9 @@ describe('WarrantiesService', () => {
     });
 
     it('should set status to EXPIRED if endDate is in the past', async () => {
-      prismaMock.warranty.create = jest.fn().mockImplementation((args) => Promise.resolve(args.data));
+      prismaMock.warranty.create = jest
+        .fn()
+        .mockImplementation((args) => Promise.resolve(args.data));
 
       const start = new Date('2025-01-01T00:00:00Z'); // passado distante
       const result = await service.create('company-1', {
@@ -68,7 +72,9 @@ describe('WarrantiesService', () => {
     it('should throw NotFoundException if warranty does not exist', async () => {
       prismaMock.warranty.findUnique = jest.fn().mockResolvedValue(null);
 
-      await expect(service.findOne('w-1', 'company-1')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('w-1', 'company-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

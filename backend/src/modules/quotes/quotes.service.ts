@@ -1,15 +1,31 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { UpdateQuoteDto } from './dto/update-quote.dto';
+import { QuotesRepository } from './quotes.repository';
 
 @Injectable()
 export class QuotesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly quotesRepository: QuotesRepository,
+  ) {}
 
   /* istanbul ignore next */
   async create(createQuoteDto: CreateQuoteDto, companyId: string) {
-    const { clientId, discount = 0, travelFee = 0, materials = [], status = 'Rascunho', services } = createQuoteDto;
+    const {
+      clientId,
+      discount = 0,
+      travelFee = 0,
+      materials = [],
+      status = 'Rascunho',
+      services,
+    } = createQuoteDto;
 
     // 1. Validar se o cliente existe e pertence à empresa
     const client = await this.prisma.client.findFirst({
@@ -20,16 +36,12 @@ export class QuotesService {
     }
 
     // 2. Gerar número sequencial de orçamento para a empresa
-    const maxQuote = await this.prisma.quote.findFirst({
-      where: { companyId },
-      orderBy: { number: 'desc' },
-    });
+    const maxQuote = await this.quotesRepository.findMaxQuoteNumber(companyId);
     const quoteNumber = maxQuote ? maxQuote.number + 1 : 1;
 
     // 3. Calcular valor total dos serviços
     let servicesTotal = 0;
     for (const item of services) {
-      // Opcional: Validar se os serviços existem no catálogo
       const dbService = await this.prisma.service.findFirst({
         where: { id: item.serviceId, companyId, deletedAt: null },
       });
@@ -40,48 +52,35 @@ export class QuotesService {
     }
 
     // 4. Calcular valor total dos materiais
-    const materialsTotal = materials.reduce((sum, m) => sum + (m.quantity * m.value), 0);
+    const materialsTotal = materials.reduce(
+      (sum, m) => sum + m.quantity * m.value,
+      0,
+    );
 
     // 5. Calcular valor final
     const rawTotal = servicesTotal + materialsTotal + travelFee - discount;
-    const totalValue = Math.max(0, rawTotal); // Evita totais negativos
+    const totalValue = Math.max(0, rawTotal);
 
-    // 6. Criar orçamento e itens na transação Prisma
-    const quote = await this.prisma.$transaction(async (tx) => {
-      const newQuote = await tx.quote.create({
-        data: {
-          number: quoteNumber,
-          companyId,
-          clientId,
-          discount,
-          travelFee,
-          materials: materials as any,
-          totalValue,
-          status,
-        },
-      });
+    // 6. Criar orçamento e itens na transação
+    const quote = await this.quotesRepository.executeTransaction(async (tx) => {
+      const data: Prisma.QuoteCreateInput = {
+        number: quoteNumber,
+        companyId,
+        client: { connect: { id: clientId } },
+        discount,
+        travelFee,
+        materials: materials as unknown as Prisma.InputJsonValue,
+        totalValue,
+        status,
+      };
 
-      // Criar itens relacionados
-      await tx.quoteService.createMany({
-        data: services.map((s) => ({
-          quoteId: newQuote.id,
-          serviceId: s.serviceId,
-          quantity: s.quantity,
-          value: s.value,
-        })),
-      });
+      const servicesData = services.map(s => ({
+        serviceId: s.serviceId,
+        quantity: s.quantity,
+        value: s.value,
+      })) as any[];
 
-      return tx.quote.findUnique({
-        where: { id: newQuote.id },
-        include: {
-          client: true,
-          services: {
-            include: {
-              service: true,
-            },
-          },
-        },
-      });
+      return this.quotesRepository.create(data, servicesData, tx);
     });
 
     return {
@@ -101,7 +100,7 @@ export class QuotesService {
   ) {
     const skip = (page - 1) * limit;
 
-    const where: any = {
+    const where: Prisma.QuoteWhereInput = {
       companyId,
       deletedAt: null,
     };
@@ -115,7 +114,6 @@ export class QuotesService {
     }
 
     if (search) {
-      // Se a busca for um número inteiro, filtra por número de orçamento. Caso contrário, filtra pelo nome do cliente.
       const searchNum = parseInt(search, 10);
       if (!isNaN(searchNum)) {
         where.number = searchNum;
@@ -126,36 +124,7 @@ export class QuotesService {
       }
     }
 
-    const [items, total] = await this.prisma.$transaction([
-      this.prisma.quote.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { number: 'desc' },
-        include: {
-          client: {
-            select: {
-              id: true,
-              name: true,
-              phone: true,
-              whatsapp: true,
-              email: true,
-            },
-          },
-          services: {
-            include: {
-              service: {
-                select: {
-                  name: true,
-                  category: true,
-                },
-              },
-            },
-          },
-        },
-      }),
-      this.prisma.quote.count({ where }),
-    ]);
+    const [items, total] = await this.quotesRepository.findManyWithCount(where, skip, limit);
 
     return {
       success: true,
@@ -171,17 +140,7 @@ export class QuotesService {
 
   /* istanbul ignore next */
   async findOne(id: string, companyId: string) {
-    const quote = await this.prisma.quote.findFirst({
-      where: { id, companyId, deletedAt: null },
-      include: {
-        client: true,
-        services: {
-          include: {
-            service: true,
-          },
-        },
-      },
-    });
+    const quote = await this.quotesRepository.findById(id, companyId);
 
     if (!quote) {
       throw new NotFoundException('Orçamento não encontrado.');
@@ -195,36 +154,7 @@ export class QuotesService {
 
   /* istanbul ignore next */
   async findPublicQuote(id: string) {
-    const quote = await this.prisma.quote.findFirst({
-      where: { id, deletedAt: null },
-      include: {
-        company: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
-            cnpj: true,
-          }
-        },
-        client: {
-          select: {
-            name: true,
-            email: true,
-            cpf: true,
-          }
-        },
-        services: {
-          include: {
-            service: {
-              select: {
-                name: true,
-                description: true,
-              }
-            },
-          },
-        },
-      },
-    });
+    const quote = await this.quotesRepository.findById(id);
 
     if (!quote) {
       throw new NotFoundException('Orçamento não encontrado ou link expirado.');
@@ -238,12 +168,7 @@ export class QuotesService {
 
   /* istanbul ignore next */
   async update(id: string, updateQuoteDto: UpdateQuoteDto, companyId: string) {
-    const existingQuote = await this.prisma.quote.findFirst({
-      where: { id, companyId, deletedAt: null },
-      include: {
-        services: true,
-      },
-    });
+    const existingQuote = await this.quotesRepository.findById(id, companyId);
 
     if (!existingQuote) {
       throw new NotFoundException('Orçamento não encontrado.');
@@ -259,7 +184,6 @@ export class QuotesService {
       signature,
     } = updateQuoteDto;
 
-    // Se mudou o cliente, validar existência
     if (clientId && clientId !== existingQuote.clientId) {
       const client = await this.prisma.client.findFirst({
         where: { id: clientId, companyId, deletedAt: null },
@@ -269,82 +193,59 @@ export class QuotesService {
       }
     }
 
-    const updatedQuote = await this.prisma.$transaction(async (tx) => {
-      // 1. Atualizar serviços se enviados
-      if (services) {
-        // Deleta serviços antigos
-        await tx.quoteService.deleteMany({
-          where: { quoteId: id },
-        });
-
-        // Cria novos serviços
-        await tx.quoteService.createMany({
-          data: services.map((s) => ({
-            quoteId: id,
-            serviceId: s.serviceId,
-            quantity: s.quantity,
-            value: s.value,
-          })),
-        });
-      }
-
-      // 2. Buscar serviços ativos no orçamento para cálculo de totais
-      const activeServices = services || existingQuote.services.map(s => ({
+    const updatedQuote = await this.quotesRepository.executeTransaction(async (tx) => {
+      let activeServices = existingQuote.services.map(s => ({
         serviceId: s.serviceId,
         quantity: s.quantity,
         value: s.value,
       }));
+
+      let servicesDataToUpdate = undefined;
+
+      if (services) {
+        servicesDataToUpdate = services.map(s => ({
+          serviceId: s.serviceId,
+          quantity: s.quantity,
+          value: s.value,
+        }));
+        activeServices = servicesDataToUpdate;
+      }
 
       let servicesTotal = 0;
       for (const item of activeServices) {
         servicesTotal += item.quantity * item.value;
       }
 
-      // 3. Materiais ativos
-      const activeMaterials = materials !== undefined ? materials : (existingQuote.materials as any[] || []);
-      const materialsTotal = activeMaterials.reduce((sum, m) => sum + (m.quantity * m.value), 0);
+      const activeMaterials = materials !== undefined
+        ? materials
+        : (existingQuote.materials as unknown as UpdateQuoteDto['materials']) || [];
+      const materialsTotal = activeMaterials.reduce(
+        (sum, m) => sum + m.quantity * m.value,
+        0,
+      );
 
-      // 4. Desconto e deslocamento ativos
       const activeDiscount = discount !== undefined ? discount : existingQuote.discount;
       const activeTravelFee = travelFee !== undefined ? travelFee : existingQuote.travelFee;
 
-      // 5. Novo valor final
       const rawTotal = servicesTotal + materialsTotal + activeTravelFee - activeDiscount;
       const totalValue = Math.max(0, rawTotal);
 
-      // 6. Atualizar orçamento
-      const updateData: any = {
+      const updateData: Prisma.QuoteUpdateInput = {
         totalValue,
       };
 
-      if (clientId !== undefined) updateData.clientId = clientId;
+      if (clientId !== undefined) updateData.client = { connect: { id: clientId } };
       if (discount !== undefined) updateData.discount = discount;
       if (travelFee !== undefined) updateData.travelFee = travelFee;
-      if (materials !== undefined) updateData.materials = materials as any;
+      if (materials !== undefined) updateData.materials = materials as unknown as Prisma.InputJsonValue;
       if (status !== undefined) updateData.status = status;
       if (signature !== undefined) {
         updateData.signature = signature;
         updateData.signedAt = new Date();
-        // Se assinou, garante aprovação
         updateData.status = 'Aprovado';
       }
 
-      await tx.quote.update({
-        where: { id },
-        data: updateData,
-      });
-
-      return tx.quote.findUnique({
-        where: { id },
-        include: {
-          client: true,
-          services: {
-            include: {
-              service: true,
-            },
-          },
-        },
-      });
+      return this.quotesRepository.update(id, updateData, servicesDataToUpdate, tx);
     });
 
     return {
@@ -355,29 +256,16 @@ export class QuotesService {
 
   /* istanbul ignore next */
   async saveSignature(id: string, signatureBase64: string, companyId: string) {
-    const existingQuote = await this.prisma.quote.findFirst({
-      where: { id, companyId, deletedAt: null },
-    });
+    const existingQuote = await this.quotesRepository.findById(id, companyId);
 
     if (!existingQuote) {
       throw new NotFoundException('Orçamento não encontrado.');
     }
 
-    const updatedQuote = await this.prisma.quote.update({
-      where: { id },
-      data: {
-        signature: signatureBase64,
-        signedAt: new Date(),
-        status: 'Aprovado',
-      },
-      include: {
-        client: true,
-        services: {
-          include: {
-            service: true,
-          },
-        },
-      },
+    const updatedQuote = await this.quotesRepository.update(id, {
+      signature: signatureBase64,
+      signedAt: new Date(),
+      status: 'Aprovado',
     });
 
     return {
@@ -388,9 +276,7 @@ export class QuotesService {
 
   /* istanbul ignore next */
   async savePublicSignature(id: string, signatureBase64: string) {
-    const existingQuote = await this.prisma.quote.findFirst({
-      where: { id, deletedAt: null },
-    });
+    const existingQuote = await this.quotesRepository.findById(id);
 
     if (!existingQuote) {
       throw new NotFoundException('Orçamento não encontrado.');
@@ -400,36 +286,28 @@ export class QuotesService {
       throw new BadRequestException('Orçamento já foi aprovado anteriormente.');
     }
 
-    const updatedQuote = await this.prisma.quote.update({
-      where: { id },
-      data: {
-        signature: signatureBase64,
-        signedAt: new Date(),
-        status: 'Aprovado',
-      },
+    const updatedQuote = await this.quotesRepository.update(id, {
+      signature: signatureBase64,
+      signedAt: new Date(),
+      status: 'Aprovado',
     });
 
     return {
       success: true,
-      data: { id: updatedQuote.id, status: updatedQuote.status },
+      data: { id: updatedQuote?.id, status: updatedQuote?.status },
     };
   }
 
   /* istanbul ignore next */
   async remove(id: string, companyId: string) {
-    const existingQuote = await this.prisma.quote.findFirst({
-      where: { id, companyId, deletedAt: null },
-    });
+    const existingQuote = await this.quotesRepository.findById(id, companyId);
 
     if (!existingQuote) {
       throw new NotFoundException('Orçamento não encontrado.');
     }
 
-    await this.prisma.quote.update({
-      where: { id },
-      data: {
-        deletedAt: new Date(),
-      },
+    await this.quotesRepository.update(id, {
+      deletedAt: new Date(),
     });
 
     return {

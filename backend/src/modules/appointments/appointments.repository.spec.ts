@@ -38,7 +38,9 @@ describe('AppointmentsRepository', () => {
   });
 
   it('should find appointment by ID and company', async () => {
-    (prismaService.appointment.findFirst as jest.Mock).mockResolvedValue({ id: '1' });
+    (prismaService.appointment.findFirst as jest.Mock).mockResolvedValue({
+      id: '1',
+    });
     const result = await repository.findByIdAndCompany('1', 'comp-1');
     expect(result).toEqual({ id: '1' });
   });

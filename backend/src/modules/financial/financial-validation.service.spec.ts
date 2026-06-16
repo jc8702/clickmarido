@@ -10,7 +10,9 @@ describe('FinancialValidationService', () => {
       providers: [FinancialValidationService],
     }).compile();
 
-    service = module.get<FinancialValidationService>(FinancialValidationService);
+    service = module.get<FinancialValidationService>(
+      FinancialValidationService,
+    );
   });
 
   it('should be defined', () => {
@@ -18,20 +20,42 @@ describe('FinancialValidationService', () => {
   });
 
   it('should validate transaction successfully', () => {
-    expect(() => service.validateTransaction({ value: 100, dueDate: new Date(), type: 'RECEITA' })).not.toThrow();
+    expect(() =>
+      service.validateTransaction({
+        value: 100,
+        dueDate: new Date(),
+        type: 'RECEITA',
+      }),
+    ).not.toThrow();
   });
 
   it('should throw if value is zero or missing', () => {
-    expect(() => service.validateTransaction({ dueDate: new Date(), type: 'RECEITA' })).toThrow(BadRequestException);
-    expect(() => service.validateTransaction({ value: 0, dueDate: new Date(), type: 'RECEITA' })).toThrow(BadRequestException);
+    expect(() =>
+      service.validateTransaction({ dueDate: new Date(), type: 'RECEITA' }),
+    ).toThrow(BadRequestException);
+    expect(() =>
+      service.validateTransaction({
+        value: 0,
+        dueDate: new Date(),
+        type: 'RECEITA',
+      }),
+    ).toThrow(BadRequestException);
   });
 
   it('should throw if dueDate is missing', () => {
-    expect(() => service.validateTransaction({ value: 100, type: 'RECEITA' })).toThrow(BadRequestException);
+    expect(() =>
+      service.validateTransaction({ value: 100, type: 'RECEITA' }),
+    ).toThrow(BadRequestException);
   });
 
   it('should throw if type is invalid', () => {
-    expect(() => service.validateTransaction({ value: 100, dueDate: new Date(), type: 'INVALID' })).toThrow(BadRequestException);
+    expect(() =>
+      service.validateTransaction({
+        value: 100,
+        dueDate: new Date(),
+        type: 'INVALID',
+      }),
+    ).toThrow(BadRequestException);
   });
 
   it('should validate summary params', () => {
@@ -39,6 +63,8 @@ describe('FinancialValidationService', () => {
   });
 
   it('should throw if companyId is missing for summary params', () => {
-    expect(() => service.validateSummaryParams('')).toThrow(BadRequestException);
+    expect(() => service.validateSummaryParams('')).toThrow(
+      BadRequestException,
+    );
   });
 });

@@ -3,6 +3,24 @@ import { PrismaService } from '../../core/prisma/prisma.service';
 import { EvolutionApiProvider } from './evolution-api.provider';
 import { AiService } from '../ai/ai.service';
 
+export interface WhatsAppWebhookData {
+  event: string;
+  instance: string;
+  data: {
+    state?: string;
+    qrcode?: { base64: string };
+    messages?: Array<{
+      key: { remoteJid: string; fromMe: boolean };
+      message?: {
+        conversation?: string;
+        extendedTextMessage?: { text: string };
+      };
+      pushName?: string;
+      messageTimestamp: number;
+    }>;
+  };
+}
+
 @Injectable()
 export class WhatsappService {
   private readonly logger = new Logger(WhatsappService.name);
@@ -37,17 +55,23 @@ export class WhatsappService {
   /* istanbul ignore next */
   async connectInstance(companyId: string, webhookUrl: string) {
     const instance = await this.getCompanyInstance(companyId);
-    
+
     // Tentamos checar se ela ja existe na API do Evolution
-    const allInstances = await this.evolution.fetchInstances();
-    const exists = allInstances.find((i: any) => i.instance.instanceName === instance.instanceId);
-    
+    const allInstances = (await this.evolution.fetchInstances()) as Array<{
+      instance: { instanceName: string };
+    }>;
+    const exists = allInstances.find(
+      (i) => i.instance.instanceName === instance.instanceId,
+    );
+
     if (!exists) {
       await this.evolution.createInstance(instance.instanceId, webhookUrl);
     }
 
-    const connectData = await this.evolution.connectInstance(instance.instanceId);
-    
+    const connectData = await this.evolution.connectInstance(
+      instance.instanceId,
+    );
+
     if (connectData?.base64) {
       await this.prisma.whatsAppInstance.update({
         where: { id: instance.id },
@@ -72,7 +96,7 @@ export class WhatsappService {
 
   // WEBHOOK HANDLER
   /* istanbul ignore next */
-  async handleWebhook(data: any) {
+  async handleWebhook(data: WhatsAppWebhookData) {
     const { event, instance, data: payload } = data;
     this.logger.log(`Received WhatsApp Webhook: ${event} for ${instance}`);
 
@@ -83,7 +107,12 @@ export class WhatsappService {
     if (!dbInstance) return;
 
     if (event === 'CONNECTION_UPDATE') {
-      const status = payload.state === 'open' ? 'CONNECTED' : payload.state === 'close' ? 'DISCONNECTED' : 'QR_CODE';
+      const status =
+        payload.state === 'open'
+          ? 'CONNECTED'
+          : payload.state === 'close'
+            ? 'DISCONNECTED'
+            : 'QR_CODE';
       await this.prisma.whatsAppInstance.update({
         where: { id: dbInstance.id },
         data: { status, qrCode: null }, // Se abriu limpa qrcode, se fechou limpa tb
@@ -94,34 +123,46 @@ export class WhatsappService {
     if (event === 'QRCODE_UPDATED') {
       await this.prisma.whatsAppInstance.update({
         where: { id: dbInstance.id },
-        data: { qrCode: payload.qrcode.base64, status: 'QR_CODE' },
+        data: { qrCode: payload.qrcode?.base64 || '', status: 'QR_CODE' },
       });
       return;
     }
 
     if (event === 'MESSAGES_UPSERT') {
-      for (const msg of payload.messages) {
+      for (const msg of payload.messages || []) {
         if (!msg.message) continue; // Pode ser atualização de status e não mensagem em si
-        
+
         const remoteJid = msg.key.remoteJid;
         const fromMe = msg.key.fromMe;
         // Ignora status@broadcast e chamadas
-        if (remoteJid === 'status@broadcast' || remoteJid.includes('@call')) continue;
+        if (remoteJid === 'status@broadcast' || remoteJid.includes('@call'))
+          continue;
 
         // Tentar obter apenas o telefone limpo
         const contactNumber = remoteJid.split('@')[0];
         const pushName = msg.pushName || contactNumber;
-        const textContent = msg.message?.conversation || msg.message?.extendedTextMessage?.text || '[Mídia/Documento]';
+        const textContent =
+          msg.message?.conversation ||
+          msg.message?.extendedTextMessage?.text ||
+          '[Mídia/Documento]';
 
         // Atualizar ou criar a Conversa
         let conversation = await this.prisma.conversation.findUnique({
-          where: { instanceId_contactNumber: { instanceId: dbInstance.id, contactNumber } },
+          where: {
+            instanceId_contactNumber: {
+              instanceId: dbInstance.id,
+              contactNumber,
+            },
+          },
         });
 
         if (!conversation) {
           // Tentar achar client que tenha esse numero (muito básico o mathc por enqnto)
           const client = await this.prisma.client.findFirst({
-            where: { companyId: dbInstance.companyId, phone: { contains: contactNumber } },
+            where: {
+              companyId: dbInstance.companyId,
+              phone: { contains: contactNumber },
+            },
           });
 
           conversation = await this.prisma.conversation.create({
@@ -151,7 +192,10 @@ export class WhatsappService {
             conversationId: conversation.id,
             remoteJid,
             fromMe,
-            messageType: msg.message?.conversation || msg.message?.extendedTextMessage ? 'TEXT' : 'OTHER',
+            messageType:
+              msg.message?.conversation || msg.message?.extendedTextMessage
+                ? 'TEXT'
+                : 'OTHER',
             content: textContent,
             timestamp: new Date(msg.messageTimestamp * 1000),
             read: fromMe,
@@ -160,7 +204,11 @@ export class WhatsappService {
 
         // Trigger Auto-Reply IA se for de cliente e o chatbot estiver "ativo"
         // No MVP: responder automaticamente com IA se a mensagem tiver "?" ou "orçamento"
-        if (!fromMe && (textContent.toLowerCase().includes('?') || textContent.toLowerCase().includes('orçamento'))) {
+        if (
+          !fromMe &&
+          (textContent.toLowerCase().includes('?') ||
+            textContent.toLowerCase().includes('orçamento'))
+        ) {
           try {
             // Pega as ultimas 5 mensagens para contexto
             const history = await this.prisma.message.findMany({
@@ -168,14 +216,20 @@ export class WhatsappService {
               orderBy: { timestamp: 'desc' },
               take: 5,
             });
-            const chatHistory = history.reverse().map(m => `${m.fromMe ? 'Atendente' : 'Cliente'}: ${m.content}`);
-            
-            const summary = await this.aiService.summarizeConversation(chatHistory);
-            
+            const chatHistory = history
+              .reverse()
+              .map(
+                (m) => `${m.fromMe ? 'Atendente' : 'Cliente'}: ${m.content}`,
+              );
+
+            const summary =
+              await this.aiService.summarizeConversation(chatHistory);
+
             const prompt = `Aja como o assistente virtual da Click Marido. O resumo da conversa até agora é: "${summary.summary}". O cliente acabou de dizer: "${textContent}". Dê uma resposta curta, educada, e peça para ele aguardar um técnico ou pergunte como podemos ajudar com o reparo.`;
-            const result = await this.aiService['flashModel'].generateContent(prompt);
+            const result =
+              await this.aiService['flashModel'].generateContent(prompt);
             const aiReply = result.response.text();
-            
+
             await this.sendMessage(conversation.id, aiReply);
           } catch (e) {
             this.logger.error('Erro na resposta automatica via IA', e);
@@ -223,7 +277,7 @@ export class WhatsappService {
       text,
     );
 
-    // O webhook vai receber o trigger fromMe = true e vai persistir no banco de dados. 
+    // O webhook vai receber o trigger fromMe = true e vai persistir no banco de dados.
     // Por enquanto retornamos true
     return { success: true, result };
   }
@@ -231,7 +285,11 @@ export class WhatsappService {
   /* istanbul ignore next */
   async sendMessageToNumber(companyId: string, phone: string, text: string) {
     const instance = await this.getCompanyInstance(companyId);
-    if (!instance || instance.status !== 'CONNECTED' && instance.status !== 'QR_CODE') return; // QR_CODE is technically not connected but we'll try
+    if (
+      !instance ||
+      (instance.status !== 'CONNECTED' && instance.status !== 'QR_CODE')
+    )
+      return; // QR_CODE is technically not connected but we'll try
 
     const number = phone.replace(/\D/g, '');
     const jid = `${number}@s.whatsapp.net`;
@@ -240,19 +298,34 @@ export class WhatsappService {
 
   // AUTOMATIONS
   /* istanbul ignore next */
-  async sendQuoteNotification(companyId: string, clientPhone: string, quoteId: string, totalAmount: number) {
+  async sendQuoteNotification(
+    companyId: string,
+    clientPhone: string,
+    quoteId: string,
+    totalAmount: number,
+  ) {
     const message = `Olá! Seu orçamento #${quoteId} da Click Marido está pronto.\nValor total: R$ ${totalAmount}\nResponda esta mensagem se quiser aprovar ou tirar dúvidas!`;
     await this.sendMessageToNumber(companyId, clientPhone, message);
   }
 
   /* istanbul ignore next */
-  async sendOsNotification(companyId: string, clientPhone: string, osNumber: number, status: string) {
+  async sendOsNotification(
+    companyId: string,
+    clientPhone: string,
+    osNumber: number,
+    status: string,
+  ) {
     const message = `Olá! A sua Ordem de Serviço #${osNumber} teve o status atualizado para: ${status}.\nQualquer dúvida, estamos à disposição. Equipe Click Marido.`;
     await this.sendMessageToNumber(companyId, clientPhone, message);
   }
 
   /* istanbul ignore next */
-  async sendServiceOrderUpdate(companyId: string, clientPhone: string, orderId: string, status: string) {
+  async sendServiceOrderUpdate(
+    companyId: string,
+    clientPhone: string,
+    orderId: string,
+    status: string,
+  ) {
     const message = `Sua Ordem de Serviço #${orderId} foi atualizada para o status: *${status}*.\nQualquer dúvida, estamos à disposição.`;
     await this.sendMessageToNumber(companyId, clientPhone, message);
   }

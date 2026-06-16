@@ -73,11 +73,14 @@ describe('AuthService', () => {
         roles: [{ name: 'ADMIN', permissions: [{ action: 'ALL' }] }],
       };
 
-      prismaService.user.findUnique.mockResolvedValue(mockUser as any);
+      prismaService.user.findUnique.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       prismaService.session.create.mockResolvedValue({} as any);
 
-      const result = await service.login({ email: user.email, password: 'password123' });
+      const result = await service.login({
+        email: user.email,
+        password: 'password123',
+      });
 
       expect(result.accessToken).toBe('mock_jwt_token');
       expect(result.refreshToken).toBeDefined();
@@ -88,7 +91,7 @@ describe('AuthService', () => {
       prismaService.user.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.login({ email: 'wrong@test.com', password: 'password123' })
+        service.login({ email: 'wrong@test.com', password: 'password123' }),
       ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -97,11 +100,11 @@ describe('AuthService', () => {
       const user = UserFactory.build({ companyId: company.id });
       const mockUser = { ...user, company, roles: [] };
 
-      prismaService.user.findUnique.mockResolvedValue(mockUser as any);
+      prismaService.user.findUnique.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(
-        service.login({ email: user.email, password: 'wrongpassword' })
+        service.login({ email: user.email, password: 'wrongpassword' }),
       ).rejects.toThrow(UnauthorizedException);
     });
   });
@@ -111,7 +114,7 @@ describe('AuthService', () => {
       prismaService.session.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.refresh({ refreshToken: 'invalid-token' })
+        service.refresh({ refreshToken: 'invalid-token' }),
       ).rejects.toThrow(UnauthorizedException);
     });
   });
@@ -120,7 +123,9 @@ describe('AuthService', () => {
     it('should return success even if user not found', async () => {
       prismaService.user.findUnique.mockResolvedValue(null);
 
-      const result = await service.forgotPassword({ email: 'notfound@test.com' });
+      const result = await service.forgotPassword({
+        email: 'notfound@test.com',
+      });
       expect(result.success).toBe(true);
     });
   });

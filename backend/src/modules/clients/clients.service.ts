@@ -17,7 +17,11 @@ export class ClientsService {
   ) {}
 
   /* istanbul ignore next */
-  async create(createClientDto: CreateClientDto, companyId: string, userId?: string) {
+  async create(
+    createClientDto: CreateClientDto,
+    companyId: string,
+    userId?: string,
+  ) {
     if (createClientDto.cpf) {
       await this.validator.validateUniqueCpf(createClientDto.cpf, companyId);
     }
@@ -28,7 +32,10 @@ export class ClientsService {
     let lng = null;
 
     if (createClientDto.address) {
-      const coords = await this.geolocationService.geocodeAddress(createClientDto.address, createClientDto.city);
+      const coords = await this.geolocationService.geocodeAddress(
+        createClientDto.address,
+        createClientDto.city,
+      );
       if (coords) {
         lat = coords.lat;
         lng = coords.lng;
@@ -37,18 +44,35 @@ export class ClientsService {
 
     const createdClient = await this.repo.createWithHistory(
       { ...createClientDto, companyId, lat, lng },
-      { type: 'SYSTEM', description: `Cliente cadastrado por ${userName}`, createdById: userId || null, clientId: '' }
+      {
+        type: 'SYSTEM',
+        description: `Cliente cadastrado por ${userName}`,
+        createdById: userId || null,
+        clientId: '',
+      },
     );
 
     return { success: true, data: createdClient };
   }
 
   /* istanbul ignore next */
-  async findAll(companyId: string, page: number = 1, limit: number = 10, search?: string, leadSource?: string, city?: string) {
+  async findAll(
+    companyId: string,
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    leadSource?: string,
+    city?: string,
+  ) {
     const skip = (page - 1) * limit;
 
     const [items, total] = await this.repo.findManyWithCount({
-      companyId, skip, take: limit, search, leadSource, city
+      companyId,
+      skip,
+      take: limit,
+      search,
+      leadSource,
+      city,
     });
 
     return {
@@ -74,11 +98,20 @@ export class ClientsService {
   }
 
   /* istanbul ignore next */
-  async update(id: string, updateClientDto: UpdateClientDto, companyId: string, userId?: string) {
+  async update(
+    id: string,
+    updateClientDto: UpdateClientDto,
+    companyId: string,
+    userId?: string,
+  ) {
     const client = await this.validator.ensureClientExists(id, companyId);
-    
+
     if (updateClientDto.cpf) {
-      await this.validator.validateUniqueCpf(updateClientDto.cpf, companyId, id);
+      await this.validator.validateUniqueCpf(
+        updateClientDto.cpf,
+        companyId,
+        id,
+      );
     }
 
     const userName = await this.getUserName(userId);
@@ -87,7 +120,10 @@ export class ClientsService {
     let lng = client.lng;
 
     if (updateClientDto.address && updateClientDto.address !== client.address) {
-      const coords = await this.geolocationService.geocodeAddress(updateClientDto.address, updateClientDto.city || client.city || undefined);
+      const coords = await this.geolocationService.geocodeAddress(
+        updateClientDto.address,
+        updateClientDto.city || client.city || undefined,
+      );
       if (coords) {
         lat = coords.lat;
         lng = coords.lng;
@@ -96,11 +132,12 @@ export class ClientsService {
 
     const dataToUpdate = { ...updateClientDto, lat, lng };
 
-    const updatedClient = await this.repo.updateWithHistory(
-      id,
-      dataToUpdate,
-      { type: 'SYSTEM', description: `Cadastro atualizado por ${userName}`, createdById: userId || null, clientId: '' }
-    );
+    const updatedClient = await this.repo.updateWithHistory(id, dataToUpdate, {
+      type: 'SYSTEM',
+      description: `Cadastro atualizado por ${userName}`,
+      createdById: userId || null,
+      clientId: '',
+    });
 
     return { success: true, data: updatedClient };
   }
@@ -111,10 +148,12 @@ export class ClientsService {
 
     const userName = await this.getUserName(userId);
 
-    await this.repo.softDeleteWithHistory(
-      id,
-      { type: 'SYSTEM', description: `Cliente arquivado (soft-delete) por ${userName}`, createdById: userId || null, clientId: '' }
-    );
+    await this.repo.softDeleteWithHistory(id, {
+      type: 'SYSTEM',
+      description: `Cliente arquivado (soft-delete) por ${userName}`,
+      createdById: userId || null,
+      clientId: '',
+    });
 
     return { success: true, data: { id } };
   }
@@ -127,9 +166,14 @@ export class ClientsService {
   }
 
   /* istanbul ignore next */
-  async createHistory(clientId: string, createHistoryDto: CreateHistoryDto, companyId: string, userId?: string) {
+  async createHistory(
+    clientId: string,
+    createHistoryDto: CreateHistoryDto,
+    companyId: string,
+    userId?: string,
+  ) {
     await this.validator.ensureClientExists(clientId, companyId);
-    
+
     const interaction = await this.repo.createHistory({
       clientId,
       type: createHistoryDto.type,

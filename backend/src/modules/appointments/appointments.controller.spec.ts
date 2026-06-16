@@ -8,7 +8,7 @@ jest.mock('../../common/company/company.context', () => ({
   CompanyContext: {
     getCompanyId: () => 'c1',
     getUserId: () => 'u1',
-  }
+  },
 }));
 
 describe('AppointmentsController', () => {

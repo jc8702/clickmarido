@@ -32,9 +32,15 @@ export class AppointmentsRepository {
     });
   }
 
-  async findConflictingAppointment(companyId: string, technicianId: string, start: Date, end: Date, excludeId?: string) {
+  async findConflictingAppointment(
+    companyId: string,
+    technicianId: string,
+    start: Date,
+    end: Date,
+    excludeId?: string,
+  ) {
     // Utilize pessimistic locking where necessary in transactions, but for raw finding we can do this:
-    const where: any = {
+    const where: Prisma.AppointmentWhereInput = {
       companyId,
       technicianId,
       deletedAt: null,
@@ -66,7 +72,7 @@ export class AppointmentsRepository {
   }
 
   async findMany(filters: AppointmentFilters) {
-    const where: any = {
+    const where: Prisma.AppointmentWhereInput = {
       companyId: filters.companyId,
       deletedAt: null,
     };
@@ -75,16 +81,21 @@ export class AppointmentsRepository {
     if (filters.clientId) where.clientId = filters.clientId;
 
     if (filters.startDate || filters.endDate) {
-      where.AND = [];
-      if (filters.startDate) where.AND.push({ endTime: { gte: new Date(filters.startDate) } });
-      if (filters.endDate) where.AND.push({ startTime: { lte: new Date(filters.endDate) } });
+      const andFilters: Prisma.AppointmentWhereInput[] = [];
+      if (filters.startDate)
+        andFilters.push({ endTime: { gte: new Date(filters.startDate) } });
+      if (filters.endDate)
+        andFilters.push({ startTime: { lte: new Date(filters.endDate) } });
+      where.AND = andFilters;
     }
 
     return this.prisma.appointment.findMany({
       where,
       orderBy: { startTime: 'asc' },
       include: {
-        client: { select: { id: true, name: true, phone: true, whatsapp: true } },
+        client: {
+          select: { id: true, name: true, phone: true, whatsapp: true },
+        },
         technician: { select: { id: true, name: true } },
         serviceOrder: { select: { id: true, number: true, status: true } },
       },

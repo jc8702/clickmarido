@@ -42,7 +42,7 @@ describe('AppointmentsService', () => {
   describe('create', () => {
     it('should create an appointment successfully', async () => {
       const appointment = AppointmentFactory.build();
-      prismaService.appointment.create.mockResolvedValue(appointment as any);
+      prismaService.appointment.create.mockResolvedValue(appointment);
 
       const result = await service.create(appointment.companyId, {
         title: appointment.title,
@@ -58,7 +58,9 @@ describe('AppointmentsService', () => {
     it('should throw NotFoundException if appointment is not found', async () => {
       prismaService.appointment.findFirst.mockResolvedValue(null);
 
-      await expect(service.findOne('company', 'id')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('company', 'id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

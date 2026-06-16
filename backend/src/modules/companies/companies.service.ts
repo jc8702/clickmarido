@@ -1,7 +1,12 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CompaniesService {
@@ -9,14 +14,17 @@ export class CompaniesService {
 
   /* istanbul ignore next */
   async create(createCompanyDto: CreateCompanyDto) {
-    const { name, slug, cnpj, phone, email, address, city, state, active } = createCompanyDto;
+    const { name, slug, cnpj, phone, email, address, city, state, active } =
+      createCompanyDto;
 
     // Verifica se já existe empresa com o mesmo slug
     const existingSlug = await this.prisma.company.findUnique({
       where: { slug },
     });
     if (existingSlug && !existingSlug.deletedAt) {
-      throw new BadRequestException('Já existe uma empresa cadastrada com este slug.');
+      throw new BadRequestException(
+        'Já existe uma empresa cadastrada com este slug.',
+      );
     }
 
     // Verifica se já existe empresa com o mesmo CNPJ
@@ -25,7 +33,9 @@ export class CompaniesService {
         where: { cnpj },
       });
       if (existingCnpj && !existingCnpj.deletedAt) {
-        throw new BadRequestException('Já existe uma empresa cadastrada com este CNPJ.');
+        throw new BadRequestException(
+          'Já existe uma empresa cadastrada com este CNPJ.',
+        );
       }
     }
 
@@ -60,7 +70,7 @@ export class CompaniesService {
     const skip = (page - 1) * limit;
 
     // Filtros de busca
-    const where: any = {
+    const where: Prisma.CompanyWhereInput = {
       deletedAt: null, // Ignora itens com soft delete
     };
 

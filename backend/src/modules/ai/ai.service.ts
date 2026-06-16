@@ -14,20 +14,21 @@ export class AiService {
       console.warn('GEMINI_API_KEY is not set. AI features will fail.');
     }
     this.ai = new GoogleGenerativeAI(apiKey || 'dummy');
-    
+
     // Modelo com instruções de sistema voltadas para a vertical
-    const systemInstruction = 'Você é um Assistente Técnico e Comercial especialista em manutenção predial, residencial e reparos (marido de aluguel). Responda sempre em pt-BR, sendo direto, pragmático e focando em maximizar o lucro, eficiência e a satisfação do cliente.';
-    
-    this.flashModel = this.ai.getGenerativeModel({ 
+    const systemInstruction =
+      'Você é um Assistente Técnico e Comercial especialista em manutenção predial, residencial e reparos (marido de aluguel). Responda sempre em pt-BR, sendo direto, pragmático e focando em maximizar o lucro, eficiência e a satisfação do cliente.';
+
+    this.flashModel = this.ai.getGenerativeModel({
       model: 'gemini-2.5-flash',
-      systemInstruction
+      systemInstruction,
     });
 
     // Para saídas restritas e analíticas em JSON
-    this.jsonModel = this.ai.getGenerativeModel({ 
+    this.jsonModel = this.ai.getGenerativeModel({
       model: 'gemini-2.5-flash',
       systemInstruction,
-      generationConfig: { responseMimeType: "application/json" }
+      generationConfig: { responseMimeType: 'application/json' },
     });
   }
 
@@ -39,7 +40,9 @@ export class AiService {
       return { summary: result.response.text() };
     } catch (e) {
       console.error(e);
-      throw new InternalServerErrorException('Falha ao comunicar com Google Gemini');
+      throw new InternalServerErrorException(
+        'Falha ao comunicar com Google Gemini',
+      );
     }
   }
 
@@ -61,7 +64,9 @@ Solicitação do cliente: "${requestText}"`;
       return JSON.parse(result.response.text());
     } catch (e) {
       console.error(e);
-      throw new InternalServerErrorException('Falha ao comunicar com Google Gemini');
+      throw new InternalServerErrorException(
+        'Falha ao comunicar com Google Gemini',
+      );
     }
   }
 
@@ -81,7 +86,9 @@ Chamado: "${description}"`;
       return JSON.parse(result.response.text());
     } catch (e) {
       console.error(e);
-      throw new InternalServerErrorException('Falha ao comunicar com Google Gemini');
+      throw new InternalServerErrorException(
+        'Falha ao comunicar com Google Gemini',
+      );
     }
   }
 
@@ -99,7 +106,9 @@ Retorne um JSON OBRIGATÓRIO neste formato:
       return JSON.parse(result.response.text());
     } catch (e) {
       console.error(e);
-      throw new InternalServerErrorException('Falha ao comunicar com Google Gemini');
+      throw new InternalServerErrorException(
+        'Falha ao comunicar com Google Gemini',
+      );
     }
   }
 
@@ -117,7 +126,9 @@ Retorne um JSON OBRIGATÓRIO neste formato:
       return JSON.parse(result.response.text());
     } catch (e) {
       console.error(e);
-      throw new InternalServerErrorException('Falha ao comunicar com Google Gemini');
+      throw new InternalServerErrorException(
+        'Falha ao comunicar com Google Gemini',
+      );
     }
   }
 }

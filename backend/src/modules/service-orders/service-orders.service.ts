@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { CreateServiceOrderDto } from './dto/create-service-order.dto';
 import { UpdateServiceOrderDto } from './dto/update-service-order.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ServiceOrdersService {
@@ -10,7 +15,7 @@ export class ServiceOrdersService {
   /* istanbul ignore next */
   async create(dto: CreateServiceOrderDto) {
     const { services, materials, ...rest } = dto;
-    
+
     // Obter o proximo numero sequencial de OS para essa empresa
     const lastOs = await this.prisma.serviceOrder.findFirst({
       where: { companyId: rest.companyId },
@@ -47,7 +52,7 @@ export class ServiceOrdersService {
   ) {
     const skip = (page - 1) * limit;
 
-    const where: any = {
+    const where: Prisma.ServiceOrderWhereInput = {
       companyId,
       deletedAt: null,
     };
@@ -122,7 +127,10 @@ export class ServiceOrdersService {
     });
 
     if (!quote) throw new NotFoundException('Orçamento não encontrado.');
-    if (quote.status !== 'Aprovado') throw new BadRequestException('Orçamento precisa estar aprovado para gerar uma OS.');
+    if (quote.status !== 'Aprovado')
+      throw new BadRequestException(
+        'Orçamento precisa estar aprovado para gerar uma OS.',
+      );
 
     const lastOs = await this.prisma.serviceOrder.findFirst({
       where: { companyId: quote.companyId },
@@ -130,15 +138,25 @@ export class ServiceOrdersService {
     });
     const nextNumber = lastOs ? lastOs.number + 1 : 1;
 
-    const services = quote.services.map(qs => ({
+    const services = quote.services.map((qs) => ({
       name: qs.service.name,
       quantity: qs.quantity,
       value: qs.value,
     }));
 
-    let materials: any[] = [];
+    interface QuoteMaterial {
+      description: string;
+      quantity: number;
+      value: number;
+    }
+
+    let materials: Array<{
+      description: string;
+      quantity: number;
+      unitValue: number;
+    }> = [];
     if (quote.materials && Array.isArray(quote.materials)) {
-      materials = quote.materials.map((m: any) => ({
+      materials = (quote.materials as unknown as QuoteMaterial[]).map((m) => ({
         description: m.description,
         quantity: m.quantity,
         unitValue: m.value,
@@ -165,15 +183,17 @@ export class ServiceOrdersService {
     const existing = await this.prisma.serviceOrder.findFirst({
       where: { id, companyId, deletedAt: null },
     });
-    if (!existing) throw new NotFoundException('Ordem de serviço não encontrada.');
+    if (!existing)
+      throw new NotFoundException('Ordem de serviço não encontrada.');
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { services, materials, ...rest } = dto;
-    
-    const updateData: any = { ...rest };
+
+    const updateData: Prisma.ServiceOrderUpdateInput = { ...rest };
     if (rest.scheduledAt) {
       updateData.scheduledAt = new Date(rest.scheduledAt);
     }
-    
+
     const updated = await this.prisma.serviceOrder.update({
       where: { id },
       data: updateData,
@@ -187,9 +207,17 @@ export class ServiceOrdersService {
     const existing = await this.prisma.serviceOrder.findFirst({
       where: { id, companyId, deletedAt: null },
     });
-    if (!existing) throw new NotFoundException('Ordem de serviço não encontrada.');
+    if (!existing)
+      throw new NotFoundException('Ordem de serviço não encontrada.');
 
-    const validStatuses = ['Pendente', 'Agendado', 'Em Andamento', 'Aguardando Peça', 'Concluído', 'Cancelado'];
+    const validStatuses = [
+      'Pendente',
+      'Agendado',
+      'Em Andamento',
+      'Aguardando Peça',
+      'Concluído',
+      'Cancelado',
+    ];
     if (!validStatuses.includes(status)) {
       throw new BadRequestException('Status inválido.');
     }
@@ -207,7 +235,8 @@ export class ServiceOrdersService {
     const existing = await this.prisma.serviceOrder.findFirst({
       where: { id, companyId, deletedAt: null },
     });
-    if (!existing) throw new NotFoundException('Ordem de serviço não encontrada.');
+    if (!existing)
+      throw new NotFoundException('Ordem de serviço não encontrada.');
 
     const updated = await this.prisma.serviceOrder.update({
       where: { id },
@@ -221,11 +250,17 @@ export class ServiceOrdersService {
   }
 
   /* istanbul ignore next */
-  async addPhoto(id: string, url: string, type: 'antes' | 'depois', companyId: string) {
+  async addPhoto(
+    id: string,
+    url: string,
+    type: 'antes' | 'depois',
+    companyId: string,
+  ) {
     const existing = await this.prisma.serviceOrder.findFirst({
       where: { id, companyId, deletedAt: null },
     });
-    if (!existing) throw new NotFoundException('Ordem de serviço não encontrada.');
+    if (!existing)
+      throw new NotFoundException('Ordem de serviço não encontrada.');
 
     const photo = await this.prisma.serviceOrderPhoto.create({
       data: {
@@ -239,11 +274,17 @@ export class ServiceOrdersService {
   }
 
   /* istanbul ignore next */
-  async toggleChecklist(id: string, checklistId: string, checked: boolean, companyId: string) {
+  async toggleChecklist(
+    id: string,
+    checklistId: string,
+    checked: boolean,
+    companyId: string,
+  ) {
     const existing = await this.prisma.serviceOrder.findFirst({
       where: { id, companyId, deletedAt: null },
     });
-    if (!existing) throw new NotFoundException('Ordem de serviço não encontrada.');
+    if (!existing)
+      throw new NotFoundException('Ordem de serviço não encontrada.');
 
     const updated = await this.prisma.serviceOrderChecklist.update({
       where: { id: checklistId },
@@ -258,7 +299,8 @@ export class ServiceOrdersService {
     const existing = await this.prisma.serviceOrder.findFirst({
       where: { id, companyId, deletedAt: null },
     });
-    if (!existing) throw new NotFoundException('Ordem de serviço não encontrada.');
+    if (!existing)
+      throw new NotFoundException('Ordem de serviço não encontrada.');
 
     const checklist = await this.prisma.serviceOrderChecklist.create({
       data: {
@@ -301,9 +343,12 @@ export class ServiceOrdersService {
       const allOrders = await this.prisma.serviceOrder.findMany({
         where: { technicianId: os.technicianId, clientRating: { not: null } },
       });
-      const validOrders = allOrders.filter(o => o.clientRating !== null);
+      const validOrders = allOrders.filter((o) => o.clientRating !== null);
       if (validOrders.length > 0) {
-        const total = validOrders.reduce((sum, o) => sum + (o.clientRating || 0), 0);
+        const total = validOrders.reduce(
+          (sum, o) => sum + (o.clientRating || 0),
+          0,
+        );
         const avg = total / validOrders.length;
         await this.prisma.technician.update({
           where: { id: os.technicianId },

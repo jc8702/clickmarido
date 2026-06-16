@@ -18,7 +18,15 @@ import { UpdateCompanyDto } from './dto/update-company.dto';
 import { JwtAuthGuard } from '../../core/auth/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
-import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiBearerAuth } from "@nestjs/swagger";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiBadRequestResponse,
+  ApiUnauthorizedResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @Controller('companies')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -29,20 +37,20 @@ export class CompaniesController {
 
   @Post()
   @RequirePermissions('*')
-    @ApiOperation({ summary: 'Criar Companies' })
-    @ApiCreatedResponse({ description: 'Companies criado com sucesso.' })
-    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
-    @ApiUnauthorizedResponse({ description: 'Não autorizado.' }) // Somente Admin Global pode cadastrar empresas
+  @ApiOperation({ summary: 'Criar Companies' })
+  @ApiCreatedResponse({ description: 'Companies criado com sucesso.' })
+  @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+  @ApiUnauthorizedResponse({ description: 'Não autorizado.' }) // Somente Admin Global pode cadastrar empresas
   create(@Body() createCompanyDto: CreateCompanyDto) {
     return this.companiesService.create(createCompanyDto);
   }
 
   @Get()
   @RequirePermissions('*')
-    @ApiOperation({ summary: 'Listar todos Companies' })
-    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
-    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
-    @ApiUnauthorizedResponse({ description: 'Não autorizado.' }) // Somente Admin Global pode listar todas as empresas
+  @ApiOperation({ summary: 'Listar todos Companies' })
+  @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+  @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+  @ApiUnauthorizedResponse({ description: 'Não autorizado.' }) // Somente Admin Global pode listar todas as empresas
   findAll(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -52,27 +60,34 @@ export class CompaniesController {
   ) {
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 10;
-    const activeBool = active === 'true' ? true : active === 'false' ? false : undefined;
+    const activeBool =
+      active === 'true' ? true : active === 'false' ? false : undefined;
 
-    return this.companiesService.findAll(pageNum, limitNum, search, activeBool, state);
+    return this.companiesService.findAll(
+      pageNum,
+      limitNum,
+      search,
+      activeBool,
+      state,
+    );
   }
 
   @Get(':id')
   @RequirePermissions('*')
-    @ApiOperation({ summary: 'Buscar um Companies' })
-    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
-    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
-    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
+  @ApiOperation({ summary: 'Buscar um Companies' })
+  @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+  @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+  @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   findOne(@Param('id') id: string) {
     return this.companiesService.findOne(id);
   }
 
   @Put(':id')
   @RequirePermissions('*')
-    @ApiOperation({ summary: 'Atualizar Companies' })
-    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
-    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
-    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
+  @ApiOperation({ summary: 'Atualizar Companies' })
+  @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+  @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+  @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   update(@Param('id') id: string, @Body() updateCompanyDto: UpdateCompanyDto) {
     return this.companiesService.update(id, updateCompanyDto);
   }
@@ -80,10 +95,10 @@ export class CompaniesController {
   @Delete(':id')
   @RequirePermissions('*')
   @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Remover Companies' })
-    @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
-    @ApiBadRequestResponse({ description: 'Dados inválidos.' })
-    @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
+  @ApiOperation({ summary: 'Remover Companies' })
+  @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
+  @ApiBadRequestResponse({ description: 'Dados inválidos.' })
+  @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
   remove(@Param('id') id: string) {
     return this.companiesService.remove(id);
   }

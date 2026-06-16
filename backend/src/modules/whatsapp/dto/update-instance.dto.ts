@@ -1,19 +1,25 @@
 import { IsString, IsOptional } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateInstanceDto {
   @IsString()
   @IsOptional()
-    @ApiPropertyOptional({ description: 'Campo name', example: 'exemplo' })
+  @ApiPropertyOptional({ description: 'Campo name', example: 'exemplo' })
   name?: string;
 
   @IsString()
   @IsOptional()
-    @ApiPropertyOptional({ description: 'Campo evolutionApiUrl', example: 'exemplo' })
+  @ApiPropertyOptional({
+    description: 'Campo evolutionApiUrl',
+    example: 'exemplo',
+  })
   evolutionApiUrl?: string;
 
   @IsString()
   @IsOptional()
-    @ApiPropertyOptional({ description: 'Campo evolutionApiKey', example: 'exemplo' })
+  @ApiPropertyOptional({
+    description: 'Campo evolutionApiKey',
+    example: 'exemplo',
+  })
   evolutionApiKey?: string;
 }

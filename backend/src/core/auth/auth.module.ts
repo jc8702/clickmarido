@@ -10,8 +10,10 @@ import { AuthController } from './auth.controller';
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'clickmarido-super-secret-key-change-in-production-12345',
-      signOptions: { expiresIn: (process.env.JWT_EXPIRES_IN || '1h') as any }, // access token expira em 1 hora
+      secret:
+        process.env.JWT_SECRET ||
+        'clickmarido-super-secret-key-change-in-production-12345',
+      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }, // access token expira em 1 hora
     }),
   ],
   controllers: [AuthController],

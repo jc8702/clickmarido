@@ -39,7 +39,7 @@ export class FinancialRepository {
         AND "deletedAt" IS NULL
       GROUP BY "type", "status"
     `;
-    
+
     return rawResult;
   }
 
