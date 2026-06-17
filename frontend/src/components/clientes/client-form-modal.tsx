@@ -41,12 +41,23 @@ export function ClientFormModal() {
       });
     } else {
       setFormData({
-        name: '', cpf: '', phone: '', whatsapp: '', email: '', address: '', cep: '', city: '', leadSource: '', notes: ''
+        name: '',
+        cpf: '',
+        phone: '',
+        whatsapp: '',
+        email: '',
+        address: '',
+        cep: '',
+        city: '',
+        leadSource: '',
+        notes: '',
       });
     }
   }, [selectedClient]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -69,12 +80,15 @@ export function ClientFormModal() {
           return [key, cleaned === '' ? null : cleaned];
         }
         return [key, val === '' ? null : val];
-      })
+      }),
     );
 
     try {
       if (selectedClient) {
-        const res = await ApiClient.put<{ success: boolean }>(`/clients/${selectedClient.id}`, payload);
+        const res = await ApiClient.put<{ success: boolean }>(
+          `/clients/${selectedClient.id}`,
+          payload,
+        );
         if (res.success) {
           setIsFormModalOpen(false);
           fetchClients();
@@ -87,7 +101,7 @@ export function ClientFormModal() {
         }
       }
     } catch (err: unknown) {
-      setFormError(err.message || 'Erro ao salvar dados do cliente.');
+      setFormError(err instanceof Error ? err.message : 'Erro ao salvar dados do cliente.');
     } finally {
       setFormLoading(false);
     }
@@ -103,7 +117,9 @@ export function ClientFormModal() {
             {selectedClient ? 'Editar Cliente' : 'Adicionar Novo Cliente'}
           </h3>
           <p className="text-zinc-500 text-xs mt-1">
-            {selectedClient ? 'Edite as informações cadastrais do contato.' : 'Cadastre as informações do novo lead/cliente.'}
+            {selectedClient
+              ? 'Edite as informações cadastrais do contato.'
+              : 'Cadastre as informações do novo lead/cliente.'}
           </p>
         </div>
 
@@ -117,7 +133,9 @@ export function ClientFormModal() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Nome Completo</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Nome Completo
+              </label>
               <input
                 type="text"
                 name="name"
@@ -129,7 +147,9 @@ export function ClientFormModal() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">CPF (opcional)</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                CPF (opcional)
+              </label>
               <input
                 type="text"
                 name="cpf"
@@ -142,7 +162,9 @@ export function ClientFormModal() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Origem do Lead</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Origem do Lead
+              </label>
               <select
                 name="leadSource"
                 value={formData.leadSource}
@@ -159,7 +181,9 @@ export function ClientFormModal() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Telefone</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Telefone
+              </label>
               <input
                 type="text"
                 name="phone"
@@ -172,7 +196,9 @@ export function ClientFormModal() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">WhatsApp</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                WhatsApp
+              </label>
               <input
                 type="text"
                 name="whatsapp"
@@ -184,7 +210,9 @@ export function ClientFormModal() {
             </div>
 
             <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">E-mail</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                E-mail
+              </label>
               <input
                 type="email"
                 name="email"
@@ -195,7 +223,9 @@ export function ClientFormModal() {
             </div>
 
             <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Endereço</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Endereço
+              </label>
               <input
                 type="text"
                 name="address"
@@ -207,7 +237,9 @@ export function ClientFormModal() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">CEP</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                CEP
+              </label>
               <input
                 type="text"
                 name="cep"
@@ -220,7 +252,9 @@ export function ClientFormModal() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Cidade</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Cidade
+              </label>
               <input
                 type="text"
                 name="city"
@@ -231,7 +265,9 @@ export function ClientFormModal() {
             </div>
 
             <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Observações Gerais</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Observações Gerais
+              </label>
               <textarea
                 name="notes"
                 value={formData.notes}

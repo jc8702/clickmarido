@@ -16,16 +16,20 @@ export function SidebarTimeline({ events, loading }: SidebarTimelineProps) {
 
   // Filtrar e ordenar eventos de hoje em diante
   const upcomingEvents = events
-    .filter(event => isSameDay(event.start, today) || isAfter(event.start, today))
-    .sort((a, b) => a.start.getTime() - b.start.getTime());
+    .filter((s) => isSameDay((s as Record<string, unknown>).start as Date, today) || isAfter((s as Record<string, unknown>).start as Date, today))
+    .sort((a, b) => ((a as Record<string, unknown>).start as Date).getTime() - ((b as Record<string, unknown>).start as Date).getTime());
 
   // Agrupar por data
-  const groupedEvents = upcomingEvents.reduce((acc: Record<string, unknown[]>, event: Record<string, unknown>) => {
-    const dateStr = format(event.start, 'yyyy-MM-dd');
-    if (!acc[dateStr]) acc[dateStr] = [];
-    acc[dateStr].push(event);
-    return acc;
-  }, {});
+  const groupedEvents = upcomingEvents.reduce(
+    (acc: Record<string, unknown[]>, s) => {
+      const event = s as Record<string, unknown>;
+      const dateStr = format(event.start as Date, 'yyyy-MM-dd');
+      if (!acc[dateStr]) acc[dateStr] = [];
+      acc[dateStr].push(event);
+      return acc;
+    },
+    {} as Record<string, unknown[]>,
+  );
 
   const dates = Object.keys(groupedEvents).sort();
 
@@ -43,7 +47,7 @@ export function SidebarTimeline({ events, loading }: SidebarTimelineProps) {
         <div className="p-5">
           {loading ? (
             <div className="flex flex-col gap-4 animate-pulse">
-              {[1, 2, 3].map(i => (
+              {[1, 2, 3].map((i) => (
                 <div key={i} className="flex gap-4">
                   <div className="w-12 h-4 bg-muted rounded"></div>
                   <div className="flex-1 h-16 bg-muted/50 rounded-lg"></div>
@@ -56,7 +60,9 @@ export function SidebarTimeline({ events, loading }: SidebarTimelineProps) {
                 <CalendarIcon className="w-6 h-6 text-muted-foreground/50" />
               </div>
               <p className="text-sm font-medium">Nenhum compromisso</p>
-              <p className="text-xs text-muted-foreground mt-1">Sua agenda está livre por enquanto.</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Sua agenda está livre por enquanto.
+              </p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -64,27 +70,31 @@ export function SidebarTimeline({ events, loading }: SidebarTimelineProps) {
                 const dateEvents = groupedEvents[dateStr];
                 const parsedDate = new Date(dateStr + 'T00:00:00');
                 const isToday = isSameDay(parsedDate, today);
-                
+
                 return (
                   <div key={dateStr} className="relative">
-                    <h4 className={`text-xs font-semibold uppercase tracking-wider mb-3 sticky top-0 bg-card py-1 z-10 ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
+                    <h4
+                      className={`text-xs font-semibold uppercase tracking-wider mb-3 sticky top-0 bg-card py-1 z-10 ${isToday ? 'text-primary' : 'text-muted-foreground'}`}
+                    >
                       {isToday ? 'Hoje' : format(parsedDate, "EEEE, d 'de' MMM", { locale: ptBR })}
                     </h4>
                     <div className="space-y-3">
-                      {dateEvents.map((event: Record<string, unknown>, idx: number) => (
-                        <div key={event.id} className="relative flex gap-3 group">
+                      {dateEvents.map((s, idx: number) => {
+                        const event = s as Record<string, unknown>;
+                        return (
+                        <div key={event.id as string} className="relative flex gap-3 group">
                           {/* Linha conectora da timeline */}
                           {idx !== dateEvents.length - 1 && (
                             <div className="absolute left-[1.15rem] top-6 bottom-[-1rem] w-px bg-border group-hover:bg-primary/30 transition-colors"></div>
                           )}
-                          
+
                           {/* Horário */}
                           <div className="w-12 pt-1 text-right">
                             <span className="text-xs font-medium text-foreground">
-                              {format(event.start, 'HH:mm')}
+                              {format(event.start as Date, 'HH:mm')}
                             </span>
                           </div>
-                          
+
                           {/* Dot */}
                           <div className="relative mt-1.5 flex-none">
                             <div className="w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-card"></div>
@@ -92,16 +102,19 @@ export function SidebarTimeline({ events, loading }: SidebarTimelineProps) {
 
                           {/* Card do Evento */}
                           <div className="flex-1 bg-muted/30 hover:bg-muted/50 border border-transparent hover:border-border transition-all rounded-lg p-3 cursor-pointer">
-                            <h5 className="font-medium text-sm leading-tight mb-1">{event.title}</h5>
+                            <h5 className="font-medium text-sm leading-tight mb-1">
+                              {event.title as string}
+                            </h5>
                             <div className="flex items-center text-xs text-muted-foreground gap-1.5">
                               <Clock className="w-3.5 h-3.5" />
                               <span>
-                                {format(event.start, 'HH:mm')} - {format(event.end, 'HH:mm')}
+                                {format(event.start as Date, 'HH:mm')} - {format(event.end as Date, 'HH:mm')}
                               </span>
                             </div>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 );

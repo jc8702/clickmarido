@@ -5,7 +5,7 @@ import { useClientContext } from '@/contexts/client-context';
 import { DataTable } from '@/components/ui/data-table';
 import { DataTablePagination } from '@/components/ui/data-table-pagination';
 import { SkeletonTable } from '@/components/ui/skeleton-table';
-import { getClientColumns } from '@/app/(dashboard)/clientes/columns';
+import { getClientColumns, Client } from '@/app/(dashboard)/clientes/columns';
 import { ApiClient } from '@/lib/api/client';
 
 export function ClientsTable() {
@@ -21,15 +21,19 @@ export function ClientsTable() {
         fetchClients();
       }
     } catch (err: unknown) {
-      alert(err.message || 'Erro ao excluir cliente.');
+      alert(err instanceof Error ? err.message : 'Erro ao excluir cliente.');
     }
   };
 
-  const columns = useMemo(() => getClientColumns({
-    onOpenHistory: handleOpenHistoryModal,
-    onOpenEdit: handleOpenEditModal,
-    onDelete: handleDelete,
-  }), [handleOpenHistoryModal, handleOpenEditModal]);
+  const columns = useMemo(
+    () =>
+      getClientColumns({
+        onOpenHistory: handleOpenHistoryModal,
+        onOpenEdit: handleOpenEditModal,
+        onDelete: handleDelete,
+      }),
+    [handleOpenHistoryModal, handleOpenEditModal],
+  );
 
   return (
     <div className="space-y-4">
@@ -38,12 +42,12 @@ export function ClientsTable() {
       ) : (
         <DataTable
           columns={columns}
-          data={clients}
+          data={clients as unknown as Client[]}
           isLoading={isLoading}
           virtualized={clients.length > 50}
         />
       )}
-      
+
       <DataTablePagination
         pageIndex={page - 1}
         pageCount={totalPages}
@@ -52,8 +56,8 @@ export function ClientsTable() {
         canPreviousPage={page > 1}
         canNextPage={page < totalPages}
         setPageIndex={(idx) => setPage(idx + 1)}
-        previousPage={() => setPage(p => p - 1)}
-        nextPage={() => setPage(p => p + 1)}
+        previousPage={() => setPage((p) => p - 1)}
+        nextPage={() => setPage((p) => p + 1)}
       />
     </div>
   );

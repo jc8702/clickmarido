@@ -1,31 +1,31 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { Lock, Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ApiClient } from "@/lib/api/client";
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Lock, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ApiClient } from '@/lib/api/client';
 
 // Componente interno com useSearchParams envolto em Suspense para conformidade Next.js 15+
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
-  const [token, setToken] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [token, setToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const tokenParam = searchParams.get("token");
+    const tokenParam = searchParams.get('token');
     if (tokenParam) {
       setToken(tokenParam);
     } else {
-      setError("Token de redefinição ausente. Por favor, utilize o link recebido por e-mail.");
+      setError('Token de redefinição ausente. Por favor, utilize o link recebido por e-mail.');
     }
   }, [searchParams]);
 
@@ -34,29 +34,29 @@ function ResetPasswordForm() {
     setError(null);
 
     if (newPassword !== confirmPassword) {
-      setError("As senhas não coincidem.");
+      setError('As senhas não coincidem.');
       return;
     }
 
     if (newPassword.length < 6) {
-      setError("A senha deve conter pelo menos 6 caracteres.");
+      setError('A senha deve conter pelo menos 6 caracteres.');
       return;
     }
 
     setLoading(true);
 
     try {
-      await ApiClient.post("/auth/reset-password", {
+      await ApiClient.post('/auth/reset-password', {
         token,
         newPassword,
       });
       setSuccess(true);
       // Redireciona para login após 3 segundos
       setTimeout(() => {
-        router.push("/login");
+        router.push('/login');
       }, 3000);
     } catch (err: unknown) {
-      setError(err.message || "Houve um erro ao atualizar sua senha. O token pode ter expirado.");
+      setError(err instanceof Error ? err.message : 'Houve um erro ao atualizar sua senha. O token pode ter expirado.');
     } finally {
       setLoading(false);
     }
@@ -86,7 +86,8 @@ function ResetPasswordForm() {
             <div className="space-y-2">
               <h3 className="font-bold text-zinc-900 dark:text-zinc-100">Senha redefinida!</h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Sua senha foi atualizada com sucesso. Você será redirecionado para a tela de login em alguns instantes...
+                Sua senha foi atualizada com sucesso. Você será redirecionado para a tela de login
+                em alguns instantes...
               </p>
             </div>
           </div>
@@ -153,7 +154,10 @@ function ResetPasswordForm() {
               </>
             )}
 
-            <Link href="/login" className="flex items-center justify-center gap-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 pt-2 transition-colors">
+            <Link
+              href="/login"
+              className="flex items-center justify-center gap-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 pt-2 transition-colors"
+            >
               <ArrowLeft className="h-3.5 w-3.5" />
               <span>Voltar para o Login</span>
             </Link>
@@ -171,12 +175,14 @@ export default function ResetPasswordPage() {
       <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-blue-500/10 dark:bg-blue-500/5 blur-[100px] -z-10" />
 
       <div className="w-full max-w-md animate-in-fade">
-        <Suspense fallback={
-          <Card className="glass-card border-zinc-200/50 dark:border-zinc-900/50 p-8 text-center">
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-amber-500 mb-4" />
-            <p className="text-sm text-zinc-500">Carregando formulário...</p>
-          </Card>
-        }>
+        <Suspense
+          fallback={
+            <Card className="glass-card border-zinc-200/50 dark:border-zinc-900/50 p-8 text-center">
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-amber-500 mb-4" />
+              <p className="text-sm text-zinc-500">Carregando formulário...</p>
+            </Card>
+          }
+        >
           <ResetPasswordForm />
         </Suspense>
       </div>

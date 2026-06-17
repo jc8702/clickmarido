@@ -13,21 +13,49 @@ import { useQuotes } from './hooks/use-quotes';
 import { QuotePrintTemplate } from './components/quote-print-template';
 import dynamic from 'next/dynamic';
 
-const SignatureModal = dynamic(() => import('./components/signature-modal').then(m => m.SignatureModal), { ssr: false });
-const ViewQuoteModal = dynamic(() => import('./components/view-quote-modal').then(m => m.ViewQuoteModal), { ssr: false });
-const QuoteFormModal = dynamic(() => import('./components/quote-form-modal').then(m => m.QuoteFormModal), { ssr: false });
+const SignatureModal = dynamic(
+  () => import('./components/signature-modal').then((m) => m.SignatureModal),
+  { ssr: false },
+);
+const ViewQuoteModal = dynamic(
+  () => import('./components/view-quote-modal').then((m) => m.ViewQuoteModal),
+  { ssr: false },
+);
+const QuoteFormModal = dynamic(
+  () => import('./components/quote-form-modal').then((m) => m.QuoteFormModal),
+  { ssr: false },
+);
 
 function OrcamentosPageInner() {
   const {
-    quotes, clients, catalogServices, total, page, totalPages,
-    search, setSearch, loading,
-    isFormModalOpen, selectedQuote, isViewModalOpen, viewedQuote, isSignatureModalOpen,
+    quotes,
+    clients,
+    catalogServices,
+    total,
+    page,
+    totalPages,
+    search,
+    setSearch,
+    loading,
+    isFormModalOpen,
+    selectedQuote,
+    isViewModalOpen,
+    viewedQuote,
+    isSignatureModalOpen,
     setPage,
-    handleOpenCreateModal, handleOpenEditModal, handleDelete,
-    handleOpenViewModal, handleShareWhatsApp, handlePrint,
-    handleOpenSignatureModal, handleGenerateOS,
-    handleFormSuccess, handleSignatureSuccess,
-    setIsFormModalOpen, setIsViewModalOpen,
+    handleOpenCreateModal,
+    handleOpenEditModal,
+    handleDelete,
+    handleOpenViewModal,
+    handleShareWhatsApp,
+    handlePrint,
+    handleOpenSignatureModal,
+    handleGenerateOS,
+    handleFormSuccess,
+    handleSignatureSuccess,
+    setIsFormModalOpen,
+    setIsViewModalOpen,
+    setIsSignatureModalOpen,
   } = useQuotes();
 
   return (
@@ -45,7 +73,10 @@ function OrcamentosPageInner() {
               Crie, gerencie, envie e aprove propostas comerciais para os clientes.
             </p>
           </div>
-          <Button onClick={handleOpenCreateModal} className="flex items-center gap-2 font-semibold bg-violet-600 hover:bg-violet-500 text-white rounded-xl h-10 px-5 transition-all">
+          <Button
+            onClick={handleOpenCreateModal}
+            className="flex items-center gap-2 font-semibold bg-violet-600 hover:bg-violet-500 text-white rounded-xl h-10 px-5 transition-all"
+          >
             <Plus className="w-4 h-4" />
             Novo Orçamento
           </Button>
@@ -64,9 +95,13 @@ function OrcamentosPageInner() {
             <FileText className="w-14 h-14 text-zinc-700 mb-4" />
             <h3 className="text-lg font-semibold text-zinc-300">Nenhum orçamento encontrado</h3>
             <p className="text-sm text-zinc-500 mt-1 max-w-sm">
-              Crie orçamentos para poder enviar propostas em PDF por WhatsApp e fechar novos negócios.
+              Crie orçamentos para poder enviar propostas em PDF por WhatsApp e fechar novos
+              negócios.
             </p>
-            <Button onClick={handleOpenCreateModal} className="mt-6 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-white rounded-xl text-xs font-semibold px-4 h-9">
+            <Button
+              onClick={handleOpenCreateModal}
+              className="mt-6 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-white rounded-xl text-xs font-semibold px-4 h-9"
+            >
               <Plus className="w-4 h-4 mr-2" />
               Criar Orçamento
             </Button>
@@ -74,10 +109,12 @@ function OrcamentosPageInner() {
         ) : (
           <div className="space-y-4">
             <DataTable
-              columns={getQuoteColumns({
-                onEdit: handleOpenEditModal as never,
-                onDelete: handleDelete as never,
-              }) as never}
+              columns={
+                getQuoteColumns({
+                  onEdit: handleOpenEditModal as never,
+                  onDelete: handleDelete as never,
+                }) as never
+              }
               data={quotes}
               isLoading={loading}
               virtualized={quotes.length > 50}
@@ -92,8 +129,8 @@ function OrcamentosPageInner() {
               canPreviousPage={page > 1}
               canNextPage={page < totalPages}
               setPageIndex={(idx) => setPage(idx + 1)}
-              previousPage={() => setPage(p => p - 1)}
-              nextPage={() => setPage(p => p + 1)}
+              previousPage={() => setPage((p) => p - 1)}
+              nextPage={() => setPage((p) => p + 1)}
             />
           </div>
         )}
@@ -110,7 +147,7 @@ function OrcamentosPageInner() {
 
       <ViewQuoteModal
         isOpen={isViewModalOpen}
-        quote={viewedQuote}
+        quote={viewedQuote as never}
         onClose={() => setIsViewModalOpen(false)}
         onPrint={handlePrint}
         onShare={handleShareWhatsApp}

@@ -17,16 +17,25 @@ export const useClientsData = () => {
     return ['/clients', page, limit, debouncedSearch, leadSourceFilter, cityFilter];
   }, [page, limit, debouncedSearch, leadSourceFilter, cityFilter]);
 
-  const { data: swrData, isLoading, mutate: fetchClients } = useSWR(
+  const {
+    data: swrData,
+    isLoading,
+    mutate: fetchClients,
+  } = useSWR(
     swrKey,
-    ([url, p, l, s, ls, c]: [string, number, number, string, string, string]) => ApiClient.get<Record<string, unknown>>(url, { params: { page: String(p), limit: String(l), search: s, leadSource: ls, city: c } }),
-    { keepPreviousData: true, dedupingInterval: 300000 }
+    ([url, p, l, s, ls, c]: [string, number, number, string, string, string]) =>
+      ApiClient.get<Record<string, unknown>>(url, {
+        params: { page: String(p), limit: String(l), search: s, leadSource: ls, city: c },
+      }),
+    { keepPreviousData: true, dedupingInterval: 300000 },
   );
 
+  const responseData = swrData?.data as { items?: unknown[]; total?: number; totalPages?: number } | undefined;
+
   return {
-    clients: swrData?.data?.items || [],
-    total: swrData?.data?.total || 0,
-    totalPages: swrData?.data?.totalPages || 1,
+    clients: (responseData?.items || []) as Record<string, unknown>[],
+    total: responseData?.total || 0,
+    totalPages: responseData?.totalPages || 1,
     isLoading,
     page,
     limit,

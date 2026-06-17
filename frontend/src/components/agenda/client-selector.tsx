@@ -11,7 +11,12 @@ interface ClientSelectorProps {
   setSelectedClientName: (name: string) => void;
 }
 
-export function ClientSelector({ clientId, setClientId, selectedClientName, setSelectedClientName }: ClientSelectorProps) {
+export function ClientSelector({
+  clientId,
+  setClientId,
+  selectedClientName,
+  setSelectedClientName,
+}: ClientSelectorProps) {
   const { clients } = useAppointmentContext();
   const [clientSearch, setClientSearch] = useState('');
   const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
@@ -20,9 +25,9 @@ export function ClientSelector({ clientId, setClientId, selectedClientName, setS
     return clients.filter((c) => c.name.toLowerCase().includes(clientSearch.toLowerCase()));
   }, [clients, clientSearch]);
 
-  function selectClient(client: unknown) {
-    setClientId(client.id);
-    setSelectedClientName(client.name);
+  function selectClient(client: Record<string, unknown>) {
+    setClientId(client.id as string);
+    setSelectedClientName(client.name as string);
     setClientDropdownOpen(false);
   }
 
@@ -32,7 +37,10 @@ export function ClientSelector({ clientId, setClientId, selectedClientName, setS
       <div className="relative">
         <div
           className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white flex items-center cursor-pointer justify-between"
-          onClick={() => { setClientDropdownOpen(!clientDropdownOpen); setClientSearch(''); }}
+          onClick={() => {
+            setClientDropdownOpen(!clientDropdownOpen);
+            setClientSearch('');
+          }}
         >
           <span className={selectedClientName ? '' : 'text-zinc-500'}>
             {selectedClientName || 'Selecionar cliente...'}
@@ -53,13 +61,15 @@ export function ClientSelector({ clientId, setClientId, selectedClientName, setS
             </div>
             <div className="p-1">
               {filteredClients.length === 0 ? (
-                <p className="px-2 py-3 text-xs text-zinc-500 text-center">Nenhum cliente encontrado.</p>
+                <p className="px-2 py-3 text-xs text-zinc-500 text-center">
+                  Nenhum cliente encontrado.
+                </p>
               ) : (
                 filteredClients.map((c) => (
                   <button
                     key={c.id}
                     type="button"
-                    onClick={() => selectClient(c)}
+                    onClick={() => selectClient(c as unknown as Record<string, unknown>)}
                     className="w-full text-left px-2 py-2 rounded text-xs text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
                   >
                     <span className="font-medium">{c.name}</span>
