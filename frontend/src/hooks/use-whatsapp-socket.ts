@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001';
@@ -15,6 +15,7 @@ interface UseWhatsAppSocketOptions {
 
 export function useWhatsAppSocket(options: UseWhatsAppSocketOptions) {
   const socketRef = useRef<Socket | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const {
     companyId,
     onNewMessage,
@@ -32,6 +33,7 @@ export function useWhatsAppSocket(options: UseWhatsAppSocketOptions) {
     });
 
     socketRef.current = socket;
+    setSocket(socket);
 
     socket.on('connect', () => {
       socket.emit('join-company', companyId);
@@ -50,6 +52,7 @@ export function useWhatsAppSocket(options: UseWhatsAppSocketOptions) {
     return () => {
       socket.disconnect();
       socketRef.current = null;
+      setSocket(null);
     };
   }, [companyId, enabled]);
 
@@ -58,5 +61,5 @@ export function useWhatsAppSocket(options: UseWhatsAppSocketOptions) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { socket: socketRef.current, emit };
+  return { socket, emit };
 }

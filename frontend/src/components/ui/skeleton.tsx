@@ -86,7 +86,7 @@ function SkeletonChart({ className }: { className?: string }) {
           <Skeleton 
             key={i} 
             className="w-full rounded-t-sm rounded-b-none" 
-            style={{ height: `${Math.max(20, Math.random() * 100)}%` }} 
+            style={{ height: `${20 + (i * 13) % 80}%` }} 
           />
         ))}
       </div>

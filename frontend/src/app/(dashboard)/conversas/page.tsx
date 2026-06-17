@@ -57,7 +57,7 @@ export default function ConversasPage() {
 
     // Pre-insert optimistically
     const optimisticMsg: Message = {
-      id: Math.random().toString(),
+      id: crypto.randomUUID(),
       fromMe: true,
       messageType: 'TEXT',
       content: text,
