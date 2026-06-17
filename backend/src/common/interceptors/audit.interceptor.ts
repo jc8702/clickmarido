@@ -42,7 +42,7 @@ export class AuditInterceptor implements NestInterceptor {
           // Se houver um tenantId ativo, salvamos o log de auditoria
           if (companyId) {
             // Tentamos extrair o ID da entidade modificada do response ou params
-            const entityId = response?.id || request.params?.id || null;
+            const entityId = (response as Record<string, unknown>)?.id || request.params?.id || null;
 
             // Execução em background para não atrasar a resposta HTTP principal
             this.prisma.auditLog

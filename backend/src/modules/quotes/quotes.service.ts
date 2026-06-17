@@ -65,7 +65,7 @@ export class QuotesService {
     const quote = await this.quotesRepository.executeTransaction(async (tx) => {
       const data: Prisma.QuoteCreateInput = {
         number: quoteNumber,
-        companyId,
+        company: { connect: { id: companyId } },
         client: { connect: { id: clientId } },
         discount,
         travelFee,

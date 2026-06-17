@@ -37,7 +37,7 @@ export class WarrantiesService {
       data: {
         companyId,
         clientId,
-        serviceOrderId,
+        serviceOrderId: serviceOrderId ?? '',
         type,
         description,
         startDate: start,

@@ -1,58 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ShieldAlert, Plus, Trash } from 'lucide-react';
-import { ApiClient } from '@/lib/api/client';
-
-interface Client {
-  id: string;
-  name: string;
-  phone: string;
-  whatsapp?: string;
-  email?: string;
-  address?: string;
-  city?: string;
-}
-
-interface Service {
-  id: string;
-  name: string;
-  category: string;
-  value: number;
-}
-
-interface QuoteServiceItem {
-  id?: string;
-  serviceId: string;
-  quantity: number;
-  value: number;
-  service?: {
-    name: string;
-    category: string;
-  };
-}
-
-interface QuoteMaterialItem {
-  description: string;
-  quantity: number;
-  value: number;
-}
-
-interface Quote {
-  id: string;
-  number: number;
-  clientId: string;
-  client: Client;
-  discount: number;
-  travelFee: number;
-  materials: QuoteMaterialItem[] | null;
-  totalValue: number;
-  status: string;
-  signature?: string | null;
-  signedAt?: string | null;
-  createdAt: string;
-  updatedAt: string;
-  services: QuoteServiceItem[];
-}
+import { useQuoteForm } from '../hooks/use-quote-form';
+import type { Quote, Client, Service } from '../types';
 
 interface QuoteFormModalProps {
   isOpen: boolean;
@@ -73,152 +22,25 @@ export function QuoteFormModal({
   quote,
   clients,
   catalogServices,
-  onSuccess
+  onSuccess,
 }: QuoteFormModalProps) {
-  const [formClientId, setFormClientId] = useState('');
-  const [formDiscount, setFormDiscount] = useState('0');
-  const [formTravelFee, setFormTravelFee] = useState('0');
-  const [formStatus, setFormStatus] = useState('Rascunho');
-  const [formServices, setFormServices] = useState<QuoteServiceItem[]>([]);
-  const [formMaterials, setFormMaterials] = useState<QuoteMaterialItem[]>([]);
-  
-  const [newMaterialDesc, setNewMaterialDesc] = useState('');
-  const [newMaterialQty, setNewMaterialQty] = useState('1');
-  const [newMaterialVal, setNewMaterialVal] = useState('0');
-
-  const [formError, setFormError] = useState('');
-  const [formLoading, setFormLoading] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      if (quote) {
-        setFormClientId(quote.clientId);
-        setFormDiscount(String(quote.discount));
-        setFormTravelFee(String(quote.travelFee));
-        setFormStatus(quote.status);
-        setFormServices(quote.services.map(s => ({
-          serviceId: s.serviceId,
-          quantity: s.quantity,
-          value: s.value,
-        })));
-        setFormMaterials(quote.materials || []);
-      } else {
-        setFormClientId(clients[0]?.id || '');
-        setFormDiscount('0');
-        setFormTravelFee('0');
-        setFormStatus('Rascunho');
-        setFormServices([]);
-        setFormMaterials([]);
-      }
-      setFormError('');
-      setNewMaterialDesc('');
-      setNewMaterialQty('1');
-      setNewMaterialVal('0');
-    }
-  }, [isOpen, quote, clients]);
+  const {
+    formClientId, setFormClientId,
+    formDiscount, setFormDiscount,
+    formTravelFee, setFormTravelFee,
+    formStatus, setFormStatus,
+    formServices, formMaterials,
+    newMaterialDesc, setNewMaterialDesc,
+    newMaterialQty, setNewMaterialQty,
+    newMaterialVal, setNewMaterialVal,
+    formError, formLoading,
+    calculateTotal,
+    handleAddServiceRow, handleUpdateServiceRow, handleRemoveServiceRow,
+    handleAddMaterialItem, handleRemoveMaterialItem,
+    handleSubmit,
+  } = useQuoteForm({ quote, clients, catalogServices, onSuccess, onClose });
 
   if (!isOpen) return null;
-
-  const calculateTotal = () => {
-    const servicesTotal = formServices.reduce((sum, s) => sum + (s.quantity * s.value), 0);
-    const materialsTotal = formMaterials.reduce((sum, m) => sum + (m.quantity * m.value), 0);
-    const discount = parseFloat(formDiscount) || 0;
-    const travelFee = parseFloat(formTravelFee) || 0;
-    const finalVal = servicesTotal + materialsTotal + travelFee - discount;
-    return Math.max(0, finalVal);
-  };
-
-  const handleAddServiceRow = () => {
-    if (catalogServices.length === 0) return;
-    const firstSrv = catalogServices[0];
-    setFormServices([...formServices, {
-      serviceId: firstSrv.id,
-      quantity: 1,
-      value: firstSrv.value,
-    }]);
-  };
-
-  const handleUpdateServiceRow = (index: number, key: 'serviceId' | 'quantity' | 'value', val: string | number) => {
-    const updated = [...formServices];
-    if (key === 'serviceId') {
-      const srv = catalogServices.find(s => s.id === val);
-      updated[index] = {
-        ...updated[index],
-        serviceId: val as string,
-        value: srv ? srv.value : updated[index].value,
-      };
-    } else if (key === 'quantity') {
-      updated[index] = { ...updated[index], quantity: parseInt(val as string, 10) || 1 };
-    } else if (key === 'value') {
-      updated[index] = { ...updated[index], value: parseFloat(val as string) || 0 };
-    }
-    setFormServices(updated);
-  };
-
-  const handleRemoveServiceRow = (index: number) => {
-    setFormServices(formServices.filter((_, i) => i !== index));
-  };
-
-  const handleAddMaterialItem = () => {
-    if (!newMaterialDesc) {
-      alert('Por favor, informe a descrição do material.');
-      return;
-    }
-    const qty = parseInt(newMaterialQty, 10) || 1;
-    const val = parseFloat(newMaterialVal) || 0;
-    setFormMaterials([...formMaterials, {
-      description: newMaterialDesc,
-      quantity: qty,
-      value: val,
-    }]);
-    setNewMaterialDesc('');
-    setNewMaterialQty('1');
-    setNewMaterialVal('0');
-  };
-
-  const handleRemoveMaterialItem = (index: number) => {
-    setFormMaterials(formMaterials.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formClientId) {
-      setFormError('Selecione um cliente.');
-      return;
-    }
-    if (formServices.length === 0) {
-      setFormError('Adicione pelo menos um serviço ao orçamento.');
-      return;
-    }
-
-    const payload = {
-      clientId: formClientId,
-      discount: parseFloat(formDiscount) || 0,
-      travelFee: parseFloat(formTravelFee) || 0,
-      materials: formMaterials,
-      status: formStatus,
-      services: formServices,
-    };
-
-    setFormLoading(true);
-    try {
-      if (quote) {
-        const res = await ApiClient.put<{ success: boolean }>(`/quotes/${quote.id}`, payload);
-        if (res.success) {
-          onSuccess(quote.id);
-        }
-      } else {
-        const res = await ApiClient.post<{ success: boolean }>('/quotes', payload);
-        if (res.success) {
-          onSuccess();
-        }
-      }
-    } catch (err: unknown) {
-      setFormError((err as Error).message || 'Erro ao salvar orçamento.');
-    } finally {
-      setFormLoading(false);
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in-fade">
@@ -240,7 +62,6 @@ export function QuoteFormModal({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Cliente e Status */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Cliente</label>
@@ -272,7 +93,6 @@ export function QuoteFormModal({
             </div>
           </div>
 
-          {/* Lista Dinâmica de Serviços */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -335,11 +155,9 @@ export function QuoteFormModal({
             )}
           </div>
 
-          {/* Lista Dinâmica de Materiais */}
           <div className="space-y-3">
             <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">Materiais Fornecidos</label>
-            
-            {/* Inputs para adicionar novo material */}
+
             <div className="flex flex-col md:flex-row gap-2 bg-zinc-900/20 p-3 border border-zinc-900 rounded-xl">
               <input
                 type="text"
@@ -376,7 +194,6 @@ export function QuoteFormModal({
               </div>
             </div>
 
-            {/* Exibição dos materiais adicionados */}
             {formMaterials.length > 0 && (
               <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
                 {formMaterials.map((m, index) => (
@@ -400,7 +217,6 @@ export function QuoteFormModal({
             )}
           </div>
 
-          {/* Valores Adicionais */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-zinc-900 pt-4">
             <div className="space-y-1">
               <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Valor de Deslocamento (Visita)</label>
@@ -426,7 +242,6 @@ export function QuoteFormModal({
             </div>
           </div>
 
-          {/* Totalizador Geral e Botões de Submissão */}
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-zinc-950 border border-zinc-900 p-4 rounded-xl">
             <div>
               <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Valor Final Estimado</p>

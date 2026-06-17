@@ -31,7 +31,7 @@ describe('AuthController', () => {
   });
 
   it('should login', async () => {
-    service.login.mockResolvedValue({ access_token: 'token', user: {} } as any);
+    service.login.mockResolvedValue({ accessToken: 'token', user: {} } as any);
     const req = {
       ip: '127.0.0.1',
       headers: {},
@@ -41,6 +41,6 @@ describe('AuthController', () => {
       { email: 'a@b.com', password: '123' },
       req as any,
     );
-    expect(result.access_token).toBe('token');
+    expect(result.accessToken).toBe('token');
   });
 });

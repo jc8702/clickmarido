@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -13,7 +13,7 @@ import { AuthController } from './auth.controller';
       secret:
         process.env.JWT_SECRET ||
         'clickmarido-super-secret-key-change-in-production-12345',
-      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }, // access token expira em 1 hora
+      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '1h' } as JwtModuleOptions['signOptions'], // access token expira em 1 hora
     }),
   ],
   controllers: [AuthController],

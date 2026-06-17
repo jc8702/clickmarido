@@ -9,7 +9,8 @@ import {
   UseGuards,
   BadRequestException,
 } from '@nestjs/common';
-import { WarrantiesService, CreateWarrantyInput } from './warranties.service';
+import { WarrantiesService } from './warranties.service';
+import type { CreateWarrantyInput } from './warranties.service';
 import { JwtAuthGuard } from '../../core/auth/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { CompanyContext } from '../../common/company/company.context';

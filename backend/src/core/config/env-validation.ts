@@ -9,5 +9,5 @@ export const envValidationSchema = Joi.object({
   JWT_SECRET: Joi.string().required(),
   CORS_ORIGIN: Joi.string().default('http://localhost:3000'),
   COOKIE_SECRET: Joi.string().default('clickmarido-cookie-secret'),
-  CSRF_SECRET: Joi.string().default('clickmarido-csrf-secret'),
+  CSRF_SECRET: Joi.string().required(),
 });

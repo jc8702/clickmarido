@@ -74,7 +74,7 @@ describe('CompaniesService', () => {
       await expect(service.create({
         name: 'Another',
         slug: 'another',
-        cnpj: company.cnpj,
+        cnpj: company.cnpj!,
       })).rejects.toThrow(BadRequestException);
     });
   });

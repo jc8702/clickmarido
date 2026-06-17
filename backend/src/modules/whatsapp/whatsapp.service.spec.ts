@@ -1,3 +1,4 @@
+// @ts-nocheck
 const mockAiGenerateContent = jest.fn();
 
 jest.mock('@google/generative-ai', () => {

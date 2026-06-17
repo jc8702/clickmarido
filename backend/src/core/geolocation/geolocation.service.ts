@@ -51,7 +51,7 @@ export class GeolocationService {
     } catch (error) {
       this.logger.error(
         `Erro ao geocodificar o endereço: ${address}`,
-        error.stack,
+        (error as Error).stack,
       );
       return null;
     }

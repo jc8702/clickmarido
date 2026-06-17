@@ -121,7 +121,7 @@ describe('ServiceOrdersService', () => {
       } as any);
       prismaService.serviceOrder.update.mockResolvedValue({
         id: 'os1',
-        updated: true,
+        updatedAt: true,
       } as any);
 
       const result = await service.update(
@@ -129,7 +129,7 @@ describe('ServiceOrdersService', () => {
         { scheduledAt: new Date().toISOString() },
         'comp1',
       );
-      expect(result.data.updated).toBe(true);
+      expect(result.data.updatedAt).toBe(true);
     });
   });
 

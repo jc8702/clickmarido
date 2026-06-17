@@ -7,7 +7,8 @@ import {
   Query,
   HttpCode,
 } from '@nestjs/common';
-import { WhatsappService, WhatsAppWebhookData } from './whatsapp.service';
+import { WhatsappService } from './whatsapp.service';
+import type { WhatsAppWebhookData } from './whatsapp.service';
 import {
   ConnectInstanceDto,
   DisconnectInstanceDto,

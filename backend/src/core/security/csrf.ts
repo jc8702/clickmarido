@@ -2,8 +2,13 @@ import { doubleCsrf } from 'csrf-csrf';
 import type { Request } from 'express';
 
 const csrfOptions = {
-  getSecret: () =>
-    process.env.CSRF_SECRET || 'clickmarido-super-secret-csrf-key-2026',
+  getSecret: () => {
+    const secret = process.env.CSRF_SECRET;
+    if (!secret) {
+      throw new Error('CSRF_SECRET environment variable is required');
+    }
+    return secret;
+  },
   cookieName: 'x-csrf-token',
   cookieOptions: {
     sameSite: 'lax' as const,

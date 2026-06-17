@@ -157,11 +157,9 @@ export class AppointmentsService {
         description !== undefined ? description : existing.description,
       startTime: start,
       endTime: end,
-      clientId: clientId !== undefined ? clientId : existing.clientId,
-      technicianId:
-        technicianId !== undefined ? technicianId : existing.technicianId,
-      serviceOrderId:
-        serviceOrderId !== undefined ? serviceOrderId : existing.serviceOrderId,
+      client: clientId !== undefined ? { connect: { id: clientId } } : undefined,
+      technician: technicianId !== undefined ? { connect: { id: technicianId } } : undefined,
+      serviceOrder: serviceOrderId !== undefined ? { connect: { id: serviceOrderId } } : undefined,
     });
 
     return { success: true, data: updated };

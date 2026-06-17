@@ -84,7 +84,7 @@ describe('QuotesService', () => {
         {
           clientId: 'client-1',
           services: [{ serviceId: 'service-1', quantity: 1, value: 150 }],
-          materials: [{ name: 'Fita', quantity: 1, value: 80 }],
+          materials: [{ description: 'Fita', quantity: 1, value: 80 }],
           travelFee: 50,
           discount: 30,
           status: 'Rascunho',
@@ -93,7 +93,7 @@ describe('QuotesService', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.data.totalValue).toBe(250);
+      expect(result.data!.totalValue).toBe(250);
     });
   });
 

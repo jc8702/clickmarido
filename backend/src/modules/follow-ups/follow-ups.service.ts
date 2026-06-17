@@ -78,7 +78,7 @@ export class FollowUpsService {
           }
         } catch (e) {
           this.logger.error(
-            `Falha no envio WA para o Client ${f.clientId}: ${e.message}`,
+            `Falha no envio WA para o Client ${f.clientId}: ${(e as Error).message}`,
           );
         }
 
@@ -91,7 +91,7 @@ export class FollowUpsService {
             );
           } catch (e) {
             this.logger.error(
-              `Falha no envio Email para o Client ${f.clientId}: ${e.message}`,
+              `Falha no envio Email para o Client ${f.clientId}: ${(e as Error).message}`,
             );
           }
         }

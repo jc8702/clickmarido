@@ -35,7 +35,7 @@ export class FinancialService {
       dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
       paidAt: dto.paidAt ? new Date(dto.paidAt) : null,
       status: dto.status || 'PENDENTE',
-    } as Prisma.FinancialTransactionCreateInput);
+    } as unknown as Prisma.FinancialTransactionCreateInput);
   }
 
   /* istanbul ignore next */
