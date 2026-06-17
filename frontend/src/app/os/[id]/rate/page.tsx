@@ -28,11 +28,11 @@ export default function PublicRatePage({ params }: { params: Promise<{ id: strin
         );
         setOrder(data);
         if (data.clientRating) {
-          setRating(data.clientRating);
-          setReview(data.clientReview || '');
+          setRating(data.clientRating as number);
+          setReview((data.clientReview as string) || '');
         }
       } catch (err: unknown) {
-        setError(err.message || 'Ordem de serviço não encontrada ou link expirado.');
+        setError(err instanceof Error ? err.message : 'Ordem de serviço não encontrada ou link expirado.');
       } finally {
         setLoading(false);
       }
@@ -56,7 +56,7 @@ export default function PublicRatePage({ params }: { params: Promise<{ id: strin
       toast.success('Avaliação enviada com sucesso!');
       setOrder({ ...order, clientRating: rating, clientReview: review });
     } catch (err: unknown) {
-      toast.error(err.message || 'Erro ao enviar avaliação.');
+      toast.error(err instanceof Error ? err.message : 'Erro ao enviar avaliação.');
     } finally {
       setSubmitting(false);
     }
@@ -101,19 +101,19 @@ export default function PublicRatePage({ params }: { params: Promise<{ id: strin
       <Card className="w-full max-w-md shadow-xl border-primary/10">
         {/* CABEÇALHO */}
         <div className="text-center pt-6 px-6 space-y-2">
-          {order.company?.logoUrl && (
+          {!!(order.company as Record<string, unknown>)?.logoUrl && (
             <div className="relative h-12 w-full mb-4">
               <Image
-                src={order.company.logoUrl}
-                alt={order.company.name}
+                src={(order.company as Record<string, unknown>).logoUrl as string}
+                alt={(order.company as Record<string, unknown>).name as string}
                 fill
                 className="object-contain"
                 unoptimized
               />
             </div>
           )}
-          <h1 className="text-xl font-bold">{order.company?.name || 'Prestador de Serviços'}</h1>
-          <p className="text-muted-foreground text-sm">Ordem de Serviço #{order.number}</p>
+          <h1 className="text-xl font-bold">{(order.company as Record<string, unknown>)?.name as string || 'Prestador de Serviços'}</h1>
+          <p className="text-muted-foreground text-sm">Ordem de Serviço #{order.number as string}</p>
         </div>
 
         {isRated ? (
@@ -129,7 +129,7 @@ export default function PublicRatePage({ params }: { params: Promise<{ id: strin
                 <Star
                   key={star}
                   className={`w-6 h-6 ${
-                    star <= (order.clientRating || 0)
+                      star <= ((order.clientRating as number) || 0)
                       ? 'fill-amber-400 text-amber-400'
                       : 'text-muted'
                   }`}
@@ -147,7 +147,7 @@ export default function PublicRatePage({ params }: { params: Promise<{ id: strin
               <CardTitle className="text-lg">Avalie o Serviço</CardTitle>
               <CardDescription>
                 Como foi o atendimento do técnico{' '}
-                <strong className="text-foreground">{order.technician?.name}</strong>?
+                <strong className="text-foreground">{(order.technician as Record<string, unknown>)?.name as string}</strong>?
               </CardDescription>
             </CardHeader>
             <CardContent>

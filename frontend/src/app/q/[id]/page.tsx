@@ -29,7 +29,7 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
         );
         setQuote(data);
       } catch (err: unknown) {
-        setError(err.message || 'Orçamento não encontrado ou expirado.');
+        setError(err instanceof Error ? err.message : 'Orçamento não encontrado ou expirado.');
       } finally {
         setLoading(false);
       }
@@ -118,7 +118,7 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
       toast.success('Orçamento aprovado com sucesso!');
       setQuote({ ...quote, status: 'Aprovado' });
     } catch (err: unknown) {
-      toast.error(err.message || 'Erro ao aprovar orçamento.');
+      toast.error(err instanceof Error ? err.message : 'Erro ao aprovar orçamento.');
     } finally {
       setSubmitting(false);
     }
@@ -162,20 +162,20 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
       <div className="max-w-3xl mx-auto space-y-6">
         {/* CABEÇALHO DA EMPRESA */}
         <div className="text-center space-y-2">
-          {quote.company?.logoUrl && (
+          {!!(quote.company as Record<string, unknown>)?.logoUrl && (
             <div className="relative h-16 w-full">
               <Image
-                src={quote.company.logoUrl}
-                alt={quote.company.name}
+                src={(quote.company as Record<string, unknown>).logoUrl as string}
+                alt={(quote.company as Record<string, unknown>).name as string}
                 fill
                 className="object-contain"
                 unoptimized
               />
             </div>
           )}
-          <h1 className="text-2xl font-bold">{quote.company?.name || 'Prestador de Serviços'}</h1>
+          <h1 className="text-2xl font-bold">{(quote.company as Record<string, unknown>)?.name as string || 'Prestador de Serviços'}</h1>
           <p className="text-muted-foreground text-sm">
-            Orçamento #{quote.number} • Emitido para: {quote.client?.name}
+            Orçamento #{quote.number as string} • Emitido para: {(quote.client as Record<string, unknown>)?.name as string}
           </p>
         </div>
 
@@ -187,7 +187,7 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
                 <CardDescription>Resumo dos serviços e valores propostos.</CardDescription>
               </div>
               <Badge variant={isApproved ? 'default' : 'secondary'} className="text-sm">
-                {quote.status}
+                {quote.status as string}
               </Badge>
             </div>
           </CardHeader>
@@ -196,56 +196,63 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
             <div>
               <h3 className="font-semibold mb-3 border-b pb-2">Serviços</h3>
               <div className="space-y-3">
-                {quote.services?.map((item: Record<string, unknown>, idx: number) => (
+                {(quote.services as unknown[])?.map((s, idx: number) => {
+                  const item = s as Record<string, unknown>;
+                  const svc = item.service as Record<string, unknown> | undefined;
+                  return (
                   <div key={idx} className="flex justify-between items-start text-sm">
                     <div>
-                      <p className="font-medium">{item.service?.name}</p>
-                      {item.service?.description && (
-                        <p className="text-muted-foreground text-xs">{item.service.description}</p>
+                      <p className="font-medium">{svc?.name as string}</p>
+                      {!!svc?.description && (
+                        <p className="text-muted-foreground text-xs">{svc.description as string}</p>
                       )}
                       <p className="text-muted-foreground mt-1">
-                        {item.quantity}x de R$ {Number(item.value).toFixed(2)}
+                        {item.quantity as number}x de R$ {Number(item.value).toFixed(2)}
                       </p>
                     </div>
                     <div className="font-medium text-right">
-                      R$ {(item.quantity * item.value).toFixed(2)}
+                      R$ {((item.quantity as number) * (item.value as number)).toFixed(2)}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
             {/* MATERIAIS SE HOUVER */}
-            {quote.materials && quote.materials.length > 0 && (
+            {(quote.materials as unknown[])?.length > 0 && (
               <div>
                 <h3 className="font-semibold mb-3 border-b pb-2">Materiais Estimados</h3>
                 <div className="space-y-3">
-                  {quote.materials.map((item: Record<string, unknown>, idx: number) => (
+                  {(quote.materials as unknown[]).map((s, idx: number) => {
+                    const item = s as Record<string, unknown>;
+                    return (
                     <div key={idx} className="flex justify-between items-start text-sm">
                       <div>
-                        <p className="font-medium">{item.name}</p>
+                        <p className="font-medium">{item.name as string}</p>
                         <p className="text-muted-foreground mt-1">
-                          {item.quantity}x de R$ {Number(item.value).toFixed(2)}
+                          {item.quantity as number}x de R$ {Number(item.value).toFixed(2)}
                         </p>
                       </div>
                       <div className="font-medium text-right">
-                        R$ {(item.quantity * item.value).toFixed(2)}
+                        R$ {((item.quantity as number) * (item.value as number)).toFixed(2)}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {/* TOTAIS */}
             <div className="border-t pt-4 space-y-2">
-              {quote.travelFee > 0 && (
+              {(quote.travelFee as number) > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Taxa de Deslocamento</span>
                   <span>R$ {Number(quote.travelFee).toFixed(2)}</span>
                 </div>
               )}
-              {quote.discount > 0 && (
+              {(quote.discount as number) > 0 && (
                 <div className="flex justify-between text-sm text-green-600">
                   <span>Desconto Aplicado</span>
                   <span>- R$ {Number(quote.discount).toFixed(2)}</span>

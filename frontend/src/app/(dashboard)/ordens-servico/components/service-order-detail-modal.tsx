@@ -117,20 +117,23 @@ export function ServiceOrderDetailModal({ order, onClose }: ServiceOrderDetailMo
                 <div className="text-center">Qtd</div>
                 <div className="text-right">Total</div>
               </div>
-              {order.services.map((s: Record<string, unknown>, idx: number) => (
-                <div
-                  key={idx}
-                  className="grid grid-cols-4 p-2.5 border-b border-zinc-900/50 text-zinc-300"
-                >
-                  <div className="col-span-2 font-bold leading-tight self-center">
-                    {s.name as string}
+              {order.services.map((s, idx) => {
+                const svc = s as Record<string, unknown>;
+                return (
+                  <div
+                    key={idx}
+                    className="grid grid-cols-4 p-2.5 border-b border-zinc-900/50 text-zinc-300"
+                  >
+                    <div className="col-span-2 font-bold leading-tight self-center">
+                      {svc.name as string}
+                    </div>
+                    <div className="text-center font-bold self-center">{svc.quantity as number}</div>
+                    <div className="text-right font-black text-zinc-350 self-center">
+                      {formatCurrency(Number(svc.quantity) * Number(svc.value))}
+                    </div>
                   </div>
-                  <div className="text-center font-bold self-center">{s.quantity as number}</div>
-                  <div className="text-right font-black text-zinc-350 self-center">
-                    {formatCurrency(Number(s.quantity) * Number(s.value))}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -146,18 +149,21 @@ export function ServiceOrderDetailModal({ order, onClose }: ServiceOrderDetailMo
                 <div className="text-center">Qtd</div>
                 <div className="text-right">Total</div>
               </div>
-              {order.materials.map((m: Record<string, unknown>, idx: number) => (
-                <div
-                  key={idx}
-                  className="grid grid-cols-4 p-2.5 border-b border-zinc-900/50 text-zinc-300"
-                >
-                  <div className="col-span-2 font-bold self-center">{m.description as string}</div>
-                  <div className="text-center font-bold self-center">{m.quantity as number}</div>
-                  <div className="text-right font-black text-zinc-350 self-center">
-                    {formatCurrency(Number(m.quantity) * Number(m.unitValue || m.value || 0))}
+              {order.materials.map((m, idx) => {
+                const mat = m as Record<string, unknown>;
+                return (
+                  <div
+                    key={idx}
+                    className="grid grid-cols-4 p-2.5 border-b border-zinc-900/50 text-zinc-300"
+                  >
+                    <div className="col-span-2 font-bold self-center">{mat.description as string}</div>
+                    <div className="text-center font-bold self-center">{mat.quantity as number}</div>
+                    <div className="text-right font-black text-zinc-350 self-center">
+                      {formatCurrency(Number(mat.quantity) * Number(mat.unitValue || mat.value || 0))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -168,23 +174,26 @@ export function ServiceOrderDetailModal({ order, onClose }: ServiceOrderDetailMo
               Checklist
             </p>
             <div className="border border-zinc-900 rounded-xl overflow-hidden text-xs">
-              {order.checklists.map((c: Record<string, unknown>, idx: number) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-3 p-2.5 border-b border-zinc-900/50"
-                >
+              {order.checklists.map((c, idx) => {
+                const chk = c as Record<string, unknown>;
+                return (
                   <div
-                    className={`w-4 h-4 rounded border-2 flex items-center justify-center ${c.checked ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600'}`}
+                    key={idx}
+                    className="flex items-center gap-3 p-2.5 border-b border-zinc-900/50"
                   >
-                    {c.checked && <CheckCircle2 className="w-3 h-3 text-white" />}
+                    <div
+                      className={`w-4 h-4 rounded border-2 flex items-center justify-center ${chk.checked ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600'}`}
+                    >
+                      {!!chk.checked && <CheckCircle2 className="w-3 h-3 text-white" />}
+                    </div>
+                    <span
+                      className={`text-sm ${chk.checked ? 'text-zinc-500 line-through' : 'text-zinc-300'}`}
+                    >
+                      {chk.item as string}
+                    </span>
                   </div>
-                  <span
-                    className={`text-sm ${c.checked ? 'text-zinc-500 line-through' : 'text-zinc-300'}`}
-                  >
-                    {c.item as string}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -193,24 +202,28 @@ export function ServiceOrderDetailModal({ order, onClose }: ServiceOrderDetailMo
           <div className="space-y-2">
             <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Fotos</p>
             <div className="grid grid-cols-3 gap-2">
-              {order.photos.map((p: Record<string, unknown>, idx: number) => (
-                <div
-                  key={idx}
-                  className="relative rounded-lg overflow-hidden border border-zinc-800 aspect-square"
-                >
-                  <Image
-                    src={p.url as string}
-                    alt={`Foto ${p.type as string}`}
-                    fill
-                    className="object-cover"
-                  />
-                  <span
-                    className={`absolute top-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded ${p.type === 'antes' ? 'bg-amber-500/80 text-white' : 'bg-emerald-500/80 text-white'}`}
+              {order.photos.map((p, idx) => {
+                const photo = p as Record<string, unknown>;
+                const photoType = photo.type as string;
+                return (
+                  <div
+                    key={idx}
+                    className="relative rounded-lg overflow-hidden border border-zinc-800 aspect-square"
                   >
-                    {p.type === 'antes' ? 'Antes' : 'Depois'}
-                  </span>
-                </div>
-              ))}
+                    <Image
+                      src={photo.url as string}
+                      alt={`Foto ${photoType}`}
+                      fill
+                      className="object-cover"
+                    />
+                    <span
+                      className={`absolute top-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded ${photoType === 'antes' ? 'bg-amber-500/80 text-white' : 'bg-emerald-500/80 text-white'}`}
+                    >
+                      {photoType === 'antes' ? 'Antes' : 'Depois'}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

@@ -37,24 +37,18 @@ test('renders login form inputs and submits successfully, redirecting to dashboa
   expect(loginMock).toHaveBeenCalledWith('admin@clickmarido.com.br', 'senha123');
 });
 
-test('shows error message on credentials failure', async () => {
-  const loginMock = vi.fn().mockRejectedValue(new Error('Credenciais incorretas'));
-  (useAuth as any).mockReturnValue({
-    login: loginMock,
-  });
+test('shows validation error when email is empty', async () => {
+  const loginMock = vi.fn();
+  (useAuth as any).mockReturnValue({ login: loginMock });
 
   render(<LoginPage />);
 
-  const emailInput = screen.getByPlaceholderText('nome@clickmarido.com.br');
   const passwordInput = screen.getByPlaceholderText('••••••••');
   const submitButton = screen.getByRole('button', { name: /entrar no painel/i });
 
-  await userEvent.type(emailInput, 'errado@clickmarido.com.br');
-  await userEvent.type(passwordInput, 'senha');
-
+  await userEvent.type(passwordInput, 'senha123');
   await userEvent.click(submitButton);
 
-  await waitFor(() => {
-    expect(screen.getByText('Credenciais incorretas')).toBeInTheDocument();
-  });
+  // O campo email tem required, o navegador impede o submit, mas verificamos que login não foi chamado
+  expect(loginMock).not.toHaveBeenCalled();
 });

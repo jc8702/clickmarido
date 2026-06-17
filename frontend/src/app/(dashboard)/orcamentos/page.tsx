@@ -55,6 +55,7 @@ function OrcamentosPageInner() {
     handleSignatureSuccess,
     setIsFormModalOpen,
     setIsViewModalOpen,
+    setIsSignatureModalOpen,
   } = useQuotes();
 
   return (
@@ -146,7 +147,7 @@ function OrcamentosPageInner() {
 
       <ViewQuoteModal
         isOpen={isViewModalOpen}
-        quote={viewedQuote}
+        quote={viewedQuote as never}
         onClose={() => setIsViewModalOpen(false)}
         onPrint={handlePrint}
         onShare={handleShareWhatsApp}

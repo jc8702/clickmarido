@@ -1,4 +1,5 @@
-import NextAuth, { NextAuthOptions } from 'next-auth';
+import NextAuth, { NextAuthOptions, Session } from 'next-auth';
+import { JWT } from 'next-auth/jwt';
 import GoogleProvider from 'next-auth/providers/google';
 
 export const dynamic = 'force-dynamic';
@@ -37,14 +38,8 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
-    async session({
-      session,
-      token,
-    }: {
-      session: Record<string, unknown>;
-      token: Record<string, unknown>;
-    }) {
-      session.accessToken = token.accessToken;
+    async session({ session, token }: { session: Session; token: JWT }) {
+      (session as unknown as Record<string, unknown>).accessToken = token.accessToken;
       return session;
     },
   },

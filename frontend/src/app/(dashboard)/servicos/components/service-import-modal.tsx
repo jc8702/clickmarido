@@ -256,54 +256,60 @@ export function ServiceImportModal({ isOpen, onClose, onSuccess }: ServiceImport
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-900 font-medium">
-                    {validationItems.map((item, idx) => (
+                    {validationItems.map((s, idx) => {
+                      const item = s as Record<string, unknown>;
+                      const svc = item.service as Record<string, unknown> | undefined;
+                      const isValid = !!item.isValid;
+                      const action = item.action as string;
+                      return (
                       <tr
                         key={idx}
-                        className={`hover:bg-zinc-900/20 transition-colors ${!item.isValid ? 'bg-red-500/5' : ''}`}
+                        className={`hover:bg-zinc-900/20 transition-colors ${!isValid ? 'bg-red-500/5' : ''}`}
                       >
-                        <td className="p-3 font-mono font-bold text-zinc-500">{item.index}</td>
+                        <td className="p-3 font-mono font-bold text-zinc-500">{String(item.index)}</td>
                         <td className="p-3">
-                          {!item.isValid && (
+                          {!isValid && (
                             <Badge className="bg-red-500/15 text-red-400 border border-red-500/25 px-2 py-0.5 text-[10px] font-black uppercase">
                               Erro
                             </Badge>
                           )}
-                          {item.isValid && item.action === 'CREATE' && (
+                          {isValid && action === 'CREATE' && (
                             <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2 py-0.5 text-[10px] font-black uppercase">
                               Inserir
                             </Badge>
                           )}
-                          {item.isValid && item.action === 'UPDATE' && (
+                          {isValid && action === 'UPDATE' && (
                             <Badge className="bg-amber-500/15 text-amber-400 border border-amber-500/25 px-2 py-0.5 text-[10px] font-black uppercase">
                               Atualizar
                             </Badge>
                           )}
                         </td>
-                        <td className="p-3 text-zinc-300">{item.service.category || '-'}</td>
+                        <td className="p-3 text-zinc-300">{(svc?.category as string) || '-'}</td>
                         <td
                           className="p-3 font-bold text-white max-w-[200px] truncate"
-                          title={item.service.name}
+                          title={svc?.name as string}
                         >
-                          {item.service.name || (
+                          {(svc?.name as string) || (
                             <span className="text-zinc-650 italic">Sem Nome</span>
                           )}
                         </td>
                         <td className="p-3 text-emerald-400 font-mono font-bold">
-                          {item.service.value ? formatCurrency(item.service.value) : '-'}
+                          {svc?.value ? formatCurrency(svc.value as number) : '-'}
                         </td>
                         <td className="p-3 font-mono">
-                          {item.service.averageTime ? `${item.service.averageTime} min` : '-'}
+                          {svc?.averageTime ? `${svc.averageTime as string} min` : '-'}
                         </td>
-                        <td className="p-3">{item.service.complexity || '-'}</td>
+                        <td className="p-3">{(svc?.complexity as string) || '-'}</td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
             </div>
 
             {/* Relatório de Erros detalhado */}
-            {validationItems.some((item) => !item.isValid) && (
+            {validationItems.some((s) => !(s as Record<string, unknown>).isValid) && (
               <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10 space-y-2">
                 <h4 className="text-xs font-bold text-red-400 uppercase tracking-wider flex items-center gap-2">
                   <ShieldAlert className="w-4 h-4 text-red-500" />
@@ -311,16 +317,19 @@ export function ServiceImportModal({ isOpen, onClose, onSuccess }: ServiceImport
                 </h4>
                 <div className="max-h-[150px] overflow-y-auto space-y-1 pr-2 scrollbar-thin text-[11px] font-medium text-red-300 font-mono">
                   {validationItems
-                    .filter((item) => !item.isValid)
-                    .map((item, idx) => (
+                    .filter((s) => !(s as Record<string, unknown>).isValid)
+                    .map((s, idx) => {
+                      const item = s as Record<string, unknown>;
+                      return (
                       <div
                         key={idx}
                         className="p-1.5 rounded bg-red-500/10 border border-red-500/20"
                       >
-                        <span className="font-bold text-red-400">Linha {item.index}:</span>{' '}
-                        {item.errors.join(' | ')}
+                        <span className="font-bold text-red-400">Linha {String(item.index)}:</span>{' '}
+                        {(item.errors as unknown[]).join(' | ')}
                       </div>
-                    ))}
+                      );
+                    })}
                 </div>
               </div>
             )}

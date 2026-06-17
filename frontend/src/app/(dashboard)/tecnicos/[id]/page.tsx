@@ -76,14 +76,15 @@ export default function TechnicianProfilePage({ params }: { params: Promise<{ id
     setEvents((prev) => prev.map((e) => (e.id === event.id ? updatedEvent : e)));
 
     try {
-      await updateAppointment(event.id, {
+      await updateAppointment(event.id as string, {
         startTime: start.toISOString(),
         endTime: end.toISOString(),
       });
       toast.success('Horário do agendamento atualizado com sucesso.');
     } catch (error: unknown) {
       console.error(error);
-      toast.error(error.response?.data?.message || error.message || 'Erro ao reagendar.');
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || (error instanceof Error ? error.message : 'Erro ao reagendar.'));
       fetchEvents();
     }
   };
@@ -94,7 +95,7 @@ export default function TechnicianProfilePage({ params }: { params: Promise<{ id
 
     try {
       if (isEdit) {
-        await updateAppointment(data.id, {
+        await updateAppointment(data.id as string, {
           title,
           startTime: start.toISOString(),
           endTime: end.toISOString(),
@@ -112,7 +113,8 @@ export default function TechnicianProfilePage({ params }: { params: Promise<{ id
       await fetchEvents();
     } catch (e: unknown) {
       console.error(e);
-      toast.error(e.response?.data?.message || e.message || 'Erro ao processar o evento.');
+      const apiError = e as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || (e instanceof Error ? e.message : 'Erro ao processar o evento.'));
     }
   };
 

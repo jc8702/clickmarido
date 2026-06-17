@@ -77,10 +77,16 @@ export class QuotesService {
       };
 
       const servicesData = services.map((s) => ({
+        quoteId: `quote-${Date.now()}`,
         serviceId: s.serviceId,
         quantity: s.quantity,
         value: s.value,
-      })) as Array<{ serviceId: string; quantity: number; value: number }>;
+      })) as Array<{
+        quoteId: string;
+        serviceId: string;
+        quantity: number;
+        value: number;
+      }>;
 
       return this.quotesRepository.create(data, servicesData, tx);
     });

@@ -7,6 +7,8 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  HttpException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -45,7 +47,12 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto, @Req() req: express.Request) {
     const ipAddress = req.ip || req.connection.remoteAddress;
     const userAgent = req.headers['user-agent'];
-    return this.authService.login(loginDto, ipAddress, userAgent);
+    try {
+      return await this.authService.login(loginDto, ipAddress, userAgent);
+    } catch (error) {
+      console.error('Erro no login:', error);
+      throw error;
+    }
   }
 
   @Post('refresh')

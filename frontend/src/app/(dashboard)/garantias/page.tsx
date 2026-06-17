@@ -215,8 +215,8 @@ export default function GarantiasPage() {
                 >
                   <option value="">Selecione...</option>
                   {clients.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
+                    <option key={c.id as string} value={c.id as string}>
+                      {c.name as string}
                     </option>
                   ))}
                 </select>
@@ -232,8 +232,8 @@ export default function GarantiasPage() {
                 >
                   <option value="">Selecione...</option>
                   {orders.map((o) => (
-                    <option key={o.id} value={o.id}>
-                      OS #{o.number} - {o.client?.name}
+                    <option key={o.id as string} value={o.id as string}>
+                      OS #{o.number as number} - {(o.client as Record<string, unknown>)?.name as string}
                     </option>
                   ))}
                 </select>
