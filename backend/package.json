@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "prepare": "husky",
-    "build": "nest build",
+    "build": "nest build --webpack",
     "swagger:gen": "ts-node --project tsconfig.build.json scripts/generate-openapi.ts",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
