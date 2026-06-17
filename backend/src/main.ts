@@ -33,7 +33,9 @@ async function bootstrap() {
           imgSrc: ["'self'", 'data:', 'https:'],
           connectSrc: [
             "'self'",
-            process.env.CORS_ORIGIN || 'http://localhost:3000',
+            ...(process.env.CORS_ORIGIN
+              ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+              : ['http://localhost:3000']),
           ],
         },
       },
