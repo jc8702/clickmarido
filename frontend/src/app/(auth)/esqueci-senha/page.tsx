@@ -22,7 +22,7 @@ export default function ForgotPasswordPage() {
       await ApiClient.post("/auth/forgot-password", { email });
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err.message || "Houve um erro ao solicitar a recuperação. Tente novamente.");
+      setError((err as Error).message || "Houve um erro ao solicitar a recuperação. Tente novamente.");
     } finally {
       setLoading(false);
     }
