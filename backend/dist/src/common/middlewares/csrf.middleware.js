@@ -11,6 +11,10 @@ const common_1 = require("@nestjs/common");
 const csrf_1 = require("../../core/security/csrf");
 let CsrfMiddleware = class CsrfMiddleware {
     use(req, res, next) {
+        console.log('CSRF Middleware Path:', req.path, 'Method:', req.method);
+        if (req.path.includes('/auth/') && req.method === 'POST') {
+            return next();
+        }
         return (0, csrf_1.doubleCsrfProtection)(req, res, next);
     }
 };

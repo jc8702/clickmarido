@@ -9,7 +9,7 @@ const csrfOptions = {
     }
     return secret;
   },
-  cookieName: 'x-csrf-token',
+  cookieName: '__Host-psifi.csrf-token',
   cookieOptions: {
     sameSite: 'lax' as const,
     path: '/',

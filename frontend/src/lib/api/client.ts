@@ -14,10 +14,10 @@ export class ApiClient {
   private static async getCsrfToken(): Promise<string | null> {
     if (this.csrfToken) return this.csrfToken;
     try {
-      const response = await fetch(`${API_URL}/api/csrf-token`, {
+      const response = await fetch(`${API_URL}/api/v1/csrf-token`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'omit', // No auth needed for csrf
+        credentials: 'include',
       });
       if (response.ok) {
         const data = await response.json();
@@ -100,7 +100,7 @@ export class ApiClient {
         const response = await fetch(url, {
           ...restOptions,
           headers: finalHeaders,
-          credentials: 'omit', // or 'include' if using cookies for auth, but we use Bearer
+          credentials: 'include', // send cookies for CSRF
         });
 
         if (!response.ok) {

@@ -85,8 +85,9 @@ let AuthService = class AuthService {
             throw new common_1.UnauthorizedException('E-mail ou senha inválidos');
         }
         const permissions = new Set();
-        for (const role of user.roles) {
-            for (const permission of role.permissions) {
+        for (const role of user.roles ?? []) {
+            const perms = role.permissions ?? [];
+            for (const permission of perms) {
                 permissions.add(permission.action);
             }
         }
