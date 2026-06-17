@@ -57,8 +57,9 @@ export class AuthService {
 
     // Agrupa todas as permissões do usuário
     const permissions = new Set<string>();
-    for (const role of user.roles) {
-      for (const permission of role.permissions) {
+    for (const role of user.roles ?? []) {
+      const perms = role.permissions ?? [];
+      for (const permission of perms) {
         permissions.add(permission.action);
       }
     }
