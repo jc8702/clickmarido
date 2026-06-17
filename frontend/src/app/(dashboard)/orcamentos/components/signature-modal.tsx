@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ApiClient } from '@/lib/api-client';
+import { ApiClient } from '@/lib/api/client';
 
 interface Quote {
   id: string;
