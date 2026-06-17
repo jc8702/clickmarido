@@ -46,5 +46,5 @@ export const typography = {
     lineHeight: '1.2',
     fontWeight: '500',
     letterSpacing: 'wide',
-  }
+  },
 };

@@ -1,24 +1,35 @@
-"use client";
+'use client';
 
-import { useEffect, useState, use, useCallback } from "react";
-import { getTechnicianById, Technician } from "@/lib/api/modules/technicians";
-import { getAppointments, updateAppointment, createAppointment } from '@/lib/api/modules/appointments';
-import { PageHeader } from "@/components/layout/page-header";
-import dynamic from "next/dynamic";
+import { useEffect, useState, use, useCallback } from 'react';
+import { getTechnicianById, Technician } from '@/lib/api/modules/technicians';
+import {
+  getAppointments,
+  updateAppointment,
+  createAppointment,
+} from '@/lib/api/modules/appointments';
+import { PageHeader } from '@/components/layout/page-header';
+import dynamic from 'next/dynamic';
 
-const CalendarView = dynamic(() => import('@/components/appointments/calendar-view').then(mod => mod.CalendarView), {
-  ssr: false,
-  loading: () => <div className="animate-pulse bg-zinc-900/50 rounded-lg w-full h-[600px] flex items-center justify-center text-zinc-500">Carregando calendário...</div>
-});
-import { EventDialogData } from "@/components/appointments/event-dialog";
-import { HardHat, Star, MapPin, Phone } from "lucide-react";
-import { toast } from "sonner";
+const CalendarView = dynamic(
+  () => import('@/components/appointments/calendar-view').then((mod) => mod.CalendarView),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="animate-pulse bg-zinc-900/50 rounded-lg w-full h-[600px] flex items-center justify-center text-zinc-500">
+        Carregando calendário...
+      </div>
+    ),
+  },
+);
+import { EventDialogData } from '@/components/appointments/event-dialog';
+import { HardHat, Star, MapPin, Phone } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function TechnicianProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const [technician, setTechnician] = useState<Technician | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   const [events, setEvents] = useState<Record<string, unknown>[]>([]);
   const [eventsLoading, setEventsLoading] = useState(false);
 
@@ -28,7 +39,7 @@ export default function TechnicianProfilePage({ params }: { params: Promise<{ id
       const data = await getTechnicianById(resolvedParams.id);
       setTechnician(data);
     } catch (err) {
-      console.error("Erro ao carregar técnico:", err);
+      console.error('Erro ao carregar técnico:', err);
     } finally {
       setLoading(false);
     }
@@ -46,7 +57,7 @@ export default function TechnicianProfilePage({ params }: { params: Promise<{ id
           end: new Date(app.endTime),
           resourceId: app.technicianId,
           data: app,
-        }))
+        })),
       );
     } catch (err) {
       console.error('Erro ao carregar agendamentos do técnico:', err);
@@ -90,11 +101,11 @@ export default function TechnicianProfilePage({ params }: { params: Promise<{ id
         });
         toast.success('Agendamento atualizado com sucesso.');
       } else {
-        await createAppointment({ 
-          title, 
-          startTime: start.toISOString(), 
+        await createAppointment({
+          title,
+          startTime: start.toISOString(),
           endTime: end.toISOString(),
-          technicianId: resolvedParams.id
+          technicianId: resolvedParams.id,
         });
         toast.success('Agendamento criado com sucesso.');
       }
@@ -123,20 +134,21 @@ export default function TechnicianProfilePage({ params }: { params: Promise<{ id
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
         {/* INFO COLUMN */}
         <div className="space-y-6">
           <div className="bg-card border rounded-lg p-6 shadow-sm">
             <h3 className="text-lg font-bold border-b pb-2 mb-4">Informações</h3>
-            
+
             <div className="space-y-4 text-sm">
               <div className="flex items-center gap-2">
                 <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                <span><strong className="text-lg">{technician.rating.toFixed(1)}</strong> / 5.0</span>
+                <span>
+                  <strong className="text-lg">{technician.rating.toFixed(1)}</strong> / 5.0
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <HardHat className="w-4 h-4 text-muted-foreground" />
-                <span>{technician.specialty || "Sem especialidade"}</span>
+                <span>{technician.specialty || 'Sem especialidade'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-muted-foreground" />
@@ -153,14 +165,13 @@ export default function TechnicianProfilePage({ params }: { params: Promise<{ id
         {/* CALENDAR COLUMN */}
         <div className="lg:col-span-2">
           <h3 className="text-xl font-bold mb-4">Agenda Individual</h3>
-          <CalendarView 
-            events={events} 
-            loading={eventsLoading} 
-            onEventMove={handleEventMove} 
-            onEventSave={handleEventSave} 
+          <CalendarView
+            events={events}
+            loading={eventsLoading}
+            onEventMove={handleEventMove}
+            onEventSave={handleEventSave}
           />
         </div>
-
       </div>
     </div>
   );

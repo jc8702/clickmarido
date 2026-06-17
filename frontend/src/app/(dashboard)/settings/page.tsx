@@ -1,21 +1,21 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { 
-  Palette, 
-  Upload, 
-  Sparkles, 
-  Check, 
-  Monitor, 
-  Layout, 
-  MousePointer2, 
+import {
+  Palette,
+  Upload,
+  Sparkles,
+  Check,
+  Monitor,
+  Layout,
+  MousePointer2,
   Wrench,
   Users,
   DollarSign,
   Settings,
   Save,
   ShieldAlert,
-  Database
+  Database,
 } from 'lucide-react';
 import { useAppearanceStore, SystemTheme } from '@/lib/stores/appearance-store';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -84,7 +84,7 @@ export default function SettingsPage() {
       setCustomPalette({
         primary: '#f59e0b',
         accent: '#3b82f6',
-        background: '#09090b'
+        background: '#09090b',
       });
       setExtracting(false);
     }, 1500);
@@ -99,15 +99,23 @@ export default function SettingsPage() {
           </div>
           Configurações
         </h1>
-        <p className="text-muted-foreground font-medium">Gerencie a identidade visual e credenciais do sistema.</p>
+        <p className="text-muted-foreground font-medium">
+          Gerencie a identidade visual e credenciais do sistema.
+        </p>
       </div>
 
       <Tabs defaultValue="appearance" className="space-y-8">
         <TabsList className="bg-input/20 border border-border p-1 rounded-xl">
-          <TabsTrigger value="appearance" className="gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-bold px-6">
+          <TabsTrigger
+            value="appearance"
+            className="gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-bold px-6"
+          >
             <Palette className="w-4 h-4" /> Aparência
           </TabsTrigger>
-          <TabsTrigger value="api" className="gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-bold px-6">
+          <TabsTrigger
+            value="api"
+            className="gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-bold px-6"
+          >
             <Database className="w-4 h-4" /> API & Keys
           </TabsTrigger>
         </TabsList>
@@ -127,13 +135,18 @@ export default function SettingsPage() {
                       key={t.id}
                       onClick={() => setTheme(t.id)}
                       className={cn(
-                        "group relative p-4 rounded-2xl border transition-all duration-300 text-left",
-                        theme === t.id 
-                          ? "bg-input/40 border-primary shadow-lg" 
-                          : "bg-card border-border hover:border-border/80"
+                        'group relative p-4 rounded-2xl border transition-all duration-300 text-left',
+                        theme === t.id
+                          ? 'bg-input/40 border-primary shadow-lg'
+                          : 'bg-card border-border hover:border-border/80',
                       )}
                     >
-                      <div className={cn("w-full h-16 rounded-xl mb-3 opacity-70 group-hover:opacity-100 transition-opacity", t.preview)}>
+                      <div
+                        className={cn(
+                          'w-full h-16 rounded-xl mb-3 opacity-70 group-hover:opacity-100 transition-opacity',
+                          t.preview,
+                        )}
+                      >
                         <div className="w-full h-full glass-card" />
                       </div>
                       <span className="text-xs font-bold text-foreground/80 block">{t.name}</span>
@@ -158,26 +171,41 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-8 items-center">
-                  <div 
+                  <div
                     onClick={() => fileInputRef.current?.click()}
                     className="relative w-40 h-40 rounded-3xl border-2 border-dashed border-border hover:border-primary/50 bg-input/40 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all group overflow-hidden shrink-0"
                   >
                     {logoUrl ? (
-                      <Image src={logoUrl} alt="Logo" fill className="object-contain p-4" unoptimized />
+                      <Image
+                        src={logoUrl}
+                        alt="Logo"
+                        fill
+                        className="object-contain p-4"
+                        unoptimized
+                      />
                     ) : (
                       <>
                         <Upload className="w-6 h-6 text-muted-foreground group-hover:text-primary" />
-                        <span className="text-[9px] font-bold text-muted-foreground/80 uppercase">Subir Logo</span>
+                        <span className="text-[9px] font-bold text-muted-foreground/80 uppercase">
+                          Subir Logo
+                        </span>
                       </>
                     )}
-                    <input type="file" ref={fileInputRef} onChange={handleLogoUpload} className="hidden" accept="image/*" />
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                      accept="image/*"
+                    />
                   </div>
 
                   <div className="flex-1 space-y-4">
                     <p className="text-sm text-muted-foreground leading-relaxed font-medium">
-                      Suba sua logo para extrairmos automaticamente as cores da sua marca para botões, glows e indicadores.
+                      Suba sua logo para extrairmos automaticamente as cores da sua marca para
+                      botões, glows e indicadores.
                     </p>
-                    <Button 
+                    <Button
                       disabled={!logoUrl || extracting}
                       onClick={handleMagicExtract}
                       className="w-full h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest gap-2 shadow-lg shadow-primary/20 transition-all"
@@ -205,10 +233,13 @@ export default function SettingsPage() {
                   <div className="h-3 w-20 bg-input rounded-full animate-pulse" />
                   <div className="h-6 w-full bg-gradient-to-r from-primary to-accent/40 rounded-lg" />
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-3">
                   {[1, 2].map((i) => (
-                    <div key={i} className="p-4 rounded-xl bg-input/40 border border-border space-y-2 glow-hover">
+                    <div
+                      key={i}
+                      className="p-4 rounded-xl bg-input/40 border border-border space-y-2 glow-hover"
+                    >
                       <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
                         <Users className="w-3 h-3 text-primary" />
                       </div>
@@ -218,8 +249,15 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-3 pt-4 border-t border-border">
-                  <Button className="w-full bg-primary h-9 rounded-lg text-primary-foreground font-bold text-xs uppercase">Botão Primário</Button>
-                  <Button variant="outline" className="w-full h-9 rounded-lg border-border bg-input/40 hover:bg-input/80 text-xs uppercase font-bold text-muted-foreground">Secundário</Button>
+                  <Button className="w-full bg-primary h-9 rounded-lg text-primary-foreground font-bold text-xs uppercase">
+                    Botão Primário
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full h-9 rounded-lg border-border bg-input/40 hover:bg-input/80 text-xs uppercase font-bold text-muted-foreground"
+                  >
+                    Secundário
+                  </Button>
                 </div>
               </Card>
             </div>
@@ -231,9 +269,12 @@ export default function SettingsPage() {
             <CardContent className="p-4 flex gap-3 items-start">
               <ShieldAlert className="w-5 h-5 text-amber-500 mt-0.5" />
               <div className="space-y-1">
-                <h4 className="text-sm font-bold text-amber-500 uppercase tracking-tighter">Armazenamento Local Seguro</h4>
+                <h4 className="text-sm font-bold text-amber-500 uppercase tracking-tighter">
+                  Armazenamento Local Seguro
+                </h4>
                 <p className="text-xs text-amber-500/80 leading-relaxed">
-                  Configurações salvas localmente para testes. Em produção, use as variáveis de ambiente.
+                  Configurações salvas localmente para testes. Em produção, use as variáveis de
+                  ambiente.
                 </p>
               </div>
             </CardContent>
@@ -248,7 +289,9 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Gemini API Key</label>
+                  <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+                    Gemini API Key
+                  </label>
                   <input
                     type="password"
                     value={keys.geminiKey}
@@ -269,7 +312,9 @@ export default function SettingsPage() {
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Supabase URL</label>
+                    <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+                      Supabase URL
+                    </label>
                     <input
                       type="text"
                       value={keys.supabaseUrl}
@@ -278,7 +323,9 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Anon Key</label>
+                    <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+                      Anon Key
+                    </label>
                     <input
                       type="password"
                       value={keys.supabaseAnonKey}

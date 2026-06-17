@@ -1,7 +1,7 @@
-import * as React from "react";
-import Select, { Props as SelectProps, MenuListProps } from "react-select";
-import { useTheme } from "next-themes";
-import { cn } from "@/lib/utils";
+import * as React from 'react';
+import Select, { Props as SelectProps, MenuListProps } from 'react-select';
+import { useTheme } from 'next-themes';
+import { cn } from '@/lib/utils';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
 export interface SelectMultiProps extends SelectProps {
@@ -50,13 +50,11 @@ function VirtualizedMenuList(props: MenuListProps<Option>) {
 }
 
 export function SelectMulti({ className, error, ...props }: SelectMultiProps) {
-  
-  
   return (
     <Select
       isMulti
       components={{ MenuList: VirtualizedMenuList }}
-      className={cn("react-select-container", className)}
+      className={cn('react-select-container', className)}
       classNamePrefix="react-select"
       styles={{
         control: (base, state) => ({
@@ -64,14 +62,20 @@ export function SelectMulti({ className, error, ...props }: SelectMultiProps) {
           minHeight: '40px',
           borderRadius: '0.75rem', // rounded-xl
           backgroundColor: 'var(--background)',
-          borderColor: error 
-            ? 'var(--destructive)' 
-            : state.isFocused ? 'var(--primary)' : 'var(--border)',
-          boxShadow: state.isFocused ? (error ? '0 0 0 2px var(--destructive)' : '0 0 0 2px var(--primary)') : 'none',
+          borderColor: error
+            ? 'var(--destructive)'
+            : state.isFocused
+              ? 'var(--primary)'
+              : 'var(--border)',
+          boxShadow: state.isFocused
+            ? error
+              ? '0 0 0 2px var(--destructive)'
+              : '0 0 0 2px var(--primary)'
+            : 'none',
           '&:hover': {
-            borderColor: error ? 'var(--destructive)' : 'var(--primary)'
+            borderColor: error ? 'var(--destructive)' : 'var(--primary)',
           },
-          transition: 'all 0.2s'
+          transition: 'all 0.2s',
         }),
         menu: (base) => ({
           ...base,
@@ -79,17 +83,19 @@ export function SelectMulti({ className, error, ...props }: SelectMultiProps) {
           border: '1px solid var(--border)',
           borderRadius: '0.75rem',
           boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-          zIndex: 50
+          zIndex: 50,
         }),
         option: (base, state) => ({
           ...base,
-          backgroundColor: state.isSelected 
-            ? 'var(--primary)' 
-            : state.isFocused ? 'color-mix(in srgb, var(--primary) 10%, transparent)' : 'transparent',
+          backgroundColor: state.isSelected
+            ? 'var(--primary)'
+            : state.isFocused
+              ? 'color-mix(in srgb, var(--primary) 10%, transparent)'
+              : 'transparent',
           color: state.isSelected ? 'var(--primary-foreground)' : 'var(--foreground)',
           '&:active': {
-            backgroundColor: 'var(--primary)'
-          }
+            backgroundColor: 'var(--primary)',
+          },
         }),
         multiValue: (base) => ({
           ...base,
@@ -106,7 +112,7 @@ export function SelectMulti({ className, error, ...props }: SelectMultiProps) {
           '&:hover': {
             backgroundColor: 'var(--destructive)',
             color: 'var(--destructive-foreground)',
-          }
+          },
         }),
       }}
       {...props}

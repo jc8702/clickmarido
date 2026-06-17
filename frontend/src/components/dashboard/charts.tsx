@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import * as React from 'react';
 import { Card } from '@/components/ui/card';
@@ -27,7 +27,13 @@ interface CommonChartProps {
   className?: string;
 }
 
-export const DashboardLineChart = React.memo(function DashboardLineChart({ data, title, dataKey, color = '#8b5cf6', className }: CommonChartProps) {
+export const DashboardLineChart = React.memo(function DashboardLineChart({
+  data,
+  title,
+  dataKey,
+  color = '#8b5cf6',
+  className,
+}: CommonChartProps) {
   return (
     <Card className={`p-6 ${className || ''}`}>
       <h3 className="text-lg font-semibold mb-4 text-foreground">{title}</h3>
@@ -35,13 +41,36 @@ export const DashboardLineChart = React.memo(function DashboardLineChart({ data,
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-            <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-            <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
+            <XAxis
+              dataKey="name"
+              stroke="var(--muted-foreground)"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              stroke="var(--muted-foreground)"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(val) => `$${val}`}
+            />
             <Tooltip
-              contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '8px' }}
+              contentStyle={{
+                backgroundColor: 'var(--card)',
+                borderColor: 'var(--border)',
+                borderRadius: '8px',
+              }}
               itemStyle={{ color: 'var(--foreground)' }}
             />
-            <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+            <Line
+              type="monotone"
+              dataKey={dataKey}
+              stroke={color}
+              strokeWidth={3}
+              dot={{ r: 4, strokeWidth: 2 }}
+              activeDot={{ r: 6 }}
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -49,7 +78,13 @@ export const DashboardLineChart = React.memo(function DashboardLineChart({ data,
   );
 });
 
-export const DashboardBarChart = React.memo(function DashboardBarChart({ data, title, dataKey, color = '#3b82f6', className }: CommonChartProps) {
+export const DashboardBarChart = React.memo(function DashboardBarChart({
+  data,
+  title,
+  dataKey,
+  color = '#3b82f6',
+  className,
+}: CommonChartProps) {
   return (
     <Card className={`p-6 ${className || ''}`}>
       <h3 className="text-lg font-semibold mb-4 text-foreground">{title}</h3>
@@ -57,10 +92,25 @@ export const DashboardBarChart = React.memo(function DashboardBarChart({ data, t
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-            <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-            <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
+            <XAxis
+              dataKey="name"
+              stroke="var(--muted-foreground)"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              stroke="var(--muted-foreground)"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+            />
             <Tooltip
-              contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '8px' }}
+              contentStyle={{
+                backgroundColor: 'var(--card)',
+                borderColor: 'var(--border)',
+                borderRadius: '8px',
+              }}
               cursor={{ fill: 'var(--muted)' }}
             />
             <Bar dataKey={dataKey} fill={color} radius={[4, 4, 0, 0]} />

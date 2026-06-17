@@ -10,7 +10,7 @@ describe('TimeSlotPicker', () => {
         setStartTime={() => {}}
         endTime="2026-06-14T11:00"
         setEndTime={() => {}}
-      />
+      />,
     );
 
     expect(screen.getByLabelText(/início/i)).toBeInTheDocument();
@@ -25,11 +25,11 @@ describe('TimeSlotPicker', () => {
         endTime="2026-06-14T11:00"
         setEndTime={() => {}}
         error="Conflito de horário"
-      />
+      />,
     );
 
     const inputs = container.querySelectorAll('input');
-    inputs.forEach(input => {
+    inputs.forEach((input) => {
       expect(input.className).toContain('border-red-500/50');
     });
   });

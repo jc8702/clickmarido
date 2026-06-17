@@ -13,7 +13,15 @@ interface KpiCardProps {
   className?: string;
 }
 
-export const KpiCard = React.memo(function KpiCard({ title, value, description, trend, trendLabel, icon, className }: KpiCardProps) {
+export const KpiCard = React.memo(function KpiCard({
+  title,
+  value,
+  description,
+  trend,
+  trendLabel,
+  icon,
+  className,
+}: KpiCardProps) {
   const isPositive = trend !== undefined && trend > 0;
   const isNegative = trend !== undefined && trend < 0;
 
@@ -26,7 +34,7 @@ export const KpiCard = React.memo(function KpiCard({ title, value, description, 
       <div className="flex items-baseline gap-2 mt-2">
         <span className="text-3xl font-bold tracking-tight text-foreground">{value}</span>
       </div>
-      
+
       {(trend !== undefined || description) && (
         <div className="mt-2 text-sm flex items-center gap-2">
           {trend !== undefined && (
@@ -35,7 +43,7 @@ export const KpiCard = React.memo(function KpiCard({ title, value, description, 
                 'flex items-center font-medium',
                 isPositive ? 'text-success-foreground bg-success/20 px-1 rounded' : '',
                 isNegative ? 'text-destructive-foreground bg-destructive/20 px-1 rounded' : '',
-                !isPositive && !isNegative ? 'text-muted-foreground' : ''
+                !isPositive && !isNegative ? 'text-muted-foreground' : '',
               )}
             >
               {isPositive ? <ArrowUpIcon className="w-3 h-3 mr-1" /> : null}

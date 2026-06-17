@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { Component, ErrorInfo, ReactNode } from "react";
-import * as Sentry from "@sentry/nextjs";
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import * as Sentry from '@sentry/nextjs';
 
 interface Props {
   children?: ReactNode;
@@ -24,7 +24,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
+    console.error('Uncaught error:', error, errorInfo);
     Sentry.captureException(error, { extra: { errorInfo } });
   }
 
@@ -42,7 +42,8 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center space-y-4">
           <h2 className="text-2xl font-bold text-red-600">Ops! Algo deu errado.</h2>
           <p className="text-gray-600 max-w-md">
-            Desculpe, ocorreu um erro inesperado ao renderizar este componente. A equipe técnica já foi notificada.
+            Desculpe, ocorreu um erro inesperado ao renderizar este componente. A equipe técnica já
+            foi notificada.
           </p>
           <button
             onClick={this.handleRetry}

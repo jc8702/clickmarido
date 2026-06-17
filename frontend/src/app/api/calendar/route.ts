@@ -7,14 +7,17 @@ export async function POST(req: Request) {
   try {
     const session: { user?: { accessToken?: string } } | null = await getServerSession(authOptions);
     if (!session?.accessToken) {
-      return NextResponse.json({ error: 'Você não está conectado ao Google Agenda' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Você não está conectado ao Google Agenda' },
+        { status: 401 },
+      );
     }
 
     const body = await req.json();
     const { title, startTime, endTime, isEdit, eventId } = body;
 
     let googleEvent;
-    
+
     if (isEdit && eventId) {
       googleEvent = await updateGoogleEvent(session.accessToken, eventId, {
         summary: title,

@@ -1,6 +1,7 @@
 // Paleta Cromática Mestra - Click Marido CRM
 export const colors = {
-  primary: { // Roxo
+  primary: {
+    // Roxo
     50: '#f5f3ff',
     100: '#ede9fe',
     200: '#ddd6fe',
@@ -12,7 +13,8 @@ export const colors = {
     800: '#5b21b6',
     900: '#4c1d95',
   },
-  success: { // Verde
+  success: {
+    // Verde
     50: '#f0fdf4',
     100: '#dcfce7',
     200: '#bbf7d0',
@@ -24,7 +26,8 @@ export const colors = {
     800: '#166534',
     900: '#14532d',
   },
-  warning: { // Laranja
+  warning: {
+    // Laranja
     50: '#fff7ed',
     100: '#ffedd5',
     200: '#fed7aa',
@@ -36,7 +39,8 @@ export const colors = {
     800: '#9a3412',
     900: '#7c2d12',
   },
-  destructive: { // Vermelho
+  destructive: {
+    // Vermelho
     50: '#fef2f2',
     100: '#fee2e2',
     200: '#fecaca',
@@ -48,7 +52,8 @@ export const colors = {
     800: '#991b1b',
     900: '#7f1d1d',
   },
-  info: { // Azul
+  info: {
+    // Azul
     50: '#eff6ff',
     100: '#dbeafe',
     200: '#bfdbfe',
@@ -60,7 +65,8 @@ export const colors = {
     800: '#1e40af',
     900: '#1e3a8a',
   },
-  attention: { // Amarelo
+  attention: {
+    // Amarelo
     50: '#fefce8',
     100: '#fef9c3',
     200: '#fef08a',
@@ -72,7 +78,8 @@ export const colors = {
     800: '#854d0e',
     900: '#713f12',
   },
-  neutral: { // Cinza / Slate
+  neutral: {
+    // Cinza / Slate
     50: '#f8fafc',
     100: '#f1f5f9',
     200: '#e2e8f0',
@@ -83,5 +90,5 @@ export const colors = {
     700: '#334155',
     800: '#1e293b',
     900: '#0f172a',
-  }
+  },
 };

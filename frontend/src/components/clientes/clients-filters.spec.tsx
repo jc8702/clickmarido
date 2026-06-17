@@ -9,7 +9,7 @@ vi.mock('@/app/(dashboard)/clientes/use-clients-data', () => ({
     search: 'joao',
     setSearch: vi.fn(),
     clients: [],
-  })
+  }),
 }));
 
 describe('ClientsFilters', () => {
@@ -17,7 +17,7 @@ describe('ClientsFilters', () => {
     render(
       <ClientProvider>
         <ClientsFilters />
-      </ClientProvider>
+      </ClientProvider>,
     );
 
     expect(screen.getByPlaceholderText(/buscar por nome/i)).toBeInTheDocument();

@@ -12,7 +12,13 @@ interface MaterialFormModalProps {
   categories: string[];
 }
 
-export function MaterialFormModal({ isOpen, onClose, onSuccess, material, categories }: MaterialFormModalProps) {
+export function MaterialFormModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  material,
+  categories,
+}: MaterialFormModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     category: 'Hidráulico',
@@ -68,7 +74,13 @@ export function MaterialFormModal({ isOpen, onClose, onSuccess, material, catego
       return;
     }
 
-    const payload = { name: formData.name.trim(), category: formData.category, quantity, minimumStock, averageCost };
+    const payload = {
+      name: formData.name.trim(),
+      category: formData.category,
+      quantity,
+      minimumStock,
+      averageCost,
+    };
 
     try {
       if (material) {
@@ -99,7 +111,9 @@ export function MaterialFormModal({ isOpen, onClose, onSuccess, material, catego
             {material ? 'Editar Material' : 'Novo Material'}
           </h3>
           <p className="text-zinc-500 text-xs mt-1">
-            {material ? 'Edite as informações do material.' : 'Preencha os campos abaixo para cadastrar um novo material.'}
+            {material
+              ? 'Edite as informações do material.'
+              : 'Preencha os campos abaixo para cadastrar um novo material.'}
           </p>
         </div>
 
@@ -113,7 +127,9 @@ export function MaterialFormModal({ isOpen, onClose, onSuccess, material, catego
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Nome do Material</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Nome do Material
+              </label>
               <input
                 type="text"
                 name="name"
@@ -126,7 +142,9 @@ export function MaterialFormModal({ isOpen, onClose, onSuccess, material, catego
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Categoria</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Categoria
+              </label>
               <select
                 name="category"
                 value={formData.category}
@@ -134,13 +152,17 @@ export function MaterialFormModal({ isOpen, onClose, onSuccess, material, catego
                 className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 cursor-pointer"
               >
                 {categories.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Custo Médio (R$)</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Custo Médio (R$)
+              </label>
               <input
                 type="text"
                 name="averageCost"
@@ -152,7 +174,9 @@ export function MaterialFormModal({ isOpen, onClose, onSuccess, material, catego
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Quantidade em Estoque</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Quantidade em Estoque
+              </label>
               <input
                 type="text"
                 name="quantity"
@@ -164,7 +188,9 @@ export function MaterialFormModal({ isOpen, onClose, onSuccess, material, catego
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Estoque Mínimo</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Estoque Mínimo
+              </label>
               <input
                 type="text"
                 name="minimumStock"

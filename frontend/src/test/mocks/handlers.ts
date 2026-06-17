@@ -8,7 +8,7 @@ export const handlers = [
       user: { id: 'user-1', name: 'Test User', email: 'test@example.com' },
     });
   }),
-  
+
   // Mock dashboard stats
   http.get('*/api-json/dashboard/stats', () => {
     return HttpResponse.json({
@@ -18,20 +18,20 @@ export const handlers = [
       completedOrders: 10,
     });
   }),
-  
+
   // Mock clients list
   http.get('*/api-json/clients', () => {
     return HttpResponse.json([
       { id: 'client-1', name: 'Client One', email: 'client1@example.com', phone: '11999999999' },
     ]);
   }),
-  
+
   // Mock create client
   http.post('*/api-json/clients', async ({ request }) => {
     const body = await request.json();
     return HttpResponse.json({ id: 'new-client', ...(body as any) }, { status: 201 });
   }),
-  
+
   // Mock appointments list
   http.get('*/api-json/appointments', () => {
     return HttpResponse.json([

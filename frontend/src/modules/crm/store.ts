@@ -121,9 +121,7 @@ export const useCrmStore = create<CrmState>((set, get) => ({
 
   updateClient: (id, data) => {
     set((state) => ({
-      clients: state.clients.map((c) =>
-        c.id === id ? { ...c, ...data, updatedAt: now() } : c
-      ),
+      clients: state.clients.map((c) => (c.id === id ? { ...c, ...data, updatedAt: now() } : c)),
     }));
   },
 
@@ -146,9 +144,7 @@ export const useCrmStore = create<CrmState>((set, get) => ({
 
   updateService: (id, data) => {
     set((state) => ({
-      services: state.services.map((s) =>
-        s.id === id ? { ...s, ...data, updatedAt: now() } : s
-      ),
+      services: state.services.map((s) => (s.id === id ? { ...s, ...data, updatedAt: now() } : s)),
     }));
   },
 
@@ -168,16 +164,13 @@ export const useCrmStore = create<CrmState>((set, get) => ({
       return new Date(s.completedAt) >= startOfMonth;
     });
 
-    const revenueThisMonth = completedThisMonth.reduce(
-      (sum, s) => sum + (s.valueFinal || 0),
-      0
-    );
+    const revenueThisMonth = completedThisMonth.reduce((sum, s) => sum + (s.valueFinal || 0), 0);
 
     return {
       totalClients: clients.length,
       activeClients: clients.filter((c) => c.status === 'ativo').length,
       pendingServices: services.filter(
-        (s) => s.status === 'agendado' || s.status === 'em_andamento'
+        (s) => s.status === 'agendado' || s.status === 'em_andamento',
       ).length,
       completedThisMonth: completedThisMonth.length,
       revenueThisMonth,

@@ -13,14 +13,14 @@ describe('Checkbox Component', () => {
   test('can be checked and unchecked', async () => {
     render(<Checkbox aria-label="Accept terms" />);
     const checkbox = screen.getByRole('checkbox', { name: 'Accept terms' });
-    
+
     expect(checkbox).not.toBeChecked();
-    
+
     await userEvent.click(checkbox);
-    
+
     // Using aria-checked for Radix UI checkbox
     expect(checkbox).toHaveAttribute('aria-checked', 'true');
-    
+
     await userEvent.click(checkbox);
     expect(checkbox).toHaveAttribute('aria-checked', 'false');
   });

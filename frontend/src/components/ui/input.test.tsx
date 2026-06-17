@@ -28,10 +28,10 @@ describe('Input Component', () => {
   test('handles user typing and focus states', async () => {
     render(<Input placeholder="Type here" />);
     const input = screen.getByPlaceholderText('Type here');
-    
+
     input.focus();
     expect(input).toHaveFocus();
-    
+
     await userEvent.type(input, 'Hello');
     expect(input).toHaveValue('Hello');
   });
@@ -40,7 +40,7 @@ describe('Input Component', () => {
     render(<Input placeholder="Disabled" disabled />);
     const input = screen.getByPlaceholderText('Disabled');
     expect(input).toBeDisabled();
-    
+
     await userEvent.type(input, 'Testing');
     expect(input).toHaveValue('');
   });

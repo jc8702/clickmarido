@@ -16,11 +16,11 @@ describe('useInfiniteScroll', () => {
   it('calls callback when isFetching becomes true', () => {
     const callback = vi.fn();
     const { result } = renderHook(() => useInfiniteScroll(callback));
-    
+
     act(() => {
       result.current[1](true);
     });
-    
+
     expect(callback).toHaveBeenCalledTimes(1);
     expect(result.current[0]).toBe(false); // resets to false after callback
   });
@@ -35,13 +35,13 @@ describe('useInfiniteScroll', () => {
     const callback = vi.fn();
     const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
     const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
-    
+
     const { unmount } = renderHook(() => useInfiniteScroll(callback));
-    
+
     expect(addEventListenerSpy).toHaveBeenCalledWith('scroll', expect.any(Function));
-    
+
     unmount();
-    
+
     expect(removeEventListenerSpy).toHaveBeenCalledWith('scroll', expect.any(Function));
   });
 });

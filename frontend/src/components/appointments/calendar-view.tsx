@@ -35,11 +35,19 @@ export function CalendarView({ events, loading, onEventMove, onEventSave }: Cale
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Record<string, unknown> | null>(null);
 
-  const moveEvent = async ({ event, start, end }: { event: Record<string, unknown>, start: Date, end: Date }) => {
+  const moveEvent = async ({
+    event,
+    start,
+    end,
+  }: {
+    event: Record<string, unknown>;
+    start: Date;
+    end: Date;
+  }) => {
     await onEventMove(event, start, end);
   };
 
-  const handleSelectSlot = ({ start, end }: { start: Date, end: Date }) => {
+  const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
     setSelectedSlot({ start, end, title: '', data: null });
     setIsEditMode(false);
     setDialogOpen(true);
@@ -62,7 +70,12 @@ export function CalendarView({ events, loading, onEventMove, onEventSave }: Cale
     setDialogOpen(false);
   };
 
-  const eventStyleGetter = (event: Record<string, unknown>, start: Date, end: Date, isSelected: boolean) => {
+  const eventStyleGetter = (
+    event: Record<string, unknown>,
+    start: Date,
+    end: Date,
+    isSelected: boolean,
+  ) => {
     return {
       style: {
         backgroundColor: 'rgba(var(--primary-rgb, 15, 23, 42), 0.85)',
@@ -74,14 +87,18 @@ export function CalendarView({ events, loading, onEventMove, onEventSave }: Cale
         padding: '3px 8px',
         fontSize: '0.80rem',
         fontWeight: 500,
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-      }
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      },
     };
   };
 
   return (
     <div className="h-full w-full bg-background text-foreground rounded-lg overflow-hidden flex flex-col relative">
-      {loading && <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 backdrop-blur-sm"><span className="text-primary font-medium">Sincronizando...</span></div>}
+      {loading && (
+        <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 backdrop-blur-sm">
+          <span className="text-primary font-medium">Sincronizando...</span>
+        </div>
+      )}
       <DnDCalendar
         localizer={localizer}
         events={events}
@@ -106,9 +123,9 @@ export function CalendarView({ events, loading, onEventMove, onEventSave }: Cale
         }}
         culture="pt-BR"
       />
-      <EventDialog 
-        open={dialogOpen} 
-        onOpenChange={setDialogOpen} 
+      <EventDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
         onSave={handleSaveEvent}
         defaultData={selectedSlot}
         isEdit={isEditMode}

@@ -112,22 +112,25 @@ export function useQuotes() {
     setIsFormModalOpen(true);
   }, []);
 
-  const handleDelete = useCallback(async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!confirm('Deseja realmente arquivar este orçamento?')) return;
+  const handleDelete = useCallback(
+    async (id: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (!confirm('Deseja realmente arquivar este orçamento?')) return;
 
-    try {
-      const res = await ApiClient.delete<{ success: boolean }>(`/quotes/${id}`);
-      if (res.success) {
-        fetchQuotes();
-        if (isViewModalOpen && viewedQuote?.id === id) {
-          setIsViewModalOpen(false);
+      try {
+        const res = await ApiClient.delete<{ success: boolean }>(`/quotes/${id}`);
+        if (res.success) {
+          fetchQuotes();
+          if (isViewModalOpen && viewedQuote?.id === id) {
+            setIsViewModalOpen(false);
+          }
         }
+      } catch (err: unknown) {
+        alert((err as Error).message || 'Erro ao arquivar orçamento.');
       }
-    } catch (err: unknown) {
-      alert((err as Error).message || 'Erro ao arquivar orçamento.');
-    }
-  }, [fetchQuotes, isViewModalOpen, viewedQuote]);
+    },
+    [fetchQuotes, isViewModalOpen, viewedQuote],
+  );
 
   const handleOpenViewModal = useCallback((quote: Quote) => {
     setViewedQuote(quote);
@@ -152,40 +155,74 @@ export function useQuotes() {
     setIsSignatureModalOpen(true);
   }, []);
 
-  const handleGenerateOS = useCallback(async (quoteId: string) => {
-    try {
-      const os = await generateFromQuote(quoteId);
-      router.push(`/ordens-servico/${os.id}`);
-    } catch (e: unknown) {
-      alert((e as Error).message || 'Erro ao gerar OS.');
-    }
-  }, [router]);
+  const handleGenerateOS = useCallback(
+    async (quoteId: string) => {
+      try {
+        const os = await generateFromQuote(quoteId);
+        router.push(`/ordens-servico/${os.id}`);
+      } catch (e: unknown) {
+        alert((e as Error).message || 'Erro ao gerar OS.');
+      }
+    },
+    [router],
+  );
 
-  const handleFormSuccess = useCallback(async (updatedQuoteId?: string) => {
-    setIsFormModalOpen(false);
-    await fetchQuotes();
-    if (updatedQuoteId && viewedQuote && viewedQuote.id === updatedQuoteId) {
-      const updated = await ApiClient.get<{ success: boolean; data: Quote }>(`/quotes/${updatedQuoteId}`);
-      if (updated.success) setViewedQuote(updated.data);
-    }
-  }, [fetchQuotes, viewedQuote]);
+  const handleFormSuccess = useCallback(
+    async (updatedQuoteId?: string) => {
+      setIsFormModalOpen(false);
+      await fetchQuotes();
+      if (updatedQuoteId && viewedQuote && viewedQuote.id === updatedQuoteId) {
+        const updated = await ApiClient.get<{ success: boolean; data: Quote }>(
+          `/quotes/${updatedQuoteId}`,
+        );
+        if (updated.success) setViewedQuote(updated.data);
+      }
+    },
+    [fetchQuotes, viewedQuote],
+  );
 
-  const handleSignatureSuccess = useCallback((updatedQuote: Quote) => {
-    setViewedQuote(updatedQuote);
-    setIsSignatureModalOpen(false);
-    fetchQuotes();
-  }, [fetchQuotes]);
+  const handleSignatureSuccess = useCallback(
+    (updatedQuote: Quote) => {
+      setViewedQuote(updatedQuote);
+      setIsSignatureModalOpen(false);
+      fetchQuotes();
+    },
+    [fetchQuotes],
+  );
 
   return {
-    quotes, clients, catalogServices, total, page, totalPages,
-    search, setSearch, statusFilter, setStatusFilter, loading,
-    isFormModalOpen, selectedQuote, isViewModalOpen, viewedQuote, isSignatureModalOpen,
-    setPage, fetchQuotes,
-    handleOpenCreateModal, handleOpenEditModal, handleDelete,
-    handleOpenViewModal, handleShareWhatsApp, handlePrint,
-    handleOpenSignatureModal, handleGenerateOS,
-    handleFormSuccess, handleSignatureSuccess,
-    setIsFormModalOpen, setIsViewModalOpen, setViewedQuote, setIsSignatureModalOpen,
+    quotes,
+    clients,
+    catalogServices,
+    total,
+    page,
+    totalPages,
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    loading,
+    isFormModalOpen,
+    selectedQuote,
+    isViewModalOpen,
+    viewedQuote,
+    isSignatureModalOpen,
+    setPage,
+    fetchQuotes,
+    handleOpenCreateModal,
+    handleOpenEditModal,
+    handleDelete,
+    handleOpenViewModal,
+    handleShareWhatsApp,
+    handlePrint,
+    handleOpenSignatureModal,
+    handleGenerateOS,
+    handleFormSuccess,
+    handleSignatureSuccess,
+    setIsFormModalOpen,
+    setIsViewModalOpen,
+    setViewedQuote,
+    setIsSignatureModalOpen,
   };
 }
 

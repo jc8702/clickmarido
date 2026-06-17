@@ -9,7 +9,7 @@ export interface Quote {
 
 export interface FinancialSlice {
   quotes: Quote[];
-  
+
   setQuotes: (quotes: Quote[]) => void;
   approveQuote: (id: string) => void;
 }
@@ -23,7 +23,12 @@ export const createFinancialSlice: StateCreator<
   quotes: [],
 
   setQuotes: (quotes) => set({ quotes }, false, 'financial/setQuotes'),
-  approveQuote: (id) => set((state) => ({
-    quotes: state.quotes.map(q => q.id === id ? { ...q, status: 'APPROVED' } : q)
-  }), false, 'financial/approveQuote'),
+  approveQuote: (id) =>
+    set(
+      (state) => ({
+        quotes: state.quotes.map((q) => (q.id === id ? { ...q, status: 'APPROVED' } : q)),
+      }),
+      false,
+      'financial/approveQuote',
+    ),
 });

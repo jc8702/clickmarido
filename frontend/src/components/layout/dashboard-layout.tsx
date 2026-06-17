@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useState } from "react";
-import { usePathname } from "next/navigation";
-import { Sidebar } from "./sidebar";
-import { Topbar } from "./topbar";
+import React, { createContext, useContext, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { Sidebar } from './sidebar';
+import { Topbar } from './topbar';
 
 interface LayoutContextType {
   sidebarOpen: boolean;
@@ -17,14 +17,14 @@ const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 export function useLayout() {
   const context = useContext(LayoutContext);
   if (!context) {
-    throw new Error("useLayout deve ser usado dentro de um LayoutProvider");
+    throw new Error('useLayout deve ser usado dentro de um LayoutProvider');
   }
   return context;
 }
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  
+
   // Controle para mobile (abrir/fechar gaveta)
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Controle para desktop (recolher/colapsar sidebar)
@@ -53,7 +53,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <Topbar />
 
           {/* Área do Conteúdo Principal */}
-          <main id="main-content" className="flex-1 overflow-y-auto p-4 md:p-6 bg-background text-foreground transition-colors duration-200">
+          <main
+            id="main-content"
+            className="flex-1 overflow-y-auto p-4 md:p-6 bg-background text-foreground transition-colors duration-200"
+          >
             {children}
           </main>
         </div>

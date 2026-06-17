@@ -8,17 +8,24 @@ import { SidebarTimeline } from '@/components/appointments/sidebar-timeline';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const CalendarView = dynamic(() => import('@/components/appointments/calendar-view').then(mod => mod.CalendarView), {
-  ssr: false,
-  loading: () => <Skeleton className="h-full w-full rounded-xl" />
-});
-import { getAppointments, updateAppointment, createAppointment } from '@/lib/api/modules/appointments';
+const CalendarView = dynamic(
+  () => import('@/components/appointments/calendar-view').then((mod) => mod.CalendarView),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-full w-full rounded-xl" />,
+  },
+);
+import {
+  getAppointments,
+  updateAppointment,
+  createAppointment,
+} from '@/lib/api/modules/appointments';
 import { toast } from 'sonner';
 import { EventDialogData } from '@/components/appointments/event-dialog';
 
 export default function AgendaPage() {
   const { data: session } = useSession();
-  
+
   const [events, setEvents] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,7 +41,7 @@ export default function AgendaPage() {
           end: new Date(app.endTime),
           resourceId: app.technicianId,
           data: app,
-        }))
+        })),
       );
     } catch (err) {
       console.error('Erro ao carregar agendamentos:', err);
@@ -81,10 +88,10 @@ export default function AgendaPage() {
         toast.success('Agendamento atualizado com sucesso.');
       } else {
         // Cria novo evento
-        savedAppointment = await createAppointment({ 
-          title, 
-          startTime: start.toISOString(), 
-          endTime: end.toISOString()
+        savedAppointment = await createAppointment({
+          title,
+          startTime: start.toISOString(),
+          endTime: end.toISOString(),
         });
         toast.success('Novo agendamento criado com sucesso.');
 
@@ -96,8 +103,8 @@ export default function AgendaPage() {
             body: JSON.stringify({
               title,
               startTime: start.toISOString(),
-              endTime: end.toISOString()
-            })
+              endTime: end.toISOString(),
+            }),
           });
         } catch (err) {
           console.error('Erro ao integrar com Google Calendar:', err);
@@ -115,9 +122,9 @@ export default function AgendaPage() {
             resourceId: savedAppointment.technicianId || undefined,
             data: savedAppointment,
           };
-          
+
           if (isEdit) {
-            return prev.map(e => e.id === data.id ? newEvent : e);
+            return prev.map((e) => (e.id === data.id ? newEvent : e));
           }
           return [...prev, newEvent];
         });
@@ -153,7 +160,12 @@ export default function AgendaPage() {
               </Button>
             </div>
           ) : (
-            <Button variant="default" size="sm" onClick={() => signIn('google')} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => signIn('google')}
+              className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+            >
               <Link className="w-4 h-4" />
               Conectar Google Agenda
             </Button>
@@ -168,11 +180,11 @@ export default function AgendaPage() {
 
         {/* Grade do Calendário */}
         <main className="flex-1 overflow-auto p-4 md:p-6 bg-background">
-          <CalendarView 
-            events={events} 
-            loading={loading} 
-            onEventMove={handleEventMove} 
-            onEventSave={handleEventSave} 
+          <CalendarView
+            events={events}
+            loading={loading}
+            onEventMove={handleEventMove}
+            onEventSave={handleEventSave}
           />
         </main>
       </div>

@@ -26,8 +26,12 @@ export function QuotePrintTemplate({ quote }: QuotePrintTemplateProps) {
           <h3 className="text-xs font-black text-gray-400 uppercase">Dados do Cliente</h3>
           <p className="text-sm font-bold text-gray-800">{quote.client.name}</p>
           <p className="text-xs text-gray-600">Tel: {quote.client.phone}</p>
-          {quote.client.email && <p className="text-xs text-gray-600">Email: {quote.client.email}</p>}
-          {quote.client.address && <p className="text-xs text-gray-600">End: {quote.client.address}</p>}
+          {quote.client.email && (
+            <p className="text-xs text-gray-600">Email: {quote.client.email}</p>
+          )}
+          {quote.client.address && (
+            <p className="text-xs text-gray-600">End: {quote.client.address}</p>
+          )}
         </div>
         <div className="space-y-1 text-right">
           <h3 className="text-xs font-black text-gray-400 uppercase">Prestador</h3>
@@ -51,12 +55,16 @@ export function QuotePrintTemplate({ quote }: QuotePrintTemplateProps) {
             {quote.services.map((s, idx) => (
               <tr key={idx} className="border-b">
                 <td className="py-2">
-                  <p className="font-bold text-gray-800">{s.service?.name || 'Serviço Personalizado'}</p>
+                  <p className="font-bold text-gray-800">
+                    {s.service?.name || 'Serviço Personalizado'}
+                  </p>
                   <p className="text-[10px] text-gray-500">{s.service?.category}</p>
                 </td>
                 <td className="py-2 text-center font-semibold">{s.quantity}</td>
                 <td className="py-2 text-right font-semibold">{formatCurrency(s.value)}</td>
-                <td className="py-2 text-right font-bold">{formatCurrency(s.quantity * s.value)}</td>
+                <td className="py-2 text-right font-bold">
+                  {formatCurrency(s.quantity * s.value)}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -81,7 +89,9 @@ export function QuotePrintTemplate({ quote }: QuotePrintTemplateProps) {
                   <td className="py-2 font-bold text-gray-800">{m.description}</td>
                   <td className="py-2 text-center font-semibold">{m.quantity}</td>
                   <td className="py-2 text-right font-semibold">{formatCurrency(m.value)}</td>
-                  <td className="py-2 text-right font-bold">{formatCurrency(m.quantity * m.value)}</td>
+                  <td className="py-2 text-right font-bold">
+                    {formatCurrency(m.quantity * m.value)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -108,9 +118,17 @@ export function QuotePrintTemplate({ quote }: QuotePrintTemplateProps) {
 
       {quote.signature ? (
         <div className="pt-8 flex flex-col items-center justify-center space-y-2">
-          <p className="text-xs font-black text-gray-400 uppercase">Assinatura Digital do Cliente</p>
+          <p className="text-xs font-black text-gray-400 uppercase">
+            Assinatura Digital do Cliente
+          </p>
           <div className="relative border border-gray-300 rounded-lg p-2 bg-white w-72 h-36 flex items-center justify-center">
-            <Image src={quote.signature} alt="Assinatura" fill className="object-contain" unoptimized />
+            <Image
+              src={quote.signature}
+              alt="Assinatura"
+              fill
+              className="object-contain"
+              unoptimized
+            />
           </div>
           <p className="text-[10px] text-gray-500 font-semibold">
             Assinado eletronicamente em: {quote.signedAt ? formatDate(quote.signedAt) : ''}

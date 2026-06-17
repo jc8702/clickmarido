@@ -54,20 +54,39 @@ interface ViewQuoteModalProps {
 const getStatusBadge = (status: string) => {
   switch (status) {
     case 'Aprovado':
-      return <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-none font-bold">Aprovado</Badge>;
+      return (
+        <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-none font-bold">
+          Aprovado
+        </Badge>
+      );
     case 'Rejeitado':
-      return <Badge className="bg-rose-500 hover:bg-rose-600 text-white border-none font-bold">Rejeitado</Badge>;
+      return (
+        <Badge className="bg-rose-500 hover:bg-rose-600 text-white border-none font-bold">
+          Rejeitado
+        </Badge>
+      );
     case 'Enviado':
-      return <Badge className="bg-blue-500 hover:bg-blue-600 text-white border-none font-bold">Enviado</Badge>;
+      return (
+        <Badge className="bg-blue-500 hover:bg-blue-600 text-white border-none font-bold">
+          Enviado
+        </Badge>
+      );
     default:
-      return <Badge className="bg-zinc-600 hover:bg-zinc-700 text-zinc-200 border-none font-bold">Rascunho</Badge>;
+      return (
+        <Badge className="bg-zinc-600 hover:bg-zinc-700 text-zinc-200 border-none font-bold">
+          Rascunho
+        </Badge>
+      );
   }
 };
 
 const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString('pt-BR', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit'
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 };
 
@@ -82,14 +101,13 @@ export function ViewQuoteModal({
   onPrint,
   onShare,
   onSign,
-  onGenerateOS
+  onGenerateOS,
 }: ViewQuoteModalProps) {
   if (!isOpen || !quote) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in-fade print:hidden">
       <div className="relative w-full max-w-2xl rounded-2xl bg-zinc-950 border border-zinc-900 shadow-2xl p-6 space-y-6 max-h-[95vh] overflow-y-auto">
-        
         {/* Header de Detalhes */}
         <div className="flex justify-between items-start border-b border-zinc-900 pb-4">
           <div>
@@ -151,13 +169,17 @@ export function ViewQuoteModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-zinc-500">
             <p>Telefone: {quote.client.phone}</p>
             {quote.client.email && <p>Email: {quote.client.email}</p>}
-            {quote.client.address && <p className="md:col-span-2">Endereço: {quote.client.address}</p>}
+            {quote.client.address && (
+              <p className="md:col-span-2">Endereço: {quote.client.address}</p>
+            )}
           </div>
         </div>
 
         {/* Tabela de Serviços */}
         <div className="space-y-2">
-          <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Serviços Contratados</p>
+          <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">
+            Serviços Contratados
+          </p>
           <div className="border border-zinc-900 rounded-xl overflow-hidden text-xs">
             <div className="grid grid-cols-4 bg-zinc-900/40 p-2.5 border-b border-zinc-900 font-black text-zinc-400 uppercase tracking-wider">
               <div className="col-span-2">Serviço</div>
@@ -165,7 +187,10 @@ export function ViewQuoteModal({
               <div className="text-right">Total</div>
             </div>
             {quote.services.map((s, idx) => (
-              <div key={idx} className="grid grid-cols-4 p-2.5 border-b border-zinc-900/50 text-zinc-300">
+              <div
+                key={idx}
+                className="grid grid-cols-4 p-2.5 border-b border-zinc-900/50 text-zinc-300"
+              >
                 <div className="col-span-2 font-bold leading-tight">
                   <p>{s.service?.name || 'Serviço Personalizado'}</p>
                   <p className="text-[10px] text-zinc-550 mt-0.5">{s.service?.category}</p>
@@ -182,7 +207,9 @@ export function ViewQuoteModal({
         {/* Tabela de Materiais se existirem */}
         {quote.materials && quote.materials.length > 0 && (
           <div className="space-y-2">
-            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Materiais Fornecidos</p>
+            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">
+              Materiais Fornecidos
+            </p>
             <div className="border border-zinc-900 rounded-xl overflow-hidden text-xs">
               <div className="grid grid-cols-4 bg-zinc-900/40 p-2.5 border-b border-zinc-900 font-black text-zinc-400 uppercase tracking-wider">
                 <div className="col-span-2">Material</div>
@@ -190,7 +217,10 @@ export function ViewQuoteModal({
                 <div className="text-right">Total</div>
               </div>
               {quote.materials.map((m, idx) => (
-                <div key={idx} className="grid grid-cols-4 p-2.5 border-b border-zinc-900/50 text-zinc-300">
+                <div
+                  key={idx}
+                  className="grid grid-cols-4 p-2.5 border-b border-zinc-900/50 text-zinc-300"
+                >
                   <div className="col-span-2 font-bold self-center">{m.description}</div>
                   <div className="text-center font-bold self-center">{m.quantity}</div>
                   <div className="text-right font-black text-zinc-350 self-center">
@@ -223,11 +253,21 @@ export function ViewQuoteModal({
         {/* Assinatura se tiver */}
         {quote.signature && (
           <div className="pt-4 flex flex-col items-center justify-center space-y-2 border-t border-zinc-900">
-            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Assinatura Digital Local</p>
+            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">
+              Assinatura Digital Local
+            </p>
             <div className="relative border border-zinc-800 rounded-xl p-2 bg-white w-64 h-32 flex items-center justify-center">
-              <Image src={quote.signature} alt="Assinatura" fill className="object-contain" unoptimized />
+              <Image
+                src={quote.signature}
+                alt="Assinatura"
+                fill
+                className="object-contain"
+                unoptimized
+              />
             </div>
-            <p className="text-[10px] text-zinc-500 font-medium">Assinado em: {quote.signedAt ? formatDate(quote.signedAt) : ''}</p>
+            <p className="text-[10px] text-zinc-500 font-medium">
+              Assinado em: {quote.signedAt ? formatDate(quote.signedAt) : ''}
+            </p>
           </div>
         )}
       </div>

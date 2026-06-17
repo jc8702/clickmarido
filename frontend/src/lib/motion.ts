@@ -16,5 +16,5 @@ export const motion = {
     slideUp: 'slideUp 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
     scaleIn: 'scaleIn 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
     bounce: 'bounce 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
-  }
+  },
 };

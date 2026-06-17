@@ -19,27 +19,27 @@ describe('useSearch', () => {
 
   it('updates searchTerm immediately', () => {
     const { result } = renderHook(() => useSearch('initial', 500));
-    
+
     act(() => {
       result.current.setSearchTerm('new term');
     });
-    
+
     expect(result.current.searchTerm).toBe('new term');
     expect(result.current.debouncedSearch).toBe('initial'); // Debounced hasn't updated yet
   });
 
   it('debounces the search term update', () => {
     const { result } = renderHook(() => useSearch('initial', 500));
-    
+
     act(() => {
       result.current.setSearchTerm('new term');
     });
-    
+
     act(() => {
       vi.advanceTimersByTime(499);
     });
     expect(result.current.debouncedSearch).toBe('initial');
-    
+
     act(() => {
       vi.advanceTimersByTime(1);
     });
@@ -48,22 +48,22 @@ describe('useSearch', () => {
 
   it('clears previous timeout on multiple updates', () => {
     const { result } = renderHook(() => useSearch('initial', 500));
-    
+
     act(() => {
       result.current.setSearchTerm('term 1');
     });
-    
+
     act(() => {
       vi.advanceTimersByTime(250);
       result.current.setSearchTerm('term 2');
     });
-    
+
     act(() => {
       vi.advanceTimersByTime(250);
     });
     // First timeout was cancelled, so total 500ms from term 1 is not enough
     expect(result.current.debouncedSearch).toBe('initial');
-    
+
     act(() => {
       vi.advanceTimersByTime(250);
     });

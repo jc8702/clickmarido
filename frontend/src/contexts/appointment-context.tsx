@@ -26,7 +26,7 @@ interface AppointmentContextData {
   serviceOrders: ServiceOrderOption[];
   dataLoading: boolean;
   refreshData: () => Promise<void>;
-  
+
   // Conflict Detection (Mocked/Basic for now, can be expanded)
   checkConflicts: (startTime: string, endTime: string, technicianId?: string) => Promise<boolean>;
 }
@@ -43,9 +43,15 @@ export function AppointmentProvider({ children }: { children: ReactNode }) {
     setDataLoading(true);
     try {
       const [resClients, resTechs, resOrders] = await Promise.all([
-        ApiClient.get<Record<string, unknown>>('/clients', { params: { limit: '100' } }).catch(() => ({ success: false, data: { items: [] } })),
-        ApiClient.get<Record<string, unknown>>('/users', { params: { limit: '100', active: 'true' } }).catch(() => ({ success: false, data: { items: [] } })),
-        ApiClient.get<Record<string, unknown>>('/service-orders', { params: { limit: '100' } }).catch(() => ({ success: false, data: { items: [] } }))
+        ApiClient.get<Record<string, unknown>>('/clients', { params: { limit: '100' } }).catch(
+          () => ({ success: false, data: { items: [] } }),
+        ),
+        ApiClient.get<Record<string, unknown>>('/users', {
+          params: { limit: '100', active: 'true' },
+        }).catch(() => ({ success: false, data: { items: [] } })),
+        ApiClient.get<Record<string, unknown>>('/service-orders', {
+          params: { limit: '100' },
+        }).catch(() => ({ success: false, data: { items: [] } })),
       ]);
 
       if (resClients.success) setClients(resClients.data.items);
@@ -69,9 +75,16 @@ export function AppointmentProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AppointmentContext.Provider value={{
-      clients, technicians, serviceOrders, dataLoading, refreshData, checkConflicts
-    }}>
+    <AppointmentContext.Provider
+      value={{
+        clients,
+        technicians,
+        serviceOrders,
+        dataLoading,
+        refreshData,
+        checkConflicts,
+      }}
+    >
       {children}
     </AppointmentContext.Provider>
   );

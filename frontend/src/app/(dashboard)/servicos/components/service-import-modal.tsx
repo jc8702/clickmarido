@@ -71,7 +71,10 @@ export function ServiceImportModal({ isOpen, onClose, onSuccess }: ServiceImport
       reader.onload = async (event) => {
         try {
           const csvContent = event.target?.result as string;
-          const data = await ApiClient.post<Record<string, unknown>[]>('/services/import/validate', { csv: csvContent });
+          const data = await ApiClient.post<Record<string, unknown>[]>(
+            '/services/import/validate',
+            { csv: csvContent },
+          );
 
           if (data) {
             setValidationItems(data);
@@ -129,9 +132,11 @@ export function ServiceImportModal({ isOpen, onClose, onSuccess }: ServiceImport
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in-fade">
-      <div className={`relative w-full rounded-2xl bg-zinc-950 border border-zinc-900 shadow-2xl p-6 space-y-6 max-h-[90vh] overflow-y-auto ${
-        importStep === 'PREVIEW' ? 'max-w-4xl' : 'max-w-md'
-      }`}>
+      <div
+        className={`relative w-full rounded-2xl bg-zinc-950 border border-zinc-900 shadow-2xl p-6 space-y-6 max-h-[90vh] overflow-y-auto ${
+          importStep === 'PREVIEW' ? 'max-w-4xl' : 'max-w-md'
+        }`}
+      >
         {/* Header */}
         <div>
           <h3 className="text-xl font-bold text-white tracking-tight flex items-center gap-3">
@@ -141,8 +146,10 @@ export function ServiceImportModal({ isOpen, onClose, onSuccess }: ServiceImport
             {importStep === 'SUCCESS' && 'Importação Concluída'}
           </h3>
           <p className="text-zinc-500 text-xs mt-1">
-            {importStep === 'UPLOAD' && 'Faça upload de uma lista de serviços estruturada no formato .csv.'}
-            {importStep === 'PREVIEW' && 'Revise os registros identificados e valide os conflitos/erros antes de confirmar.'}
+            {importStep === 'UPLOAD' &&
+              'Faça upload de uma lista de serviços estruturada no formato .csv.'}
+            {importStep === 'PREVIEW' &&
+              'Revise os registros identificados e valide os conflitos/erros antes de confirmar.'}
             {importStep === 'SUCCESS' && 'Resumo do processamento em lote concluído com sucesso.'}
           </p>
         </div>
@@ -159,8 +166,10 @@ export function ServiceImportModal({ isOpen, onClose, onSuccess }: ServiceImport
         {importStep === 'UPLOAD' && (
           <form onSubmit={handleImportCsv} className="space-y-4">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">Arquivo CSV</label>
-              <div 
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">
+                Arquivo CSV
+              </label>
+              <div
                 onClick={() => fileInputRef.current?.click()}
                 className="w-full p-8 rounded-xl bg-zinc-900 border-2 border-dashed border-zinc-800 hover:border-violet-500/50 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:bg-zinc-850"
               >
@@ -169,7 +178,8 @@ export function ServiceImportModal({ isOpen, onClose, onSuccess }: ServiceImport
                   {importFile ? importFile.name : 'Selecionar arquivo .csv'}
                 </span>
                 <span className="text-[10px] text-zinc-500 text-center">
-                  Cabeçalho: Categoria;Nome;Descrição;Valor;Tempo Médio (min);Complexidade;Garantia (dias);Especialidade;Status
+                  Cabeçalho: Categoria;Nome;Descrição;Valor;Tempo Médio (min);Complexidade;Garantia
+                  (dias);Especialidade;Status
                 </span>
               </div>
               <input
@@ -212,15 +222,21 @@ export function ServiceImportModal({ isOpen, onClose, onSuccess }: ServiceImport
               </div>
               <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
                 <span className="block text-emerald-500/70 text-[10px] uppercase">Inserir</span>
-                <span className="text-lg font-black">{validationItems.filter(i => i.action === 'CREATE' && i.isValid).length}</span>
+                <span className="text-lg font-black">
+                  {validationItems.filter((i) => i.action === 'CREATE' && i.isValid).length}
+                </span>
               </div>
               <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
                 <span className="block text-amber-500/70 text-[10px] uppercase">Atualizar</span>
-                <span className="text-lg font-black">{validationItems.filter(i => i.action === 'UPDATE' && i.isValid).length}</span>
+                <span className="text-lg font-black">
+                  {validationItems.filter((i) => i.action === 'UPDATE' && i.isValid).length}
+                </span>
               </div>
               <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
                 <span className="block text-red-500/70 text-[10px] uppercase">Erros</span>
-                <span className="text-lg font-black">{validationItems.filter(i => !i.isValid).length}</span>
+                <span className="text-lg font-black">
+                  {validationItems.filter((i) => !i.isValid).length}
+                </span>
               </div>
             </div>
 
@@ -241,7 +257,10 @@ export function ServiceImportModal({ isOpen, onClose, onSuccess }: ServiceImport
                   </thead>
                   <tbody className="divide-y divide-zinc-900 font-medium">
                     {validationItems.map((item, idx) => (
-                      <tr key={idx} className={`hover:bg-zinc-900/20 transition-colors ${!item.isValid ? 'bg-red-500/5' : ''}`}>
+                      <tr
+                        key={idx}
+                        className={`hover:bg-zinc-900/20 transition-colors ${!item.isValid ? 'bg-red-500/5' : ''}`}
+                      >
                         <td className="p-3 font-mono font-bold text-zinc-500">{item.index}</td>
                         <td className="p-3">
                           {!item.isValid && (
@@ -261,13 +280,20 @@ export function ServiceImportModal({ isOpen, onClose, onSuccess }: ServiceImport
                           )}
                         </td>
                         <td className="p-3 text-zinc-300">{item.service.category || '-'}</td>
-                        <td className="p-3 font-bold text-white max-w-[200px] truncate" title={item.service.name}>
-                          {item.service.name || <span className="text-zinc-650 italic">Sem Nome</span>}
+                        <td
+                          className="p-3 font-bold text-white max-w-[200px] truncate"
+                          title={item.service.name}
+                        >
+                          {item.service.name || (
+                            <span className="text-zinc-650 italic">Sem Nome</span>
+                          )}
                         </td>
                         <td className="p-3 text-emerald-400 font-mono font-bold">
                           {item.service.value ? formatCurrency(item.service.value) : '-'}
                         </td>
-                        <td className="p-3 font-mono">{item.service.averageTime ? `${item.service.averageTime} min` : '-'}</td>
+                        <td className="p-3 font-mono">
+                          {item.service.averageTime ? `${item.service.averageTime} min` : '-'}
+                        </td>
                         <td className="p-3">{item.service.complexity || '-'}</td>
                       </tr>
                     ))}
@@ -277,19 +303,24 @@ export function ServiceImportModal({ isOpen, onClose, onSuccess }: ServiceImport
             </div>
 
             {/* Relatório de Erros detalhado */}
-            {validationItems.some(item => !item.isValid) && (
+            {validationItems.some((item) => !item.isValid) && (
               <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10 space-y-2">
                 <h4 className="text-xs font-bold text-red-400 uppercase tracking-wider flex items-center gap-2">
                   <ShieldAlert className="w-4 h-4 text-red-500" />
                   Relatório de Erros de Validação
                 </h4>
                 <div className="max-h-[150px] overflow-y-auto space-y-1 pr-2 scrollbar-thin text-[11px] font-medium text-red-300 font-mono">
-                  {validationItems.filter(item => !item.isValid).map((item, idx) => (
-                    <div key={idx} className="p-1.5 rounded bg-red-500/10 border border-red-500/20">
-                      <span className="font-bold text-red-400">Linha {item.index}:</span>{' '}
-                      {item.errors.join(' | ')}
-                    </div>
-                  ))}
+                  {validationItems
+                    .filter((item) => !item.isValid)
+                    .map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="p-1.5 rounded bg-red-500/10 border border-red-500/20"
+                      >
+                        <span className="font-bold text-red-400">Linha {item.index}:</span>{' '}
+                        {item.errors.join(' | ')}
+                      </div>
+                    ))}
                 </div>
               </div>
             )}
@@ -313,11 +344,13 @@ export function ServiceImportModal({ isOpen, onClose, onSuccess }: ServiceImport
                 </Button>
                 <Button
                   type="button"
-                  disabled={importLoading || validationItems.filter(i => i.isValid).length === 0}
+                  disabled={importLoading || validationItems.filter((i) => i.isValid).length === 0}
                   onClick={handleConfirmImport}
                   className="bg-violet-600 hover:bg-violet-500 text-white font-bold h-10 px-5 rounded-lg text-xs disabled:opacity-50 shadow-lg shadow-violet-600/20"
                 >
-                  {importLoading ? 'Confirmando...' : `Confirmar Importação (${validationItems.filter(i => i.isValid).length} itens)`}
+                  {importLoading
+                    ? 'Confirmando...'
+                    : `Confirmar Importação (${validationItems.filter((i) => i.isValid).length} itens)`}
                 </Button>
               </div>
             </div>
@@ -330,14 +363,20 @@ export function ServiceImportModal({ isOpen, onClose, onSuccess }: ServiceImport
               <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-4 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h4 className="text-lg font-bold text-white tracking-tight">Catálogo Importado com Sucesso!</h4>
-              <p className="text-zinc-500 text-xs mt-1">Os serviços válidos foram processados e salvos em lote no banco.</p>
+              <h4 className="text-lg font-bold text-white tracking-tight">
+                Catálogo Importado com Sucesso!
+              </h4>
+              <p className="text-zinc-500 text-xs mt-1">
+                Os serviços válidos foram processados e salvos em lote no banco.
+              </p>
             </div>
 
             <div className="grid grid-cols-3 gap-2 text-center text-xs font-bold">
               <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-850">
                 <span className="block text-zinc-500 text-[10px] uppercase">Enviados</span>
-                <span className="text-white text-base font-black">{importSummary.totalProcessed}</span>
+                <span className="text-white text-base font-black">
+                  {importSummary.totalProcessed}
+                </span>
               </div>
               <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
                 <span className="block text-emerald-500/70 text-[10px] uppercase">Novos</span>

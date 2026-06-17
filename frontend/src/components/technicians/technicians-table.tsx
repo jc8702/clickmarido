@@ -18,10 +18,13 @@ interface TechniciansTableProps {
 export function TechniciansTable({ technicians, onEdit, onDelete }: TechniciansTableProps) {
   const columns: ColumnDef<Technician>[] = [
     {
-      id: "select",
+      id: 'select',
       header: ({ table }) => (
         <Checkbox
-          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && 'indeterminate')
+          }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
           className="translate-y-[2px]"
@@ -48,19 +51,27 @@ export function TechniciansTable({ technicians, onEdit, onDelete }: TechniciansT
     {
       accessorKey: 'phone',
       header: 'Telefone',
-      cell: ({ row }) => <span className="text-muted-foreground text-sm">{row.original.phone}</span>,
+      cell: ({ row }) => (
+        <span className="text-muted-foreground text-sm">{row.original.phone}</span>
+      ),
     },
     {
       accessorKey: 'specialty',
       header: 'Especialidade',
-      cell: ({ row }) => <span className="text-muted-foreground text-sm">{row.original.specialty || '-'}</span>,
-      meta: { className: "hidden md:table-cell" },
+      cell: ({ row }) => (
+        <span className="text-muted-foreground text-sm">{row.original.specialty || '-'}</span>
+      ),
+      meta: { className: 'hidden md:table-cell' },
     },
     {
       accessorKey: 'rating',
       header: 'Avaliação',
-      cell: ({ row }) => <span className="text-amber-400 font-bold text-sm">⭐ {row.original.rating.toFixed(1)}</span>,
-      meta: { className: "hidden lg:table-cell" },
+      cell: ({ row }) => (
+        <span className="text-amber-400 font-bold text-sm">
+          ⭐ {row.original.rating.toFixed(1)}
+        </span>
+      ),
+      meta: { className: 'hidden lg:table-cell' },
     },
     {
       accessorKey: 'status',
@@ -68,7 +79,10 @@ export function TechniciansTable({ technicians, onEdit, onDelete }: TechniciansT
       cell: ({ row }) => {
         const status = row.original.status;
         return (
-          <Badge variant={status === 'Ativo' ? 'success' : 'destructive'} className="text-[10px] font-black uppercase tracking-tighter px-1.5 py-0">
+          <Badge
+            variant={status === 'Ativo' ? 'success' : 'destructive'}
+            className="text-[10px] font-black uppercase tracking-tighter px-1.5 py-0"
+          >
             {status}
           </Badge>
         );
@@ -81,7 +95,11 @@ export function TechniciansTable({ technicians, onEdit, onDelete }: TechniciansT
         return (
           <div className="flex justify-end gap-1">
             <Link href={`/tecnicos/${tech.id}`} aria-label="Ver detalhes">
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+              >
                 <ExternalLink className="w-4 h-4" />
               </Button>
             </Link>
@@ -98,7 +116,9 @@ export function TechniciansTable({ technicians, onEdit, onDelete }: TechniciansT
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
-              onClick={() => { if(confirm('Excluir técnico?')) onDelete(tech.id); }}
+              onClick={() => {
+                if (confirm('Excluir técnico?')) onDelete(tech.id);
+              }}
               aria-label="Excluir"
             >
               <Trash2 className="w-4 h-4" />
@@ -109,11 +129,5 @@ export function TechniciansTable({ technicians, onEdit, onDelete }: TechniciansT
     },
   ];
 
-  return (
-    <DataTable
-      columns={columns}
-      data={technicians}
-      virtualized={technicians.length > 50}
-    />
-  );
+  return <DataTable columns={columns} data={technicians} virtualized={technicians.length > 50} />;
 }

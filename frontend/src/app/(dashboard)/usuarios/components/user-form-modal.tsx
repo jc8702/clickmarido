@@ -56,7 +56,7 @@ export function UserFormModal({ isOpen, onClose, onSuccess, user, roles }: UserF
   const handleRoleToggle = (roleId: string) => {
     setFormData((prev) => {
       const isSelected = prev.roleIds.includes(roleId);
-      const newRoleIds = isSelected 
+      const newRoleIds = isSelected
         ? prev.roleIds.filter((id) => id !== roleId)
         : [...prev.roleIds, roleId];
       return { ...prev, roleIds: newRoleIds };
@@ -112,7 +112,9 @@ export function UserFormModal({ isOpen, onClose, onSuccess, user, roles }: UserF
             {user ? 'Editar Usuário' : 'Adicionar Novo Usuário'}
           </h3>
           <p className="text-zinc-500 text-xs mt-1">
-            {user ? 'Edite as informações e perfis do colaborador.' : 'Cadastre um novo membro no time.'}
+            {user
+              ? 'Edite as informações e perfis do colaborador.'
+              : 'Cadastre um novo membro no time.'}
           </p>
         </div>
 
@@ -126,7 +128,9 @@ export function UserFormModal({ isOpen, onClose, onSuccess, user, roles }: UserF
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-4">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Nome Completo</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Nome Completo
+              </label>
               <input
                 type="text"
                 name="name"
@@ -138,7 +142,9 @@ export function UserFormModal({ isOpen, onClose, onSuccess, user, roles }: UserF
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">E-mail</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                E-mail
+              </label>
               <input
                 type="email"
                 name="email"
@@ -165,26 +171,23 @@ export function UserFormModal({ isOpen, onClose, onSuccess, user, roles }: UserF
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">Perfil de Acesso</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">
+                Perfil de Acesso
+              </label>
               <div className="grid grid-cols-2 gap-2 bg-zinc-900/40 p-3 rounded-lg border border-zinc-900">
                 {roles.map((role) => {
                   const isSelected = formData.roleIds.includes(role.id);
                   return (
-                    <div 
+                    <div
                       key={role.id}
                       onClick={() => handleRoleToggle(role.id)}
                       className={`flex items-center gap-2 p-2 rounded-md border text-xs font-medium cursor-pointer transition-all ${
-                        isSelected 
-                          ? 'bg-blue-500/10 border-blue-500/40 text-blue-400 font-bold' 
+                        isSelected
+                          ? 'bg-blue-500/10 border-blue-500/40 text-blue-400 font-bold'
                           : 'bg-zinc-900/50 border-zinc-850 hover:bg-zinc-800 text-zinc-400'
                       }`}
                     >
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        readOnly
-                        className="hidden"
-                      />
+                      <input type="checkbox" checked={isSelected} readOnly className="hidden" />
                       <span>{role.name}</span>
                     </div>
                   );
@@ -202,7 +205,10 @@ export function UserFormModal({ isOpen, onClose, onSuccess, user, roles }: UserF
               onChange={(e) => setFormData((prev) => ({ ...prev, isActive: e.target.checked }))}
               className="rounded bg-zinc-900 border-zinc-800 text-blue-600 focus:ring-0 cursor-pointer w-4 h-4"
             />
-            <label htmlFor="userActive" className="text-xs font-bold text-zinc-300 uppercase tracking-wider cursor-pointer">
+            <label
+              htmlFor="userActive"
+              className="text-xs font-bold text-zinc-300 uppercase tracking-wider cursor-pointer"
+            >
               Usuário Ativo e Habilitado
             </label>
           </div>

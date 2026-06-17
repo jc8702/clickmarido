@@ -10,7 +10,12 @@ interface TechnicianFormProps {
   onCancel: () => void;
 }
 
-export function TechnicianForm({ initialData, companyId, onSuccess, onCancel }: TechnicianFormProps) {
+export function TechnicianForm({
+  initialData,
+  companyId,
+  onSuccess,
+  onCancel,
+}: TechnicianFormProps) {
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     phone: initialData?.phone || '',
@@ -32,14 +37,19 @@ export function TechnicianForm({ initialData, companyId, onSuccess, onCancel }: 
     const payload = Object.fromEntries(
       Object.entries(formData).map(([key, val]) => {
         return [key, val === '' ? null : val];
-      })
+      }),
     );
 
     try {
       if (initialData) {
-        await updateTechnician(initialData.id, payload as unknown as Parameters<typeof updateTechnician>[1]);
+        await updateTechnician(
+          initialData.id,
+          payload as unknown as Parameters<typeof updateTechnician>[1],
+        );
       } else {
-        await createTechnician({ ...payload, companyId, rating: 0 } as unknown as Parameters<typeof createTechnician>[0]);
+        await createTechnician({ ...payload, companyId, rating: 0 } as unknown as Parameters<
+          typeof createTechnician
+        >[0]);
       }
       onSuccess();
     } catch (error) {
@@ -54,29 +64,65 @@ export function TechnicianForm({ initialData, companyId, onSuccess, onCancel }: 
     <form onSubmit={handleSubmit} className="space-y-4 bg-card p-6 rounded-lg shadow border">
       <div>
         <label className="block text-sm font-medium mb-1">Nome Completo</label>
-        <input required type="text" name="name" value={formData.name} onChange={handleChange} className="w-full border rounded p-2 bg-background text-foreground" />
+        <input
+          required
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          className="w-full border rounded p-2 bg-background text-foreground"
+        />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">Telefone</label>
-        <input required type="text" name="phone" value={formData.phone} onChange={handleChange} className="w-full border rounded p-2 bg-background text-foreground" />
+        <input
+          required
+          type="text"
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+          className="w-full border rounded p-2 bg-background text-foreground"
+        />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Especialidades (Separe por vírgulas para múltiplas)</label>
-        <input type="text" name="specialty" value={formData.specialty} onChange={handleChange} placeholder="Ex: Elétrica, Hidráulica, Ar Condicionado" className="w-full border rounded p-2 bg-background text-foreground" />
+        <label className="block text-sm font-medium mb-1">
+          Especialidades (Separe por vírgulas para múltiplas)
+        </label>
+        <input
+          type="text"
+          name="specialty"
+          value={formData.specialty}
+          onChange={handleChange}
+          placeholder="Ex: Elétrica, Hidráulica, Ar Condicionado"
+          className="w-full border rounded p-2 bg-background text-foreground"
+        />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">Status</label>
-        <select name="status" value={formData.status} onChange={handleChange} className="w-full border rounded p-2 bg-background text-foreground">
+        <select
+          name="status"
+          value={formData.status}
+          onChange={handleChange}
+          className="w-full border rounded p-2 bg-background text-foreground"
+        >
           <option value="Ativo">Ativo</option>
           <option value="Inativo">Inativo</option>
         </select>
       </div>
 
       <div className="flex justify-end gap-2 pt-4">
-        <button type="button" onClick={onCancel} className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80"
+        >
           Cancelar
         </button>
-        <button type="submit" disabled={loading} className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90">
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+        >
           {loading ? 'Salvando...' : 'Salvar Técnico'}
         </button>
       </div>

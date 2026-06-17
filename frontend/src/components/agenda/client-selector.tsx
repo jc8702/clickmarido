@@ -11,7 +11,12 @@ interface ClientSelectorProps {
   setSelectedClientName: (name: string) => void;
 }
 
-export function ClientSelector({ clientId, setClientId, selectedClientName, setSelectedClientName }: ClientSelectorProps) {
+export function ClientSelector({
+  clientId,
+  setClientId,
+  selectedClientName,
+  setSelectedClientName,
+}: ClientSelectorProps) {
   const { clients } = useAppointmentContext();
   const [clientSearch, setClientSearch] = useState('');
   const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
@@ -32,7 +37,10 @@ export function ClientSelector({ clientId, setClientId, selectedClientName, setS
       <div className="relative">
         <div
           className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white flex items-center cursor-pointer justify-between"
-          onClick={() => { setClientDropdownOpen(!clientDropdownOpen); setClientSearch(''); }}
+          onClick={() => {
+            setClientDropdownOpen(!clientDropdownOpen);
+            setClientSearch('');
+          }}
         >
           <span className={selectedClientName ? '' : 'text-zinc-500'}>
             {selectedClientName || 'Selecionar cliente...'}
@@ -53,7 +61,9 @@ export function ClientSelector({ clientId, setClientId, selectedClientName, setS
             </div>
             <div className="p-1">
               {filteredClients.length === 0 ? (
-                <p className="px-2 py-3 text-xs text-zinc-500 text-center">Nenhum cliente encontrado.</p>
+                <p className="px-2 py-3 text-xs text-zinc-500 text-center">
+                  Nenhum cliente encontrado.
+                </p>
               ) : (
                 filteredClients.map((c) => (
                   <button

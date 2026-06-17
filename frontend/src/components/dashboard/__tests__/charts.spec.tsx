@@ -8,7 +8,9 @@ vi.mock('recharts', async () => {
   return {
     ...OriginalRecharts,
     ResponsiveContainer: ({ children }: any) => (
-      <div data-testid="recharts-mock" style={{ width: '100%', height: 300 }}>{children}</div>
+      <div data-testid="recharts-mock" style={{ width: '100%', height: 300 }}>
+        {children}
+      </div>
     ),
   };
 });
@@ -16,7 +18,7 @@ vi.mock('recharts', async () => {
 describe('DashboardLineChart', () => {
   const data = [
     { name: 'Jan', value: 100 },
-    { name: 'Feb', value: 200 }
+    { name: 'Feb', value: 200 },
   ];
 
   it('renders correctly', () => {
@@ -25,7 +27,9 @@ describe('DashboardLineChart', () => {
   });
 
   it('handles empty data', () => {
-    const { container } = render(<DashboardLineChart data={[]} title="Line Chart" dataKey="value" />);
+    const { container } = render(
+      <DashboardLineChart data={[]} title="Line Chart" dataKey="value" />,
+    );
     expect(container).toBeInTheDocument();
   });
 });
@@ -33,7 +37,7 @@ describe('DashboardLineChart', () => {
 describe('DashboardBarChart', () => {
   const data = [
     { name: 'A', value: 10 },
-    { name: 'B', value: 20 }
+    { name: 'B', value: 20 },
   ];
 
   it('renders correctly', () => {
@@ -51,7 +55,7 @@ describe('DashboardBarChart', () => {
       <div>
         <DashboardLineChart data={data} title="Line" dataKey="value" />
         <DashboardBarChart data={data} title="Bar" dataKey="value" />
-      </div>
+      </div>,
     );
     expect(screen.getAllByTestId('recharts-mock')).toHaveLength(2);
   });

@@ -8,11 +8,22 @@ interface TimeSlotPickerProps {
   error?: string;
 }
 
-export function TimeSlotPicker({ startTime, setStartTime, endTime, setEndTime, error }: TimeSlotPickerProps) {
+export function TimeSlotPicker({
+  startTime,
+  setStartTime,
+  endTime,
+  setEndTime,
+  error,
+}: TimeSlotPickerProps) {
   return (
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-1">
-        <label htmlFor="start-time" className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Início</label>
+        <label
+          htmlFor="start-time"
+          className="text-xs font-bold text-zinc-400 uppercase tracking-wider"
+        >
+          Início
+        </label>
         <input
           id="start-time"
           type="datetime-local"
@@ -23,7 +34,12 @@ export function TimeSlotPicker({ startTime, setStartTime, endTime, setEndTime, e
         />
       </div>
       <div className="space-y-1">
-        <label htmlFor="end-time" className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Término</label>
+        <label
+          htmlFor="end-time"
+          className="text-xs font-bold text-zinc-400 uppercase tracking-wider"
+        >
+          Término
+        </label>
         <input
           id="end-time"
           type="datetime-local"

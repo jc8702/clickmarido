@@ -20,7 +20,7 @@ describe('Custom Hooks', () => {
     it('should initialize and increment correctly', () => {
       const { result } = renderHook(() => useCounter(0));
       expect(result.current.count).toBe(0);
-      
+
       act(() => {
         result.current.increment();
       });
@@ -33,7 +33,7 @@ describe('Custom Hooks', () => {
         result.current.decrement();
       });
       expect(result.current.count).toBe(9);
-      
+
       act(() => {
         result.current.reset();
       });
@@ -45,12 +45,12 @@ describe('Custom Hooks', () => {
     it('should toggle boolean value', () => {
       const { result } = renderHook(() => useToggle(false));
       expect(result.current[0]).toBe(false);
-      
+
       act(() => {
         result.current[1]();
       });
       expect(result.current[0]).toBe(true);
-      
+
       act(() => {
         result.current[2](false);
       });
@@ -100,16 +100,16 @@ describe('Custom Hooks', () => {
       const { result, rerender } = renderHook(({ val }) => useDebounce(val, 500), {
         initialProps: { val: 'test' },
       });
-      
+
       expect(result.current).toBe('test');
-      
+
       rerender({ val: 'test2' });
       expect(result.current).toBe('test'); // still test, not enough time passed
-      
+
       act(() => {
         vi.advanceTimersByTime(500);
       });
-      
+
       expect(result.current).toBe('test2');
     });
   });

@@ -14,7 +14,7 @@ vi.mock('next/link', () => ({
 }));
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn() })
+  useRouter: () => ({ push: vi.fn() }),
 }));
 
 test('renders login form inputs and submits successfully, redirecting to dashboard', async () => {

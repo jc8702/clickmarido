@@ -7,8 +7,14 @@ import { ClientsFilters } from '@/components/clientes/clients-filters';
 import { ClientsTable } from '@/components/clientes/clients-table';
 import dynamic from 'next/dynamic';
 
-const ClientFormModal = dynamic(() => import('@/components/clientes/client-form-modal').then(m => m.ClientFormModal), { ssr: false });
-const ClientHistoryModal = dynamic(() => import('@/components/clientes/client-history-modal').then(m => m.ClientHistoryModal), { ssr: false });
+const ClientFormModal = dynamic(
+  () => import('@/components/clientes/client-form-modal').then((m) => m.ClientFormModal),
+  { ssr: false },
+);
+const ClientHistoryModal = dynamic(
+  () => import('@/components/clientes/client-history-modal').then((m) => m.ClientHistoryModal),
+  { ssr: false },
+);
 
 function ClientesView() {
   const { data, handleOpenCreateModal } = useClientContext();
@@ -23,17 +29,17 @@ function ClientesView() {
         breadcrumbs={[{ label: 'Clientes' }]}
         actions={[
           {
-            label: "Novo Cliente",
+            label: 'Novo Cliente',
             icon: <Plus className="w-5 h-5" />,
             onClick: handleOpenCreateModal,
-            className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg",
-          }
+            className: 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg',
+          },
         ]}
       />
 
       <ClientsFilters />
       <ClientsTable />
-      
+
       <ClientFormModal />
       <ClientHistoryModal />
     </div>

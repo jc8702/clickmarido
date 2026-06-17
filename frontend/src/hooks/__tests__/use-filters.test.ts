@@ -32,11 +32,11 @@ describe('useFilters', () => {
       result.current.setFilter('status', 'inactive');
       result.current.setFilter('search', 'test');
     });
-    
+
     act(() => {
       result.current.resetFilters();
     });
-    
+
     expect(result.current.filters).toEqual(initial);
   });
 

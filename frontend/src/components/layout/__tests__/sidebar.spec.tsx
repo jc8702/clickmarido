@@ -3,20 +3,20 @@ import { describe, it, expect, vi } from 'vitest';
 import { Sidebar } from '../sidebar';
 
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/dashboard'
+  usePathname: () => '/dashboard',
 }));
 
 vi.mock('@/contexts/auth-context', () => ({
-  useAuth: () => ({ user: { name: 'Test User', permissions: ['*'] }, logout: vi.fn() })
+  useAuth: () => ({ user: { name: 'Test User', permissions: ['*'] }, logout: vi.fn() }),
 }));
 
 vi.mock('@/components/layout/dashboard-layout', () => ({
-  useLayout: () => ({ 
-    sidebarOpen: true, 
-    setSidebarOpen: vi.fn(), 
+  useLayout: () => ({
+    sidebarOpen: true,
+    setSidebarOpen: vi.fn(),
     sidebarCollapsed: false,
-    setSidebarCollapsed: vi.fn() 
-  })
+    setSidebarCollapsed: vi.fn(),
+  }),
 }));
 
 describe('Sidebar', () => {

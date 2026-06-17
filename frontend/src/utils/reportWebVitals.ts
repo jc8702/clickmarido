@@ -2,7 +2,7 @@ import { Metric, onCLS, onFCP, onFID, onINP, onLCP, onTTFB } from 'web-vitals';
 
 /**
  * Endpoint centralizado para disparo de métricas de Web Vitals.
- * O target ideal é enviar isso para um endpoint de ingestão como DataDog, 
+ * O target ideal é enviar isso para um endpoint de ingestão como DataDog,
  * Google Analytics ou um serviço custom (ex: Prometheus/Grafana do backend).
  */
 const sendToAnalytics = (metric: Metric) => {
@@ -29,7 +29,7 @@ const sendToAnalytics = (metric: Metric) => {
 
 /**
  * Ativa os listeners nativos do browser para coleta de Web Vitals.
- * Meta: 
+ * Meta:
  * FCP: <1.8s
  * LCP: <2.5s
  * CLS: <0.1

@@ -1,6 +1,13 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { Skeleton, SkeletonCard, SkeletonList, SkeletonText, SkeletonTable, SkeletonChart } from './skeleton';
+import {
+  Skeleton,
+  SkeletonCard,
+  SkeletonList,
+  SkeletonText,
+  SkeletonTable,
+  SkeletonChart,
+} from './skeleton';
 import { expect, test, describe } from 'vitest';
 
 describe('Skeleton Component', () => {

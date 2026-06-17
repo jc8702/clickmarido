@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { useAuth } from "@/contexts/auth-context";
-import { Wrench, Mail, Lock, Loader2, ArrowRight } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/contexts/auth-context';
+import { Wrench, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
   const { login } = useAuth();
-  
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +23,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
     } catch (err: unknown) {
-      setError(err.message || "E-mail ou senha inválidos. Tente novamente.");
+      setError(err.message || 'E-mail ou senha inválidos. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -61,11 +61,17 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* E-mail */}
               <div className="space-y-1.5">
-                <label htmlFor="login-email" className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                <label
+                  htmlFor="login-email"
+                  className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider"
+                >
                   E-mail institucional
                 </label>
                 <div className="relative">
-                  <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" aria-hidden="true" />
+                  <Mail
+                    className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400"
+                    aria-hidden="true"
+                  />
                   <input
                     id="login-email"
                     type="email"
@@ -81,7 +87,10 @@ export default function LoginPage() {
               {/* Senha */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="login-password" className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                  <label
+                    htmlFor="login-password"
+                    className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider"
+                  >
                     Senha de acesso
                   </label>
                   <Link
@@ -92,7 +101,10 @@ export default function LoginPage() {
                   </Link>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" aria-hidden="true" />
+                  <Lock
+                    className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400"
+                    aria-hidden="true"
+                  />
                   <input
                     id="login-password"
                     type="password"

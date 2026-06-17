@@ -69,7 +69,7 @@ export function CompanyFormModal({ isOpen, onClose, onSuccess, company }: Compan
           return [key, cleaned === '' ? null : cleaned];
         }
         return [key, val === '' ? null : val];
-      })
+      }),
     );
 
     try {
@@ -103,7 +103,9 @@ export function CompanyFormModal({ isOpen, onClose, onSuccess, company }: Compan
             {company ? 'Editar Empresa' : 'Adicionar Nova Empresa'}
           </h3>
           <p className="text-muted-foreground text-xs mt-1">
-            {company ? 'Edite as informações cadastrais da empresa.' : 'Preencha os dados abaixo para cadastrar.'}
+            {company
+              ? 'Edite as informações cadastrais da empresa.'
+              : 'Preencha os dados abaixo para cadastrar.'}
           </p>
         </div>
 
@@ -117,7 +119,9 @@ export function CompanyFormModal({ isOpen, onClose, onSuccess, company }: Compan
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Nome da Empresa</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Nome da Empresa
+              </label>
               <input
                 type="text"
                 name="name"
@@ -129,7 +133,9 @@ export function CompanyFormModal({ isOpen, onClose, onSuccess, company }: Compan
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Slug de Acesso</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Slug de Acesso
+              </label>
               <input
                 type="text"
                 name="slug"
@@ -143,7 +149,9 @@ export function CompanyFormModal({ isOpen, onClose, onSuccess, company }: Compan
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">CNPJ</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                CNPJ
+              </label>
               <input
                 type="text"
                 name="cnpj"
@@ -156,7 +164,9 @@ export function CompanyFormModal({ isOpen, onClose, onSuccess, company }: Compan
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Telefone</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Telefone
+              </label>
               <input
                 type="text"
                 name="phone"
@@ -168,7 +178,9 @@ export function CompanyFormModal({ isOpen, onClose, onSuccess, company }: Compan
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">E-mail</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                E-mail
+              </label>
               <input
                 type="email"
                 name="email"
@@ -179,7 +191,9 @@ export function CompanyFormModal({ isOpen, onClose, onSuccess, company }: Compan
             </div>
 
             <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Endereço Completo</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Endereço Completo
+              </label>
               <input
                 type="text"
                 name="address"
@@ -190,7 +204,9 @@ export function CompanyFormModal({ isOpen, onClose, onSuccess, company }: Compan
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Cidade</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Cidade
+              </label>
               <input
                 type="text"
                 name="city"
@@ -201,7 +217,9 @@ export function CompanyFormModal({ isOpen, onClose, onSuccess, company }: Compan
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Estado (UF)</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Estado (UF)
+              </label>
               <input
                 type="text"
                 name="state"
@@ -223,7 +241,10 @@ export function CompanyFormModal({ isOpen, onClose, onSuccess, company }: Compan
               onChange={(e) => setFormData((prev) => ({ ...prev, active: e.target.checked }))}
               className="rounded bg-input/40 border-border text-primary focus:ring-primary/20 cursor-pointer w-4 h-4"
             />
-            <label htmlFor="active" className="text-xs font-bold text-foreground/80 uppercase tracking-wider cursor-pointer">
+            <label
+              htmlFor="active"
+              className="text-xs font-bold text-foreground/80 uppercase tracking-wider cursor-pointer"
+            >
               Empresa Ativa e Operacional
             </label>
           </div>

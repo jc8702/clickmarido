@@ -9,7 +9,7 @@ describe('Avatar Component', () => {
       <Avatar>
         <AvatarImage src="invalid.jpg" alt="User" />
         <AvatarFallback>US</AvatarFallback>
-      </Avatar>
+      </Avatar>,
     );
     // Note: AvatarImage from Radix won't load image synchronously in test, so fallback should render
     expect(screen.getByText('US')).toBeInTheDocument();

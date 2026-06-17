@@ -1,15 +1,22 @@
-import { ColumnDef } from "@tanstack/react-table"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Edit, Trash2 } from "lucide-react"
+import { ColumnDef } from '@tanstack/react-table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Edit, Trash2 } from 'lucide-react';
 
 // Types matching Quote interface
 export interface Quote {
   id: string;
   number: number;
   clientId: string;
-  client: { name: string; phone: string; whatsapp?: string; email?: string; address?: string; city?: string };
+  client: {
+    name: string;
+    phone: string;
+    whatsapp?: string;
+    email?: string;
+    address?: string;
+    city?: string;
+  };
   discount: number;
   travelFee: number;
   materials: Record<string, unknown>[] | null;
@@ -37,17 +44,56 @@ function formatDate(dateString: string): string {
 const getStatusBadge = (status: string) => {
   switch (status) {
     case 'Rascunho':
-      return <Badge variant="outline" className="bg-zinc-500/10 border-zinc-500/20 text-zinc-400 font-semibold px-2 py-0.5">Rascunho</Badge>;
+      return (
+        <Badge
+          variant="outline"
+          className="bg-zinc-500/10 border-zinc-500/20 text-zinc-400 font-semibold px-2 py-0.5"
+        >
+          Rascunho
+        </Badge>
+      );
     case 'Enviado':
-      return <Badge variant="outline" className="bg-blue-500/10 border-blue-500/20 text-blue-400 font-semibold px-2 py-0.5">Enviado</Badge>;
+      return (
+        <Badge
+          variant="outline"
+          className="bg-blue-500/10 border-blue-500/20 text-blue-400 font-semibold px-2 py-0.5"
+        >
+          Enviado
+        </Badge>
+      );
     case 'Visualizado':
-      return <Badge variant="outline" className="bg-purple-500/10 border-purple-500/20 text-purple-400 font-semibold px-2 py-0.5">Visualizado</Badge>;
+      return (
+        <Badge
+          variant="outline"
+          className="bg-purple-500/10 border-purple-500/20 text-purple-400 font-semibold px-2 py-0.5"
+        >
+          Visualizado
+        </Badge>
+      );
     case 'Aprovado':
-      return <Badge variant="outline" className="bg-emerald-500/10 border-emerald-500/20 text-emerald-400 font-semibold px-2 py-0.5">Aprovado</Badge>;
+      return (
+        <Badge
+          variant="outline"
+          className="bg-emerald-500/10 border-emerald-500/20 text-emerald-400 font-semibold px-2 py-0.5"
+        >
+          Aprovado
+        </Badge>
+      );
     case 'Rejeitado':
-      return <Badge variant="outline" className="bg-rose-500/10 border-rose-500/20 text-rose-400 font-semibold px-2 py-0.5">Rejeitado</Badge>;
+      return (
+        <Badge
+          variant="outline"
+          className="bg-rose-500/10 border-rose-500/20 text-rose-400 font-semibold px-2 py-0.5"
+        >
+          Rejeitado
+        </Badge>
+      );
     default:
-      return <Badge variant="outline" className="font-semibold px-2 py-0.5">{status}</Badge>;
+      return (
+        <Badge variant="outline" className="font-semibold px-2 py-0.5">
+          {status}
+        </Badge>
+      );
   }
 };
 
@@ -58,10 +104,12 @@ interface GetQuoteColumnsProps {
 
 export const getQuoteColumns = ({ onEdit, onDelete }: GetQuoteColumnsProps): ColumnDef<Quote>[] => [
   {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
-        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+        checked={
+          table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')
+        }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
         className="translate-y-[2px]"
@@ -81,8 +129,8 @@ export const getQuoteColumns = ({ onEdit, onDelete }: GetQuoteColumnsProps): Col
     enableHiding: false,
   },
   {
-    accessorKey: "number",
-    header: "Número",
+    accessorKey: 'number',
+    header: 'Número',
     cell: ({ row }) => {
       const quote = row.original;
       return (
@@ -93,8 +141,8 @@ export const getQuoteColumns = ({ onEdit, onDelete }: GetQuoteColumnsProps): Col
     },
   },
   {
-    accessorKey: "client",
-    header: "Cliente",
+    accessorKey: 'client',
+    header: 'Cliente',
     cell: ({ row }) => {
       const quote = row.original;
       return (
@@ -106,26 +154,30 @@ export const getQuoteColumns = ({ onEdit, onDelete }: GetQuoteColumnsProps): Col
     },
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: 'status',
+    header: 'Status',
     cell: ({ row }) => {
       return getStatusBadge(row.original.status);
     },
-    meta: { className: "hidden md:table-cell" },
+    meta: { className: 'hidden md:table-cell' },
   },
   {
-    accessorKey: "totalValue",
-    header: "Valor Final",
+    accessorKey: 'totalValue',
+    header: 'Valor Final',
     cell: ({ row }) => {
-      return <span className="font-black text-emerald-400">{formatCurrency(row.original.totalValue)}</span>;
+      return (
+        <span className="font-black text-emerald-400">
+          {formatCurrency(row.original.totalValue)}
+        </span>
+      );
     },
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => {
       const quote = row.original;
       return (
-        <div className="flex gap-1 justify-end shrink-0" onClick={e => e.stopPropagation()}>
+        <div className="flex gap-1 justify-end shrink-0" onClick={(e) => e.stopPropagation()}>
           <Button
             variant="ghost"
             size="icon"

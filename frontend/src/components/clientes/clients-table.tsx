@@ -25,11 +25,15 @@ export function ClientsTable() {
     }
   };
 
-  const columns = useMemo(() => getClientColumns({
-    onOpenHistory: handleOpenHistoryModal,
-    onOpenEdit: handleOpenEditModal,
-    onDelete: handleDelete,
-  }), [handleOpenHistoryModal, handleOpenEditModal]);
+  const columns = useMemo(
+    () =>
+      getClientColumns({
+        onOpenHistory: handleOpenHistoryModal,
+        onOpenEdit: handleOpenEditModal,
+        onDelete: handleDelete,
+      }),
+    [handleOpenHistoryModal, handleOpenEditModal],
+  );
 
   return (
     <div className="space-y-4">
@@ -43,7 +47,7 @@ export function ClientsTable() {
           virtualized={clients.length > 50}
         />
       )}
-      
+
       <DataTablePagination
         pageIndex={page - 1}
         pageCount={totalPages}
@@ -52,8 +56,8 @@ export function ClientsTable() {
         canPreviousPage={page > 1}
         canNextPage={page < totalPages}
         setPageIndex={(idx) => setPage(idx + 1)}
-        previousPage={() => setPage(p => p - 1)}
-        nextPage={() => setPage(p => p + 1)}
+        previousPage={() => setPage((p) => p - 1)}
+        nextPage={() => setPage((p) => p + 1)}
       />
     </div>
   );

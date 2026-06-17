@@ -19,7 +19,7 @@ describe('Card Component', () => {
       <CardHeader>
         <CardTitle>Title text</CardTitle>
         <CardDescription>Description text</CardDescription>
-      </CardHeader>
+      </CardHeader>,
     );
     expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('Title text');
     expect(screen.getByText('Description text')).toBeInTheDocument();

@@ -12,7 +12,9 @@ interface AppearanceState {
   } | null;
   logoUrl: string | null;
   setTheme: (theme: SystemTheme) => void;
-  setCustomPalette: (palette: { primary: string; accent: string; background: string } | null) => void;
+  setCustomPalette: (
+    palette: { primary: string; accent: string; background: string } | null,
+  ) => void;
   setLogoUrl: (url: string | null) => void;
 }
 
@@ -41,6 +43,6 @@ export const useAppearanceStore = create<AppearanceState>()(
     }),
     {
       name: 'clickmarido-appearance',
-    }
-  )
+    },
+  ),
 );

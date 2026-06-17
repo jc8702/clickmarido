@@ -1,11 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FinancialTransaction, getFinancialTransactions, createTransaction, deleteTransaction, updateTransaction } from '@/lib/api/modules/financial';
+import {
+  FinancialTransaction,
+  getFinancialTransactions,
+  createTransaction,
+  deleteTransaction,
+  updateTransaction,
+} from '@/lib/api/modules/financial';
 import { format } from 'date-fns';
 import { DollarSign, Plus, Trash, CheckCircle } from 'lucide-react';
 
-const COMPANY_ID = "6fb48ab0-08ab-49bd-9eab-57dd4f923ff1"; // MOCK for MVP
+const COMPANY_ID = '6fb48ab0-08ab-49bd-9eab-57dd4f923ff1'; // MOCK for MVP
 
 export default function FinancialTransactionsPage() {
   const [transactions, setTransactions] = useState<FinancialTransaction[]>([]);
@@ -58,7 +64,7 @@ export default function FinancialTransactionsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if(confirm('Tem certeza?')) {
+    if (confirm('Tem certeza?')) {
       await deleteTransaction(id);
       fetchTx();
     }
@@ -73,7 +79,10 @@ export default function FinancialTransactionsPage() {
           </div>
           Extrato & Lançamentos
         </h2>
-        <button onClick={() => setIsModalOpen(true)} className="bg-primary text-primary-foreground px-4 py-2 rounded flex items-center gap-2">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-primary text-primary-foreground px-4 py-2 rounded flex items-center gap-2"
+        >
           <Plus className="w-4 h-4" /> Novo Lançamento
         </button>
       </div>
@@ -93,13 +102,23 @@ export default function FinancialTransactionsPage() {
           </thead>
           <tbody className="bg-card">
             {loading ? (
-              <tr><td colSpan={7} className="text-center py-4">Carregando...</td></tr>
+              <tr>
+                <td colSpan={7} className="text-center py-4">
+                  Carregando...
+                </td>
+              </tr>
             ) : transactions.length === 0 ? (
-              <tr><td colSpan={7} className="text-center py-4">Nenhuma transação encontrada.</td></tr>
+              <tr>
+                <td colSpan={7} className="text-center py-4">
+                  Nenhuma transação encontrada.
+                </td>
+              </tr>
             ) : (
-              transactions.map(tx => (
+              transactions.map((tx) => (
                 <tr key={tx.id} className="border-t">
-                  <td className="px-4 py-3">{format(new Date(tx.transactionDate), 'dd/MM/yyyy')}</td>
+                  <td className="px-4 py-3">
+                    {format(new Date(tx.transactionDate), 'dd/MM/yyyy')}
+                  </td>
                   <td className="px-4 py-3 font-bold">
                     <span className={tx.type === 'RECEITA' ? 'text-emerald-500' : 'text-rose-500'}>
                       {tx.type}
@@ -109,17 +128,27 @@ export default function FinancialTransactionsPage() {
                   <td className="px-4 py-3">{tx.description || '-'}</td>
                   <td className="px-4 py-3 text-right font-medium">R$ {tx.value.toFixed(2)}</td>
                   <td className="px-4 py-3 text-center">
-                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${tx.status === 'PAGO' ? 'bg-emerald-100 text-emerald-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-[10px] font-bold ${tx.status === 'PAGO' ? 'bg-emerald-100 text-emerald-800' : 'bg-yellow-100 text-yellow-800'}`}
+                    >
                       {tx.status}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right flex items-center justify-end gap-2">
                     {tx.status === 'PENDENTE' && (
-                      <button onClick={() => handleMarkAsPaid(tx)} title="Marcar como Pago" className="text-emerald-500 hover:text-emerald-400">
+                      <button
+                        onClick={() => handleMarkAsPaid(tx)}
+                        title="Marcar como Pago"
+                        className="text-emerald-500 hover:text-emerald-400"
+                      >
                         <CheckCircle className="w-4 h-4" />
                       </button>
                     )}
-                    <button onClick={() => handleDelete(tx.id)} title="Excluir" className="text-rose-500 hover:text-rose-400">
+                    <button
+                      onClick={() => handleDelete(tx.id)}
+                      title="Excluir"
+                      className="text-rose-500 hover:text-rose-400"
+                    >
                       <Trash className="w-4 h-4" />
                     </button>
                   </td>
@@ -138,20 +167,34 @@ export default function FinancialTransactionsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold block mb-1">Tipo</label>
-                  <select value={type} onChange={e => setType(e.target.value as never)} className="w-full border p-2 rounded bg-background">
+                  <select
+                    value={type}
+                    onChange={(e) => setType(e.target.value as never)}
+                    className="w-full border p-2 rounded bg-background"
+                  >
                     <option value="RECEITA">RECEITA (+)</option>
                     <option value="DESPESA">DESPESA (-)</option>
                   </select>
                 </div>
                 <div>
                   <label className="text-xs font-bold block mb-1">Data</label>
-                  <input type="date" value={transactionDate} onChange={e => setTransactionDate(e.target.value)} required className="w-full border p-2 rounded bg-background" />
+                  <input
+                    type="date"
+                    value={transactionDate}
+                    onChange={(e) => setTransactionDate(e.target.value)}
+                    required
+                    className="w-full border p-2 rounded bg-background"
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="text-xs font-bold block mb-1">Categoria</label>
-                <select value={category} onChange={e => setCategory(e.target.value)} className="w-full border p-2 rounded bg-background">
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full border p-2 rounded bg-background"
+                >
                   {type === 'RECEITA' ? (
                     <>
                       <option value="PIX">PIX</option>
@@ -173,25 +216,55 @@ export default function FinancialTransactionsPage() {
 
               <div>
                 <label className="text-xs font-bold block mb-1">Valor (R$)</label>
-                <input type="number" step="0.01" min="0" value={value} onChange={e => setValue(e.target.value)} required className="w-full border p-2 rounded bg-background" placeholder="0.00" />
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                  required
+                  className="w-full border p-2 rounded bg-background"
+                  placeholder="0.00"
+                />
               </div>
 
               <div>
                 <label className="text-xs font-bold block mb-1">Descrição</label>
-                <input type="text" value={description} onChange={e => setDescription(e.target.value)} className="w-full border p-2 rounded bg-background" placeholder="Opcional" />
+                <input
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full border p-2 rounded bg-background"
+                  placeholder="Opcional"
+                />
               </div>
 
               <div>
                 <label className="text-xs font-bold block mb-1">Status do Pagamento</label>
-                <select value={status} onChange={e => setStatus(e.target.value as never)} className="w-full border p-2 rounded bg-background">
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as never)}
+                  className="w-full border p-2 rounded bg-background"
+                >
                   <option value="PAGO">PAGO / RECEBIDO</option>
                   <option value="PENDENTE">PENDENTE (A Vencer)</option>
                 </select>
               </div>
 
               <div className="flex gap-2 justify-end pt-4">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-muted text-muted-foreground rounded">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground rounded">Salvar</button>
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 bg-muted text-muted-foreground rounded"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded"
+                >
+                  Salvar
+                </button>
               </div>
             </form>
           </div>

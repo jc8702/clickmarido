@@ -23,7 +23,9 @@ const statusStyles: Record<string, string> = {
 export function getStatusBadge(status: QuoteStatus | string): React.ReactNode {
   const className = statusStyles[status] || '';
   return (
-    <span className={`inline-flex items-center font-semibold px-2 py-0.5 rounded-full border text-xs ${className}`}>
+    <span
+      className={`inline-flex items-center font-semibold px-2 py-0.5 rounded-full border text-xs ${className}`}
+    >
       {status}
     </span>
   );

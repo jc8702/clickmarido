@@ -40,7 +40,9 @@ export function ClientHistoryModal() {
   async function fetchHistory(clientId: string) {
     setHistoryLoading(true);
     try {
-      const res = await ApiClient.get<{ success: boolean; data: HistoryItem[] }>(`/clients/${clientId}/history`);
+      const res = await ApiClient.get<{ success: boolean; data: HistoryItem[] }>(
+        `/clients/${clientId}/history`,
+      );
       if (res.success) {
         setHistoryItems(res.data);
       }
@@ -49,7 +51,7 @@ export function ClientHistoryModal() {
     } finally {
       setHistoryLoading(false);
     }
-  };
+  }
 
   async function handleAddNote(e: React.FormEvent) {
     e.preventDefault();
@@ -58,10 +60,13 @@ export function ClientHistoryModal() {
     setNoteError('');
     setNoteLoading(true);
     try {
-      const res = await ApiClient.post<{ success: boolean }>(`/clients/${historyClient.id}/history`, {
-        type: newNoteType,
-        description: newNote.trim(),
-      });
+      const res = await ApiClient.post<{ success: boolean }>(
+        `/clients/${historyClient.id}/history`,
+        {
+          type: newNoteType,
+          description: newNote.trim(),
+        },
+      );
 
       if (res.success) {
         setNewNote('');
@@ -72,22 +77,61 @@ export function ClientHistoryModal() {
     } finally {
       setNoteLoading(false);
     }
-  };
+  }
 
   const getHistoryBadge = (type: string) => {
     switch (type) {
       case 'NOTE':
-        return <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-[10px]">Anotação</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-[10px]"
+          >
+            Anotação
+          </Badge>
+        );
       case 'WHATSAPP':
-        return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[10px]">WhatsApp</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[10px]"
+          >
+            WhatsApp
+          </Badge>
+        );
       case 'SYSTEM':
-        return <Badge variant="outline" className="bg-zinc-800 text-zinc-400 border-zinc-700 text-[10px]">Sistema</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className="bg-zinc-800 text-zinc-400 border-zinc-700 text-[10px]"
+          >
+            Sistema
+          </Badge>
+        );
       case 'CALL':
-        return <Badge variant="outline" className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 text-[10px]">Ligação</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 text-[10px]"
+          >
+            Ligação
+          </Badge>
+        );
       case 'VISIT':
-        return <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[10px]">Visita</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[10px]"
+          >
+            Visita
+          </Badge>
+        );
       default:
-        return <Badge variant="outline" className="text-[10px]">{type}</Badge>;
+        return (
+          <Badge variant="outline" className="text-[10px]">
+            {type}
+          </Badge>
+        );
     }
   };
 
@@ -102,7 +146,9 @@ export function ClientHistoryModal() {
               <History className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white tracking-tight">Histórico de Interações</h3>
+              <h3 className="text-base font-bold text-white tracking-tight">
+                Histórico de Interações
+              </h3>
               <p className="text-xs text-zinc-500">{historyClient.name}</p>
             </div>
           </div>
@@ -132,7 +178,7 @@ export function ClientHistoryModal() {
               {historyItems.map((item) => (
                 <div key={item.id} className="relative">
                   <span className="absolute -left-[31px] top-1.5 flex h-2 w-2 rounded-full bg-border ring-4 ring-background" />
-                  
+
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-[10px] text-zinc-500 font-medium">
@@ -157,9 +203,7 @@ export function ClientHistoryModal() {
 
         <div className="border-t border-border/50 pt-4">
           <form onSubmit={handleAddNote} className="space-y-3">
-            {noteError && (
-              <p className="text-[11px] text-red-500 font-medium">{noteError}</p>
-            )}
+            {noteError && <p className="text-[11px] text-red-500 font-medium">{noteError}</p>}
 
             <div className="flex gap-2">
               <select

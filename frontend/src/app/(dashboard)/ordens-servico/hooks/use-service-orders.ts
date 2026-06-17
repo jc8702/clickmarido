@@ -45,7 +45,17 @@ export function useServiceOrders() {
   }, [debouncedSearch]);
 
   return {
-    orders, total, page, limit, totalPages, search, statusFilter, loading,
-    setSearch, setPage, setStatusFilter, fetchOrders,
+    orders,
+    total,
+    page,
+    limit,
+    totalPages,
+    search,
+    statusFilter,
+    loading,
+    setSearch,
+    setPage,
+    setStatusFilter,
+    fetchOrders,
   };
 }

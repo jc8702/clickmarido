@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
-import { useLayout } from "./dashboard-layout";
-import { useAuth } from "@/contexts/auth-context";
-import { 
-  Menu, 
-  Sun, 
-  Moon, 
-  Building2, 
-  ChevronDown, 
-  LogOut, 
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useTheme } from 'next-themes';
+import { useLayout } from './dashboard-layout';
+import { useAuth } from '@/contexts/auth-context';
+import {
+  Menu,
+  Sun,
+  Moon,
+  Building2,
+  ChevronDown,
+  LogOut,
   User as UserIcon,
-  Bell
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+  Bell,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,13 +24,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 
 // Tenants simulados para a demonstração multi-tenant
 const tenants = [
-  { id: "tenant-1", name: "Click Marido Matriz SP" },
-  { id: "tenant-2", name: "Click Marido Filial RJ" },
-  { id: "tenant-3", name: "Click Marido Franquia BH" },
+  { id: 'tenant-1', name: 'Click Marido Matriz SP' },
+  { id: 'tenant-2', name: 'Click Marido Filial RJ' },
+  { id: 'tenant-3', name: 'Click Marido Franquia BH' },
 ];
 
 export function Topbar() {
@@ -38,39 +38,45 @@ export function Topbar() {
   const { theme, setTheme } = useTheme();
   const { setSidebarOpen } = useLayout();
   const { user, company, logout } = useAuth();
-  
+
   const [tenantDropdownOpen, setTenantDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   // Mapeamento de breadcrumb simplificado baseado no pathname
   const getPageTitle = () => {
-    const parts = pathname.split("/").filter(Boolean);
-    if (parts.length === 0) return "Painel Geral";
+    const parts = pathname.split('/').filter(Boolean);
+    if (parts.length === 0) return 'Painel Geral';
     const segment = parts[0];
     switch (segment) {
-      case "dashboard":
-        return "Painel de Controle";
-      case "clientes":
-        return "Gestão de Clientes";
-      case "servicos":
-        return "Ordens de Serviço";
-      case "orcamentos":
-        return "Orçamentos e Propostas";
-      case "settings":
-        return "Configurações do Sistema";
-      case "empresas":
-        return "Gestão de Empresas";
-      case "agenda":
-        return "Agenda de Compromissos";
-      case "usuarios":
-        return "Gestão de Usuários (Time)";
+      case 'dashboard':
+        return 'Painel de Controle';
+      case 'clientes':
+        return 'Gestão de Clientes';
+      case 'servicos':
+        return 'Ordens de Serviço';
+      case 'orcamentos':
+        return 'Orçamentos e Propostas';
+      case 'settings':
+        return 'Configurações do Sistema';
+      case 'empresas':
+        return 'Gestão de Empresas';
+      case 'agenda':
+        return 'Agenda de Compromissos';
+      case 'usuarios':
+        return 'Gestão de Usuários (Time)';
       default:
         return segment.charAt(0).toUpperCase() + segment.slice(1);
     }
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-[var(--border)] px-4 md:px-6 transition-colors duration-200" style={{ background: 'color-mix(in srgb, var(--card) 80%, transparent)', backdropFilter: 'blur(12px)' }}>
+    <header
+      className="flex h-16 items-center justify-between border-b border-[var(--border)] px-4 md:px-6 transition-colors duration-200"
+      style={{
+        background: 'color-mix(in srgb, var(--card) 80%, transparent)',
+        backdropFilter: 'blur(12px)',
+      }}
+    >
       {/* Lado Esquerdo: Menu Mobile + Breadcrumb */}
       <div className="flex items-center gap-4">
         <button
@@ -104,7 +110,7 @@ export function Topbar() {
           >
             <Building2 className="h-3.5 w-3.5 text-amber-500" />
             <span className="hidden sm:inline max-w-[130px] truncate">
-              {company?.name || "Click Marido Matriz SP"}
+              {company?.name || 'Click Marido Matriz SP'}
             </span>
             <ChevronDown className="h-3.5 w-3.5 text-zinc-400" />
           </button>
@@ -114,25 +120,26 @@ export function Topbar() {
               <div className="px-2 py-1.5 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
                 Empresa Ativa
               </div>
-              <button
-                className="flex w-full items-center gap-2 rounded-md bg-amber-500/10 text-amber-500 px-2 py-1.5 text-left text-xs font-medium"
-              >
+              <button className="flex w-full items-center gap-2 rounded-md bg-amber-500/10 text-amber-500 px-2 py-1.5 text-left text-xs font-medium">
                 <Building2 className="h-3.5 w-3.5" />
-                <span className="truncate">{company?.name || "Click Marido Matriz SP"}</span>
+                <span className="truncate">{company?.name || 'Click Marido Matriz SP'}</span>
               </button>
             </div>
           )}
         </div>
 
         {/* Botão de Notificações (Simulado) */}
-        <button className="rounded-lg p-2 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors relative" aria-label="Notificações">
+        <button
+          className="rounded-lg p-2 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors relative"
+          aria-label="Notificações"
+        >
           <Bell className="h-4 w-4" />
           <span className="absolute top-1 right-1 flex h-1.5 w-1.5 rounded-full bg-amber-500" />
         </button>
 
         {/* Botão de Tema (Claro/Escuro) */}
         <button
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className="rounded-lg p-2 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           aria-label="Alternar tema"
         >
@@ -151,22 +158,31 @@ export function Topbar() {
               className="flex items-center gap-2 rounded-lg p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors outline-none"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 font-bold text-zinc-700 dark:text-zinc-300 uppercase">
-                {user?.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2) : "CM"}
+                {user?.name
+                  ? user.name
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .substring(0, 2)
+                  : 'CM'}
               </div>
               <div className="hidden text-left md:block">
                 <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 leading-tight">
-                  {user?.name || "Carregando..."}
+                  {user?.name || 'Carregando...'}
                 </p>
                 <p className="text-[10px] text-zinc-400 leading-none">
-                  {user?.roles?.[0] || "Usuário"}
+                  {user?.roles?.[0] || 'Usuário'}
                 </p>
               </div>
               <ChevronDown className="hidden h-3.5 w-3.5 text-zinc-400 md:block" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 mt-1.5 border-zinc-200 dark:border-zinc-800 shadow-lg">
+          <DropdownMenuContent
+            align="end"
+            className="w-48 mt-1.5 border-zinc-200 dark:border-zinc-800 shadow-lg"
+          >
             <DropdownMenuLabel className="font-normal truncate">
-              {user?.email || ""}
+              {user?.email || ''}
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-zinc-200 dark:bg-zinc-800" />
             <DropdownMenuItem asChild>
@@ -178,7 +194,7 @@ export function Topbar() {
                 <span>Meu Perfil</span>
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={() => logout()}
               className="flex w-full items-center gap-2 cursor-pointer text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 focus:bg-red-500/10 transition-colors"
             >

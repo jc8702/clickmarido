@@ -19,9 +19,9 @@ describe('Table Component', () => {
             <TableCell>John</TableCell>
           </TableRow>
         </TableBody>
-      </Table>
+      </Table>,
     );
-    
+
     expect(screen.getByRole('table')).toBeInTheDocument();
     expect(screen.getByText('ID')).toBeInTheDocument();
     expect(screen.getByText('John')).toBeInTheDocument();

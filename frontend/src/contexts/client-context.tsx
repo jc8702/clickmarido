@@ -7,7 +7,7 @@ import { useClientsData } from '@/app/(dashboard)/clientes/use-clients-data';
 interface ClientContextData {
   // Dados e Filtros do Hook
   data: ReturnType<typeof useClientsData>;
-  
+
   // Modais State
   isFormModalOpen: boolean;
   setIsFormModalOpen: (open: boolean) => void;
@@ -33,7 +33,7 @@ export function ClientProvider({ children }: { children: ReactNode }) {
 
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-  
+
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [historyClient, setHistoryClient] = useState<Client | null>(null);
 
@@ -53,16 +53,22 @@ export function ClientProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ClientContext.Provider value={{
-      data,
-      isFormModalOpen, setIsFormModalOpen,
-      isHistoryModalOpen, setIsHistoryModalOpen,
-      selectedClient, setSelectedClient,
-      historyClient, setHistoryClient,
-      handleOpenCreateModal,
-      handleOpenEditModal,
-      handleOpenHistoryModal,
-    }}>
+    <ClientContext.Provider
+      value={{
+        data,
+        isFormModalOpen,
+        setIsFormModalOpen,
+        isHistoryModalOpen,
+        setIsHistoryModalOpen,
+        selectedClient,
+        setSelectedClient,
+        historyClient,
+        setHistoryClient,
+        handleOpenCreateModal,
+        handleOpenEditModal,
+        handleOpenHistoryModal,
+      }}
+    >
       {children}
     </ClientContext.Provider>
   );

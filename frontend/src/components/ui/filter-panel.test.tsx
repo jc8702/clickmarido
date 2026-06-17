@@ -6,8 +6,10 @@ import { expect, test, describe, vi } from 'vitest';
 describe('FilterPanel', () => {
   test('renders search input and calls onSearchChange', () => {
     const onSearchChange = vi.fn();
-    render(<FilterPanel search="foo" onSearchChange={onSearchChange} searchPlaceholder="Busca test" />);
-    
+    render(
+      <FilterPanel search="foo" onSearchChange={onSearchChange} searchPlaceholder="Busca test" />,
+    );
+
     const input = screen.getByLabelText('Busca test');
     expect(input).toBeInTheDocument();
     expect(input).toHaveValue('foo');
@@ -19,22 +21,22 @@ describe('FilterPanel', () => {
   test('renders filters and calls onFilterChange', () => {
     const onFilterChange = vi.fn();
     const filters = [
-      { id: 'status', label: 'Status', options: [{ label: 'Ativo', value: 'ativo' }] }
+      { id: 'status', label: 'Status', options: [{ label: 'Ativo', value: 'ativo' }] },
     ];
-    
+
     render(
-      <FilterPanel 
-        search="" 
-        onSearchChange={() => {}} 
-        filters={filters} 
-        activeFilters={{ status: '' }} 
-        onFilterChange={onFilterChange} 
-      />
+      <FilterPanel
+        search=""
+        onSearchChange={() => {}}
+        filters={filters}
+        activeFilters={{ status: '' }}
+        onFilterChange={onFilterChange}
+      />,
     );
-    
+
     const select = screen.getByLabelText('Status');
     expect(select).toBeInTheDocument();
-    
+
     fireEvent.change(select, { target: { value: 'ativo' } });
     expect(onFilterChange).toHaveBeenCalledWith('status', 'ativo');
   });
@@ -42,21 +44,21 @@ describe('FilterPanel', () => {
   test('renders date range and calls onDateRangeChange', () => {
     const onDateRangeChange = vi.fn();
     render(
-      <FilterPanel 
-        search="" 
-        onSearchChange={() => {}} 
+      <FilterPanel
+        search=""
+        onSearchChange={() => {}}
         showDateRange={true}
         dateRange={{ from: '2023-01-01', to: '2023-01-31' }}
         onDateRangeChange={onDateRangeChange}
-      />
+      />,
     );
-    
+
     const fromInput = screen.getByLabelText('Data inicial');
     const toInput = screen.getByLabelText('Data final');
-    
+
     expect(fromInput).toHaveValue('2023-01-01');
     expect(toInput).toHaveValue('2023-01-31');
-    
+
     fireEvent.change(fromInput, { target: { value: '2023-02-01' } });
     expect(onDateRangeChange).toHaveBeenCalledWith({ from: '2023-02-01', to: '2023-01-31' });
 
@@ -66,18 +68,20 @@ describe('FilterPanel', () => {
 
   test('calls onClearFilters when clear button is clicked', () => {
     const onClearFilters = vi.fn();
-    const filters = [{ id: 'status', label: 'Status', options: [{ label: 'Ativo', value: 'ativo' }] }];
-    
+    const filters = [
+      { id: 'status', label: 'Status', options: [{ label: 'Ativo', value: 'ativo' }] },
+    ];
+
     render(
-      <FilterPanel 
-        search="" 
-        onSearchChange={() => {}} 
-        filters={filters} 
-        activeFilters={{ status: 'ativo' }} 
-        onClearFilters={onClearFilters} 
-      />
+      <FilterPanel
+        search=""
+        onSearchChange={() => {}}
+        filters={filters}
+        activeFilters={{ status: 'ativo' }}
+        onClearFilters={onClearFilters}
+      />,
     );
-    
+
     const clearButton = screen.getByRole('button', { name: /Limpar/i });
     fireEvent.click(clearButton);
     expect(onClearFilters).toHaveBeenCalled();
