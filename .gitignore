@@ -12,13 +12,17 @@ node_modules/
 
 # testing
 coverage/
+test-results/
+playwright-report/
 
 # next.js
 .next/
 out/
 
-# production
+# production/build artifacts
 build/
+dist/
+*.tsbuildinfo
 
 # misc
 .DS_Store
@@ -30,19 +34,24 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# lint/error output files
+lint-errors.txt
+lint-errors.json
+frontend/lint-errors.json
+
+# one-off debug/test scripts
+test_regex.js
+backend/test_db.js
+backend/test_db_v7.js
+backend/ignore.js
+
 # env files (can opt-in for committing if needed)
 .env*
+*.env
+backend/backend.env
 
 # vercel
 .vercel
 
 # typescript
-*.tsbuildinfo
 next-env.d.ts
-
-.vercel
-
-.env.local
-
-.env*.local
-.vercel

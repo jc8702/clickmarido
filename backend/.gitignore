@@ -1,5 +1,28 @@
 node_modules
+
 # Keep environment variables out of version control
 .env
+.env.*
+*.env
+backend.env
 
+# Build artifacts
+dist/
+
+# Coverage reports
+coverage/
+
+# Prisma generated files
 /generated/prisma
+
+# Debug/test scripts
+test_db.js
+test_db_v7.js
+ignore.js
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
