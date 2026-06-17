@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
@@ -67,15 +68,17 @@ describe('UsersService', () => {
     });
 
     it('should throw if companyId is missing', async () => {
-      await expect(service.create(dto, ''))
-        .rejects.toThrow(BadRequestException);
+      await expect(service.create(dto, '')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw if company not found', async () => {
       prismaService.company.findFirst.mockResolvedValue(null);
 
-      await expect(service.create(dto, companyId))
-        .rejects.toThrow(BadRequestException);
+      await expect(service.create(dto, companyId)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw if email already exists', async () => {
@@ -85,8 +88,9 @@ describe('UsersService', () => {
       prismaService.company.findFirst.mockResolvedValue(company);
       prismaService.user.findUnique.mockResolvedValue(existing);
 
-      await expect(service.create(dto, companyId))
-        .rejects.toThrow(BadRequestException);
+      await expect(service.create(dto, companyId)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -117,8 +121,9 @@ describe('UsersService', () => {
     it('should throw if user not found', async () => {
       prismaService.user.findFirst.mockResolvedValue(null);
 
-      await expect(service.findOne('non-existent'))
-        .rejects.toThrow(NotFoundException);
+      await expect(service.findOne('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -137,8 +142,9 @@ describe('UsersService', () => {
     it('should throw if user not found', async () => {
       prismaService.user.findFirst.mockResolvedValue(null);
 
-      await expect(service.update('non-existent', {}))
-        .rejects.toThrow(NotFoundException);
+      await expect(service.update('non-existent', {})).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -156,14 +162,17 @@ describe('UsersService', () => {
     it('should throw if user not found', async () => {
       prismaService.user.findFirst.mockResolvedValue(null);
 
-      await expect(service.remove('non-existent'))
-        .rejects.toThrow(NotFoundException);
+      await expect(service.remove('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
   describe('getRoles', () => {
     it('should return roles for a company', async () => {
-      const roles = [{ id: 'role-1', name: 'Admin', description: 'Admin role' }];
+      const roles = [
+        { id: 'role-1', name: 'Admin', description: 'Admin role' },
+      ];
       prismaService.role.findMany.mockResolvedValue(roles);
 
       const result = await service.getRoles('company-uuid-1');

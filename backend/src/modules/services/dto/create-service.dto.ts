@@ -12,10 +12,21 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export class CreateServiceDto {
   @IsString()
   @IsNotEmpty({ message: 'A categoria do serviço é obrigatória' })
-  @IsIn(['Elétrica', 'Hidráulica', 'Instalação', 'Instalações', 'Marcenaria', 'Montagem de Móveis', 'Limpeza'], {
-    message:
-      'Categoria inválida. Categorias aceitas: Elétrica, Hidráulica, Instalação, Instalações, Marcenaria, Montagem de Móveis, Limpeza',
-  })
+  @IsIn(
+    [
+      'Elétrica',
+      'Hidráulica',
+      'Instalação',
+      'Instalações',
+      'Marcenaria',
+      'Montagem de Móveis',
+      'Limpeza',
+    ],
+    {
+      message:
+        'Categoria inválida. Categorias aceitas: Elétrica, Hidráulica, Instalação, Instalações, Marcenaria, Montagem de Móveis, Limpeza',
+    },
+  )
   @ApiProperty({ description: 'Campo category', example: 'exemplo' })
   category: string;
 

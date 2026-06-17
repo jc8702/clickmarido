@@ -42,7 +42,10 @@ export class AuditInterceptor implements NestInterceptor {
           // Se houver um tenantId ativo, salvamos o log de auditoria
           if (companyId) {
             // Tentamos extrair o ID da entidade modificada do response ou params
-            const entityId = (response as Record<string, unknown>)?.id || request.params?.id || null;
+            const entityId =
+              (response as Record<string, unknown>)?.id ||
+              request.params?.id ||
+              null;
 
             // Execução em background para não atrasar a resposta HTTP principal
             this.prisma.auditLog
@@ -50,7 +53,12 @@ export class AuditInterceptor implements NestInterceptor {
                 data: {
                   action,
                   entityName,
-                  entityId: entityId ? String(entityId) : null,
+                  entityId:
+                    typeof entityId === 'string'
+                      ? entityId
+                      : entityId
+                        ? JSON.stringify(entityId)
+                        : null,
                   newValues: body ? JSON.parse(JSON.stringify(body)) : {},
                   oldValues: {}, // Em uma implementação completa, faríamos um select prévio do banco para obter os valores antigos
                   companyId,

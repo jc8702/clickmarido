@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { Test, TestingModule } from '@nestjs/testing';
 import { FinancialService } from './financial.service';

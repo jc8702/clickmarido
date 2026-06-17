@@ -92,10 +92,7 @@ describe('EmailService', () => {
     it('should call sendEmail with welcome HTML', async () => {
       mockSend.mockResolvedValue({ id: 'simulated' });
 
-      const result = await service.sendWelcomeEmail(
-        'user@test.com',
-        'João',
-      );
+      const result = await service.sendWelcomeEmail('user@test.com', 'João');
 
       expect(result).toBeDefined();
     });

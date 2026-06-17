@@ -39,6 +39,20 @@ describe('AiService', () => {
     expect(service).toBeDefined();
   });
 
+  it('should warn when GEMINI_API_KEY is not set', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+    const module = new AiService({
+      get: jest.fn().mockReturnValue(undefined),
+    } as unknown as ConfigService);
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      'GEMINI_API_KEY is not set. AI features will fail.',
+    );
+
+    warnSpy.mockRestore();
+  });
+
   describe('summarizeConversation', () => {
     it('should call Gemini and return a formatted summary object', async () => {
       mockGenerateContent.mockResolvedValue({

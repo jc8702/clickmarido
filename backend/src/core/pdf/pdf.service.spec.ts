@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { Test, TestingModule } from '@nestjs/testing';
 import { PdfService } from './pdf.service';
@@ -23,7 +24,7 @@ describe('PdfService', () => {
         id: 'quote-123',
         createdAt: new Date('2025-01-15'),
         status: 'PENDING',
-        totalValue: 450.00,
+        totalValue: 450.0,
         discount: 0,
         fee: 0,
         clientId: 'client-1',
@@ -46,7 +47,7 @@ describe('PdfService', () => {
         id: 'quote-456',
         createdAt: new Date(),
         status: 'APPROVED',
-        totalValue: 1200.00,
+        totalValue: 1200.0,
         discount: 100,
         fee: 50,
         clientId: 'client-2',
@@ -68,7 +69,7 @@ describe('PdfService', () => {
         id: 'quote-789',
         createdAt: new Date(),
         status: 'PENDING',
-        totalValue: 890.00,
+        totalValue: 890.0,
         discount: 0,
         fee: 0,
         clientId: 'client-3',

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppointmentsController } from './appointments.controller';

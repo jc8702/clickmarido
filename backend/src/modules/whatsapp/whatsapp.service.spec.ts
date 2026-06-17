@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 const mockAiGenerateContent = jest.fn();
 
@@ -133,7 +134,9 @@ describe('WhatsappService', () => {
       evolutionProvider.fetchInstances.mockResolvedValue([
         { instance: { instanceName: 'cm_instance_company-u' } },
       ]);
-      evolutionProvider.connectInstance.mockResolvedValue({ base64: 'qr-data' });
+      evolutionProvider.connectInstance.mockResolvedValue({
+        base64: 'qr-data',
+      });
       prismaService.whatsAppInstance.update.mockResolvedValue(mockInstance);
 
       const result = await service.connectInstance(
@@ -352,9 +355,9 @@ describe('WhatsappService', () => {
     it('should throw if conversation not found', async () => {
       prismaService.conversation.findUnique.mockResolvedValue(null);
 
-      await expect(
-        service.sendMessage('invalid-conv', 'Olá!'),
-      ).rejects.toThrow('Conversation not found');
+      await expect(service.sendMessage('invalid-conv', 'Olá!')).rejects.toThrow(
+        'Conversation not found',
+      );
     });
   });
 
@@ -408,7 +411,7 @@ describe('WhatsappService', () => {
         'company-uuid-1',
         '(11) 99999-9999',
         'quote-123',
-        450.00,
+        450.0,
       );
 
       expect(evolutionProvider.sendText).toHaveBeenCalled();

@@ -8,15 +8,22 @@ import { UpdateQuoteDto } from './dto/update-quote.dto';
 export class QuotesRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: Prisma.QuoteCreateInput, servicesData: Prisma.QuoteServiceCreateManyInput[], tx?: Prisma.TransactionClient) {
+  async create(
+    data: Prisma.QuoteCreateInput,
+    servicesData: Prisma.QuoteServiceCreateManyInput[],
+    tx?: Prisma.TransactionClient,
+  ) {
     const prismaClient = tx || this.prisma;
-    
+
     const quote = await prismaClient.quote.create({
       data,
     });
 
     if (servicesData && servicesData.length > 0) {
-      const mappedServices = servicesData.map(s => ({ ...s, quoteId: quote.id }));
+      const mappedServices = servicesData.map((s) => ({
+        ...s,
+        quoteId: quote.id,
+      }));
       await prismaClient.quoteService.createMany({
         data: mappedServices,
       });
@@ -42,7 +49,11 @@ export class QuotesRepository {
     });
   }
 
-  async findManyWithCount(where: Prisma.QuoteWhereInput, skip: number, take: number) {
+  async findManyWithCount(
+    where: Prisma.QuoteWhereInput,
+    skip: number,
+    take: number,
+  ) {
     return this.prisma.$transaction([
       this.prisma.quote.findMany({
         where,
@@ -75,7 +86,11 @@ export class QuotesRepository {
     ]);
   }
 
-  async findById(id: string, companyId?: string, tx?: Prisma.TransactionClient) {
+  async findById(
+    id: string,
+    companyId?: string,
+    tx?: Prisma.TransactionClient,
+  ) {
     const prismaClient = tx || this.prisma;
     const where: Prisma.QuoteWhereInput = { id, deletedAt: null };
     if (companyId) {
@@ -103,9 +118,18 @@ export class QuotesRepository {
     });
   }
 
-  async update(id: string, data: Prisma.QuoteUpdateInput, servicesData?: any[], tx?: Prisma.TransactionClient) {
+  async update(
+    id: string,
+    data: Prisma.QuoteUpdateInput,
+    servicesData?: Array<{
+      serviceId: string;
+      quantity: number;
+      value: number;
+    }>,
+    tx?: Prisma.TransactionClient,
+  ) {
     const prismaClient = tx || this.prisma;
-    
+
     if (servicesData) {
       await prismaClient.quoteService.deleteMany({
         where: { quoteId: id },
@@ -113,7 +137,7 @@ export class QuotesRepository {
 
       if (servicesData.length > 0) {
         await prismaClient.quoteService.createMany({
-          data: servicesData.map(s => ({ ...s, quoteId: id })),
+          data: servicesData.map((s) => ({ ...s, quoteId: id })),
         });
       }
     }
@@ -136,7 +160,9 @@ export class QuotesRepository {
     });
   }
 
-  async executeTransaction<T>(fn: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
+  async executeTransaction<T>(
+    fn: (tx: Prisma.TransactionClient) => Promise<T>,
+  ): Promise<T> {
     return this.prisma.$transaction(fn);
   }
 }

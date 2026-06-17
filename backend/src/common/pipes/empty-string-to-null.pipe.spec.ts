@@ -85,7 +85,10 @@ describe('EmptyStringToNullPipe', () => {
     };
     const metadata: ArgumentMetadata = { type: 'body' };
 
-    const result = pipe.transform(input, metadata) as { createdAt: Date; name: string | null };
+    const result = pipe.transform(input, metadata) as {
+      createdAt: Date;
+      name: string | null;
+    };
 
     expect(result.createdAt).toBeInstanceOf(Date);
     expect(result.name).toBeNull();

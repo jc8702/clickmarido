@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { Test, TestingModule } from '@nestjs/testing';
 import { MaterialsService } from './materials.service';
@@ -83,10 +84,12 @@ describe('MaterialsService', () => {
       const existing = MaterialFactory.build();
       prismaService.material.findFirst.mockResolvedValue(existing);
 
-      await expect(service.create(
-        { name: existing.name, category: 'General' },
-        existing.companyId,
-      )).rejects.toThrow(BadRequestException);
+      await expect(
+        service.create(
+          { name: existing.name, category: 'General' },
+          existing.companyId,
+        ),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -117,8 +120,9 @@ describe('MaterialsService', () => {
     it('should throw if material not found', async () => {
       prismaService.material.findFirst.mockResolvedValue(null);
 
-      await expect(service.findOne('non-existent', 'company-uuid-1'))
-        .rejects.toThrow(NotFoundException);
+      await expect(
+        service.findOne('non-existent', 'company-uuid-1'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -131,7 +135,10 @@ describe('MaterialsService', () => {
       prismaService.$transaction.mockResolvedValue([movements, 1]);
 
       const result = await service.findMovements(
-        material.id, material.companyId, 1, 10,
+        material.id,
+        material.companyId,
+        1,
+        10,
       );
 
       expect(result.success).toBe(true);
@@ -187,7 +194,9 @@ describe('MaterialsService', () => {
       });
 
       const result = await service.createMovement(
-        material.id, material.companyId, 'user-uuid-1',
+        material.id,
+        material.companyId,
+        'user-uuid-1',
         { type: 'SAIDA', quantity: 10, description: 'Saída teste' },
       );
 
@@ -198,10 +207,13 @@ describe('MaterialsService', () => {
       const material = MaterialFactory.build({ quantity: 5 });
       prismaService.material.findFirst.mockResolvedValue(material);
 
-      await expect(service.createMovement(
-        material.id, material.companyId, 'user-uuid-1',
-        { type: 'SAIDA', quantity: 10, description: 'Test' },
-      )).rejects.toThrow(BadRequestException);
+      await expect(
+        service.createMovement(material.id, material.companyId, 'user-uuid-1', {
+          type: 'SAIDA',
+          quantity: 10,
+          description: 'Test',
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -216,7 +228,11 @@ describe('MaterialsService', () => {
         name: 'Updated',
       });
 
-      const result = await service.update(material.id, { name: 'Updated' }, material.companyId);
+      const result = await service.update(
+        material.id,
+        { name: 'Updated' },
+        material.companyId,
+      );
 
       expect(result.success).toBe(true);
       expect(result.data.name).toBe('Updated');
@@ -225,8 +241,9 @@ describe('MaterialsService', () => {
     it('should throw if material not found', async () => {
       prismaService.material.findFirst.mockResolvedValue(null);
 
-      await expect(service.update('non-existent', {}, 'company-uuid-1'))
-        .rejects.toThrow(NotFoundException);
+      await expect(
+        service.update('non-existent', {}, 'company-uuid-1'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -244,8 +261,9 @@ describe('MaterialsService', () => {
     it('should throw if material not found', async () => {
       prismaService.material.findFirst.mockResolvedValue(null);
 
-      await expect(service.remove('non-existent', 'company-uuid-1'))
-        .rejects.toThrow(NotFoundException);
+      await expect(
+        service.remove('non-existent', 'company-uuid-1'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });
