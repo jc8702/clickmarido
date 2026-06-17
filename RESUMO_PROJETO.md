@@ -1,11 +1,20 @@
 # RESUMO DE PROJETO: ClickMarido
 
 ## Informações Gerais
-- **Status Atual:** ⚠️ EM AUDITORIA (Plano de correções técnicas e segurança elaborado)
+- **Status Atual:** ✅ ATIVO (Auditoria de segurança git concluída)
 - **Objetivo Central:** Plataforma CRM e Agendamento para Técnicos/Serviços.
-- **Última Atualização:** [15/06/2026 - 15:35]
+- **Última Atualização:** [17/06/2026 - 20:52]
 
 ## Histórico de Alterações
+- **[17/06/2026 - 20:52]:** Auditoria de segurança git e limpeza de arquivos comprometidos.
+  - **CRÍTICO**: Removidos `test_regex.js` e `backend/test_db.js` do tracking (continham credenciais de banco Supabase hardcoded expostas no GitHub).
+  - Removido `backend/dist/` (432 arquivos de build compilado) do tracking — desnecessário no controle de versão.
+  - Removido `backend/backend.env` (CSRF_SECRET) do tracking.
+  - Removidos arquivos de debug: `lint-errors.txt`, `frontend/lint-errors.json`, `backend/test_db_v7.js`, `backend/ignore.js`.
+  - Atualizados `.gitignore` (raiz) e `backend/.gitignore` para prevenir que esses arquivos voltem ao tracking.
+  - Commit `aa1735c` enviado ao GitHub com as correções.
+  - **⚠️ AÇÃO NECESSÁRIA**: Rotacionar a senha do banco Supabase imediatamente, pois `Millena@@2017@@` ficou exposta no histórico do git.
+  - Arquivos modificados: `.gitignore`, `backend/.gitignore`, `RESUMO_PROJETO.md`.
 - **[15/06/2026 - 16:45]:** Finalizada as correções de TypeSafety e Linters (0 erros no frontend e backend). Concluída a Fase P1 de Refatoração com a extração minuciosa de componentes altamente acoplados, como o `SignatureModal` do `orcamentos/page.tsx`. O código agora está robusto e devidamente componentizado.
   - Arquivos modificados/criados: `frontend/src/app/(dashboard)/orcamentos/page.tsx`, `frontend/src/app/(dashboard)/orcamentos/components/signature-modal.tsx`.
 - **[15/06/2026 - 15:35]:** Análise de relatório de auditoria pós-implementação e criação de plano estruturado de correções de segurança (CSRF, XSS) e qualidade (testes, ESLint strict, refatoração, monitoramento e performance).
