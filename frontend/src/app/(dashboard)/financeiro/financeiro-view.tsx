@@ -2,10 +2,25 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FinancialSummary, FinancialDre, FinancialProjection, getFinancialSummary, getFinancialDre, getFinancialProjection } from '@/lib/api/modules/financial';
-import { DollarSign, TrendingUp, TrendingDown, Clock, Activity, FileText, CalendarDays } from 'lucide-react';
+import {
+  FinancialSummary,
+  FinancialDre,
+  FinancialProjection,
+  getFinancialSummary,
+  getFinancialDre,
+  getFinancialProjection,
+} from '@/lib/api/modules/financial';
+import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  Activity,
+  FileText,
+  CalendarDays,
+} from 'lucide-react';
 
-const COMPANY_ID = "6fb48ab0-08ab-49bd-9eab-57dd4f923ff1"; // MOCK for MVP
+const COMPANY_ID = '6fb48ab0-08ab-49bd-9eab-57dd4f923ff1'; // MOCK for MVP
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -24,14 +39,14 @@ export default function FinanceiroDashboardPage() {
     Promise.all([
       getFinancialSummary(COMPANY_ID),
       getFinancialDre(COMPANY_ID, currentMonth, currentYear),
-      getFinancialProjection(COMPANY_ID, 30)
+      getFinancialProjection(COMPANY_ID, 30),
     ])
       .then(([summaryData, dreData, projectionData]) => {
         setSummary(summaryData);
         setDre(dreData);
         setProjection(projectionData);
       })
-      .catch(err => console.error(err))
+      .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   }, []);
 
@@ -48,7 +63,10 @@ export default function FinanceiroDashboardPage() {
           </div>
           Painel Financeiro
         </h2>
-        <Link href="/financeiro/transacoes" className="bg-primary text-primary-foreground px-4 py-2 rounded font-medium text-sm">
+        <Link
+          href="/financeiro/transacoes"
+          className="bg-primary text-primary-foreground px-4 py-2 rounded font-medium text-sm"
+        >
           Acessar Extrato Detalhado
         </Link>
       </div>
@@ -97,8 +115,12 @@ export default function FinanceiroDashboardPage() {
             <Activity className="h-4 w-4 text-yellow-500" />
           </div>
           <div className="flex flex-col text-sm font-medium">
-            <span className="text-emerald-500">A receber: {formatCurrency(summary?.pendingToReceive || 0)}</span>
-            <span className="text-rose-500">A pagar: {formatCurrency(summary?.pendingToPay || 0)}</span>
+            <span className="text-emerald-500">
+              A receber: {formatCurrency(summary?.pendingToReceive || 0)}
+            </span>
+            <span className="text-rose-500">
+              A pagar: {formatCurrency(summary?.pendingToPay || 0)}
+            </span>
           </div>
           <p className="text-xs text-muted-foreground">Provisão de caixa futuro.</p>
         </div>
@@ -112,20 +134,21 @@ export default function FinanceiroDashboardPage() {
               DRE Gerencial - {dre?.period}
             </h3>
           </div>
-          
+
           <div className="space-y-4 text-sm">
             <div className="flex justify-between font-bold text-emerald-600">
               <span>Receita Bruta Total</span>
               <span>{formatCurrency(dre?.grossRevenue || 0)}</span>
             </div>
-            
+
             <div className="pl-4 space-y-1 text-muted-foreground border-l-2 border-emerald-100">
-              {dre?.revenuesByCategory && Object.entries(dre.revenuesByCategory).map(([cat, val]) => (
-                <div key={cat} className="flex justify-between">
-                  <span>{cat}</span>
-                  <span>{formatCurrency(val as number)}</span>
-                </div>
-              ))}
+              {dre?.revenuesByCategory &&
+                Object.entries(dre.revenuesByCategory).map(([cat, val]) => (
+                  <div key={cat} className="flex justify-between">
+                    <span>{cat}</span>
+                    <span>{formatCurrency(val as number)}</span>
+                  </div>
+                ))}
             </div>
 
             <div className="flex justify-between font-bold text-rose-600 border-t pt-4">
@@ -134,15 +157,18 @@ export default function FinanceiroDashboardPage() {
             </div>
 
             <div className="pl-4 space-y-1 text-muted-foreground border-l-2 border-rose-100">
-              {dre?.expensesByCategory && Object.entries(dre.expensesByCategory).map(([cat, val]) => (
-                <div key={cat} className="flex justify-between">
-                  <span>{cat}</span>
-                  <span>{formatCurrency(val as number)}</span>
-                </div>
-              ))}
+              {dre?.expensesByCategory &&
+                Object.entries(dre.expensesByCategory).map(([cat, val]) => (
+                  <div key={cat} className="flex justify-between">
+                    <span>{cat}</span>
+                    <span>{formatCurrency(val as number)}</span>
+                  </div>
+                ))}
             </div>
 
-            <div className={`flex justify-between font-black text-lg border-t pt-4 ${(dre?.netIncome || 0) >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+            <div
+              className={`flex justify-between font-black text-lg border-t pt-4 ${(dre?.netIncome || 0) >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}
+            >
               <span>Lucro Líquido / Prejuízo</span>
               <span>{formatCurrency(dre?.netIncome || 0)}</span>
             </div>
@@ -167,9 +193,12 @@ export default function FinanceiroDashboardPage() {
                 // Formata a data: YYYY-MM-DD para DD/MM
                 const dateObj = new Date(item.date + 'T00:00:00');
                 const label = `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}`;
-                
+
                 return (
-                  <div key={item.date} className="flex justify-between items-center text-sm border-b pb-2 last:border-0">
+                  <div
+                    key={item.date}
+                    className="flex justify-between items-center text-sm border-b pb-2 last:border-0"
+                  >
                     <span className="font-medium w-16">{label}</span>
                     <div className="flex gap-4 w-full justify-end">
                       <span className="text-emerald-500 min-w-20 text-right">

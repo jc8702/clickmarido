@@ -13,18 +13,35 @@ import { useUsers } from './hooks/use-users';
 import { UserCard } from './components/user-card';
 import type { User } from './types';
 
-const UserFormModal = dynamic(() => import('./components/user-form-modal').then(m => m.UserFormModal), { ssr: false });
+const UserFormModal = dynamic(
+  () => import('./components/user-form-modal').then((m) => m.UserFormModal),
+  { ssr: false },
+);
 
 function UsuariosPageInner() {
   const { user: currentUser } = useAuth();
   const {
-    users, roles, total, page, totalPages, search, roleFilter, activeFilter, loading,
-    setSearch, setPage, setRoleFilter, setActiveFilter, fetchData, handleDelete,
+    users,
+    roles,
+    total,
+    page,
+    totalPages,
+    search,
+    roleFilter,
+    activeFilter,
+    loading,
+    setSearch,
+    setPage,
+    setRoleFilter,
+    setActiveFilter,
+    fetchData,
+    handleDelete,
   } = useUsers();
 
   const [formModal, setFormModal] = useState({ open: false, user: null as User | null });
 
-  const canAccess = currentUser?.roles.includes('Administrador') || currentUser?.roles.includes('Gestor');
+  const canAccess =
+    currentUser?.roles.includes('Administrador') || currentUser?.roles.includes('Gestor');
 
   if (!canAccess) {
     return (
@@ -34,7 +51,8 @@ function UsuariosPageInner() {
         </div>
         <h3 className="text-2xl font-extrabold text-white tracking-tight">Acesso restrito</h3>
         <p className="text-zinc-400 mt-2 max-w-sm font-medium">
-          Apenas administradores e gestores da empresa têm permissão para visualizar e gerenciar o time.
+          Apenas administradores e gestores da empresa têm permissão para visualizar e gerenciar o
+          time.
         </p>
         <Link href="/dashboard" className="mt-6">
           <Button className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white font-bold h-11 px-6 rounded-xl">
@@ -50,7 +68,10 @@ function UsuariosPageInner() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-zinc-900 pb-8">
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-zinc-500 mb-1">
-            <Link href="/dashboard" className="hover:text-blue-400 transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-widest">
+            <Link
+              href="/dashboard"
+              className="hover:text-blue-400 transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-widest"
+            >
               <ArrowLeft className="w-3 h-3" /> Dashboard
             </Link>
           </div>
@@ -61,12 +82,15 @@ function UsuariosPageInner() {
             Usuários
           </h1>
           <p className="text-zinc-400 font-medium">
-            Gerenciando o time operacional com <span className="text-white font-bold">{total}</span> colaboradores
+            Gerenciando o time operacional com <span className="text-white font-bold">{total}</span>{' '}
+            colaboradores
           </p>
         </div>
         <div className="flex w-full md:w-auto gap-3">
-          <Button onClick={() => setFormModal({ open: true, user: null })}
-            className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20 font-bold shrink-0 ml-auto md:ml-0">
+          <Button
+            onClick={() => setFormModal({ open: true, user: null })}
+            className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20 font-bold shrink-0 ml-auto md:ml-0"
+          >
             <Plus className="w-5 h-5 mr-2" /> Novo Usuário
           </Button>
         </div>
@@ -75,20 +99,40 @@ function UsuariosPageInner() {
       <div className="grid gap-4 md:grid-cols-4 items-center bg-zinc-950/20 p-4 rounded-2xl border border-zinc-900/60 backdrop-blur-sm">
         <div className="relative md:col-span-2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             className="w-full h-11 pl-10 pr-4 rounded-xl bg-zinc-900/50 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
-            placeholder="Nome ou e-mail..." />
+            placeholder="Nome ou e-mail..."
+          />
         </div>
-        <select value={activeFilter} onChange={(e) => { setActiveFilter(e.target.value); setPage(1); }}
-          className="w-full h-11 px-4 rounded-xl bg-zinc-900/50 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all cursor-pointer">
+        <select
+          value={activeFilter}
+          onChange={(e) => {
+            setActiveFilter(e.target.value);
+            setPage(1);
+          }}
+          className="w-full h-11 px-4 rounded-xl bg-zinc-900/50 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all cursor-pointer"
+        >
           <option value="all">Todos os Status</option>
           <option value="active">Ativos</option>
           <option value="inactive">Inativos</option>
         </select>
-        <select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
-          className="w-full h-11 px-4 rounded-xl bg-zinc-900/50 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all cursor-pointer">
+        <select
+          value={roleFilter}
+          onChange={(e) => {
+            setRoleFilter(e.target.value);
+            setPage(1);
+          }}
+          className="w-full h-11 px-4 rounded-xl bg-zinc-900/50 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all cursor-pointer"
+        >
           <option value="">Todos os Perfis</option>
-          {roles.map((role) => <option key={role.id} value={role.id}>{role.name}</option>)}
+          {roles.map((role) => (
+            <option key={role.id} value={role.id}>
+              {role.name}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -103,13 +147,18 @@ function UsuariosPageInner() {
             <Users className="w-10 h-10 text-zinc-700 opacity-50" />
           </div>
           <h3 className="text-xl font-bold text-zinc-300">Nenhum colaborador cadastrado</h3>
-          <p className="text-zinc-500 mt-2 max-w-sm">Tente ajustar os termos da busca ou adicione um novo usuário.</p>
+          <p className="text-zinc-500 mt-2 max-w-sm">
+            Tente ajustar os termos da busca ou adicione um novo usuário.
+          </p>
         </Card>
       ) : (
         <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
             {users.map((targetUser, idx) => (
-              <UserCard key={targetUser.id} user={targetUser} idx={idx}
+              <UserCard
+                key={targetUser.id}
+                user={targetUser}
+                idx={idx}
                 isCurrentUser={targetUser.id === currentUser?.id}
                 onEdit={(u) => setFormModal({ open: true, user: u })}
                 onDelete={(id) => {
@@ -118,27 +167,45 @@ function UsuariosPageInner() {
                     return;
                   }
                   handleDelete(id);
-                }} />
+                }}
+              />
             ))}
           </div>
 
           {totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-zinc-900 pt-6">
               <span className="text-sm font-medium text-zinc-500">
-                Página <span className="text-white">{page}</span> de <span className="text-white">{totalPages}</span>
+                Página <span className="text-white">{page}</span> de{' '}
+                <span className="text-white">{totalPages}</span>
               </span>
               <div className="flex gap-2">
-                <Button disabled={page === 1} onClick={() => setPage(page - 1)}
-                  className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 disabled:opacity-50 text-white font-bold h-9 px-4 rounded-lg text-xs">Anterior</Button>
-                <Button disabled={page === totalPages} onClick={() => setPage(page + 1)}
-                  className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 disabled:opacity-50 text-white font-bold h-9 px-4 rounded-lg text-xs">Próxima</Button>
+                <Button
+                  disabled={page === 1}
+                  onClick={() => setPage(page - 1)}
+                  className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 disabled:opacity-50 text-white font-bold h-9 px-4 rounded-lg text-xs"
+                >
+                  Anterior
+                </Button>
+                <Button
+                  disabled={page === totalPages}
+                  onClick={() => setPage(page + 1)}
+                  className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 disabled:opacity-50 text-white font-bold h-9 px-4 rounded-lg text-xs"
+                >
+                  Próxima
+                </Button>
               </div>
             </div>
           )}
         </div>
       )}
 
-      <UserFormModal isOpen={formModal.open} onClose={() => setFormModal({ open: false, user: null })} onSuccess={fetchData} user={formModal.user} roles={roles} />
+      <UserFormModal
+        isOpen={formModal.open}
+        onClose={() => setFormModal({ open: false, user: null })}
+        onSuccess={fetchData}
+        user={formModal.user}
+        roles={roles}
+      />
     </div>
   );
 }

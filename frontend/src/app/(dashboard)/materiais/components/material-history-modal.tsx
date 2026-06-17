@@ -10,7 +10,10 @@ function formatCurrency(value: number): string {
 }
 
 function formatNumber(value: number): string {
-  return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+  return new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
 }
 
 interface MaterialHistoryModalProps {
@@ -31,8 +34,16 @@ export function MaterialHistoryModal({ isOpen, onClose, material }: MaterialHist
     try {
       const data = await ApiClient.get<{
         success: boolean;
-        data: { items: MaterialMovement[]; total: number; page: number; limit: number; totalPages: number };
-      }>(`/materials/${material.id}/movements`, { params: { page: String(pageToFetch), limit: '10' } });
+        data: {
+          items: MaterialMovement[];
+          total: number;
+          page: number;
+          limit: number;
+          totalPages: number;
+        };
+      }>(`/materials/${material.id}/movements`, {
+        params: { page: String(pageToFetch), limit: '10' },
+      });
       if (data.success) {
         if (pageToFetch === 1) {
           setMovements(data.data.items);
@@ -67,19 +78,39 @@ export function MaterialHistoryModal({ isOpen, onClose, material }: MaterialHist
 
   const movementIcon = (type: string) => {
     switch (type) {
-      case 'ENTRADA': return <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />;
-      case 'SAIDA': return <TrendingDown className="w-3.5 h-3.5 text-red-400" />;
-      case 'AJUSTE': return <Minus className="w-3.5 h-3.5 text-amber-400" />;
-      default: return null;
+      case 'ENTRADA':
+        return <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />;
+      case 'SAIDA':
+        return <TrendingDown className="w-3.5 h-3.5 text-red-400" />;
+      case 'AJUSTE':
+        return <Minus className="w-3.5 h-3.5 text-amber-400" />;
+      default:
+        return null;
     }
   };
 
   const movementBadge = (type: string) => {
     switch (type) {
-      case 'ENTRADA': return <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2 py-0.5 text-[10px] font-black uppercase">Entrada</Badge>;
-      case 'SAIDA': return <Badge className="bg-red-500/15 text-red-400 border border-red-500/25 px-2 py-0.5 text-[10px] font-black uppercase">Saída</Badge>;
-      case 'AJUSTE': return <Badge className="bg-amber-500/15 text-amber-400 border border-amber-500/25 px-2 py-0.5 text-[10px] font-black uppercase">Ajuste</Badge>;
-      default: return null;
+      case 'ENTRADA':
+        return (
+          <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2 py-0.5 text-[10px] font-black uppercase">
+            Entrada
+          </Badge>
+        );
+      case 'SAIDA':
+        return (
+          <Badge className="bg-red-500/15 text-red-400 border border-red-500/25 px-2 py-0.5 text-[10px] font-black uppercase">
+            Saída
+          </Badge>
+        );
+      case 'AJUSTE':
+        return (
+          <Badge className="bg-amber-500/15 text-amber-400 border border-amber-500/25 px-2 py-0.5 text-[10px] font-black uppercase">
+            Ajuste
+          </Badge>
+        );
+      default:
+        return null;
     }
   };
 
@@ -92,7 +123,10 @@ export function MaterialHistoryModal({ isOpen, onClose, material }: MaterialHist
             Histórico — {material.name}
           </h3>
           <p className="text-zinc-500 text-xs mt-1">
-            Estoque atual: <span className="text-white font-bold">{formatNumber(material.quantity)}</span> | Custo médio: <span className="text-white font-bold">{formatCurrency(material.averageCost)}</span>
+            Estoque atual:{' '}
+            <span className="text-white font-bold">{formatNumber(material.quantity)}</span> | Custo
+            médio:{' '}
+            <span className="text-white font-bold">{formatCurrency(material.averageCost)}</span>
           </p>
         </div>
 
@@ -104,7 +138,10 @@ export function MaterialHistoryModal({ isOpen, onClose, material }: MaterialHist
         ) : (
           <div className="space-y-3">
             {movements.map((mov) => (
-              <div key={mov.id} className="flex items-center justify-between p-4 rounded-xl bg-zinc-900/50 border border-zinc-900">
+              <div
+                key={mov.id}
+                className="flex items-center justify-between p-4 rounded-xl bg-zinc-900/50 border border-zinc-900"
+              >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
                     {movementIcon(mov.type)}
@@ -112,13 +149,17 @@ export function MaterialHistoryModal({ isOpen, onClose, material }: MaterialHist
                   <div>
                     <div className="flex items-center gap-2">
                       {movementBadge(mov.type)}
-                      <span className="text-sm font-bold text-white">{formatNumber(mov.quantity)} unidades</span>
+                      <span className="text-sm font-bold text-white">
+                        {formatNumber(mov.quantity)} unidades
+                      </span>
                     </div>
                     {mov.description && (
                       <p className="text-xs text-zinc-500 mt-0.5">{mov.description}</p>
                     )}
                     {mov.unitCost > 0 && (
-                      <p className="text-xs text-zinc-500">Custo unitário: {formatCurrency(mov.unitCost)}</p>
+                      <p className="text-xs text-zinc-500">
+                        Custo unitário: {formatCurrency(mov.unitCost)}
+                      </p>
                     )}
                   </div>
                 </div>

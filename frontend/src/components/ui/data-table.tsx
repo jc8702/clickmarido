@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -8,9 +8,9 @@ import {
   getSortedRowModel,
   OnChangeFn,
   RowSelectionState,
-} from "@tanstack/react-table"
-import { useVirtualizer } from "@tanstack/react-virtual"
-import { cn } from "@/lib/utils"
+} from '@tanstack/react-table';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { cn } from '@/lib/utils';
 import {
   Table,
   TableBody,
@@ -18,18 +18,18 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from '@/components/ui/table';
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-  sorting?: SortingState
-  onSortingChange?: OnChangeFn<SortingState>
-  rowSelection?: RowSelectionState
-  onRowSelectionChange?: OnChangeFn<RowSelectionState>
-  isLoading?: boolean
-  virtualized?: boolean
-  onRowClick?: (row: TData) => void
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  sorting?: SortingState;
+  onSortingChange?: OnChangeFn<SortingState>;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>;
+  isLoading?: boolean;
+  virtualized?: boolean;
+  onRowClick?: (row: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -56,25 +56,25 @@ export function DataTable<TData, TValue>({
       ...(rowSelection !== undefined && { rowSelection }),
     },
     manualSorting: true,
-  })
+  });
 
   // Virtualization
-  const tableContainerRef = React.useRef<HTMLDivElement>(null)
-  
-  const { rows } = table.getRowModel()
-  
+  const tableContainerRef = React.useRef<HTMLDivElement>(null);
+
+  const { rows } = table.getRowModel();
+
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => tableContainerRef.current,
     estimateSize: () => 56, // default row height
     overscan: 10,
-  })
+  });
 
   return (
     <div
       ref={tableContainerRef}
       className={`rounded-xl border border-border bg-card overflow-auto ${
-        virtualized ? "h-[600px]" : "w-full"
+        virtualized ? 'h-[600px]' : 'w-full'
       }`}
     >
       <Table>
@@ -83,18 +83,15 @@ export function DataTable<TData, TValue>({
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead 
+                  <TableHead
                     key={header.id}
                     className={(header.column.columnDef.meta as { className?: string })?.className}
                   >
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
-                )
+                );
               })}
             </TableRow>
           ))}
@@ -113,17 +110,21 @@ export function DataTable<TData, TValue>({
             virtualized ? (
               <>
                 {/* Placeholder top for virtualization */}
-                {rowVirtualizer.getVirtualItems().length > 0 && rowVirtualizer.getVirtualItems()[0].start > 0 && (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} style={{ height: `${rowVirtualizer.getVirtualItems()[0].start}px` }} />
-                  </TableRow>
-                )}
+                {rowVirtualizer.getVirtualItems().length > 0 &&
+                  rowVirtualizer.getVirtualItems()[0].start > 0 && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        style={{ height: `${rowVirtualizer.getVirtualItems()[0].start}px` }}
+                      />
+                    </TableRow>
+                  )}
                 {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                  const row = rows[virtualRow.index]
+                  const row = rows[virtualRow.index];
                   return (
                     <TableRow
                       key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
+                      data-state={row.getIsSelected() && 'selected'}
                       onClick={() => onRowClick?.(row.original)}
                       onKeyDown={(e) => {
                         if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
@@ -132,64 +133,71 @@ export function DataTable<TData, TValue>({
                         }
                       }}
                       tabIndex={onRowClick ? 0 : undefined}
-                      role={onRowClick ? "button" : undefined}
+                      role={onRowClick ? 'button' : undefined}
                       aria-label={onRowClick ? `Selecionar linha ${row.index + 1}` : undefined}
                       className={cn(
-                        onRowClick ? "cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset" : ""
+                        onRowClick
+                          ? 'cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset'
+                          : '',
                       )}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell 
+                        <TableCell
                           key={cell.id}
-                          className={(cell.column.columnDef.meta as { className?: string })?.className}
+                          className={
+                            (cell.column.columnDef.meta as { className?: string })?.className
+                          }
                         >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>
                       ))}
                     </TableRow>
-                  )
+                  );
                 })}
                 {/* Placeholder bottom for virtualization */}
-                {rowVirtualizer.getVirtualItems().length > 0 && rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1].end < rowVirtualizer.getTotalSize() && (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} style={{ height: `${rowVirtualizer.getTotalSize() - rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1].end}px` }} />
-                  </TableRow>
-                )}
+                {rowVirtualizer.getVirtualItems().length > 0 &&
+                  rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1]
+                    .end < rowVirtualizer.getTotalSize() && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        style={{
+                          height: `${rowVirtualizer.getTotalSize() - rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1].end}px`,
+                        }}
+                      />
+                    </TableRow>
+                  )}
               </>
             ) : (
               rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                      onClick={() => onRowClick?.(row.original)}
-                      onKeyDown={(e) => {
-                        if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
-                          e.preventDefault();
-                          onRowClick(row.original);
-                        }
-                      }}
-                      tabIndex={onRowClick ? 0 : undefined}
-                      role={onRowClick ? "button" : undefined}
-                      aria-label={onRowClick ? `Selecionar linha ${row.index + 1}` : undefined}
-                      className={cn(
-                        onRowClick ? "cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset" : ""
-                      )}
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                  onClick={() => onRowClick?.(row.original)}
+                  onKeyDown={(e) => {
+                    if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault();
+                      onRowClick(row.original);
+                    }
+                  }}
+                  tabIndex={onRowClick ? 0 : undefined}
+                  role={onRowClick ? 'button' : undefined}
+                  aria-label={onRowClick ? `Selecionar linha ${row.index + 1}` : undefined}
+                  className={cn(
+                    onRowClick
+                      ? 'cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset'
+                      : '',
+                  )}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className={(cell.column.columnDef.meta as { className?: string })?.className}
                     >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell 
-                          key={cell.id}
-                          className={(cell.column.columnDef.meta as { className?: string })?.className}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
               ))
             )
           ) : (
@@ -205,5 +213,5 @@ export function DataTable<TData, TValue>({
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

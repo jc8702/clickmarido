@@ -32,12 +32,20 @@ export function ServiceCard({ service, idx, onEdit, onDelete }: ServiceCardProps
             <div className="space-y-3 min-w-0">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-lg font-bold text-white tracking-tight truncate">{service.name}</h3>
-                  <Badge variant="outline" className="text-[10px] bg-violet-500/10 border-violet-500/20 text-violet-400 font-semibold px-2">
+                  <h3 className="text-lg font-bold text-white tracking-tight truncate">
+                    {service.name}
+                  </h3>
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] bg-violet-500/10 border-violet-500/20 text-violet-400 font-semibold px-2"
+                  >
                     {service.category}
                   </Badge>
                   {!service.active && (
-                    <Badge variant="destructive" className="text-[10px] font-black uppercase px-2 py-0.5">
+                    <Badge
+                      variant="destructive"
+                      className="text-[10px] font-black uppercase px-2 py-0.5"
+                    >
                       Inativo
                     </Badge>
                   )}
@@ -60,13 +68,19 @@ export function ServiceCard({ service, idx, onEdit, onDelete }: ServiceCardProps
                 </div>
 
                 <div className="px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-350 flex items-center gap-1">
-                  <span className="text-[10px] opacity-70 uppercase mr-0.5 text-zinc-500 font-bold">Complexidade:</span>
-                  <span className={getComplexityClass(service.complexity)}>{service.complexity}</span>
+                  <span className="text-[10px] opacity-70 uppercase mr-0.5 text-zinc-500 font-bold">
+                    Complexidade:
+                  </span>
+                  <span className={getComplexityClass(service.complexity)}>
+                    {service.complexity}
+                  </span>
                 </div>
 
                 {service.warranty > 0 && (
                   <div className="px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-350 flex items-center gap-1">
-                    <span className="text-[10px] opacity-70 uppercase mr-0.5 text-zinc-500 font-bold">Garantia:</span>
+                    <span className="text-[10px] opacity-70 uppercase mr-0.5 text-zinc-500 font-bold">
+                      Garantia:
+                    </span>
                     <span>{service.warranty} dias</span>
                   </div>
                 )}

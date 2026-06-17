@@ -38,7 +38,8 @@ export function useUsers() {
       const rolesRes = await ApiClient.get<RolesResponse>('/users/roles');
       if (rolesRes.success) setRoles(rolesRes.data);
 
-      const activeParam = activeFilter === 'active' ? 'true' : activeFilter === 'inactive' ? 'false' : '';
+      const activeParam =
+        activeFilter === 'active' ? 'true' : activeFilter === 'inactive' ? 'false' : '';
       const usersRes = await ApiClient.get<UsersResponse>('/users', {
         params: {
           page: String(page),
@@ -66,7 +67,12 @@ export function useUsers() {
   }, [fetchData]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza de que deseja excluir este usuário? Suas sessões ativas serão encerradas.')) return;
+    if (
+      !confirm(
+        'Tem certeza de que deseja excluir este usuário? Suas sessões ativas serão encerradas.',
+      )
+    )
+      return;
     try {
       const res = await ApiClient.delete<{ success: boolean }>(`/users/${id}`);
       if (res.success) fetchData();
@@ -76,7 +82,20 @@ export function useUsers() {
   };
 
   return {
-    users, roles, total, page, totalPages, search, roleFilter, activeFilter, loading,
-    setSearch, setPage, setRoleFilter, setActiveFilter, fetchData, handleDelete,
+    users,
+    roles,
+    total,
+    page,
+    totalPages,
+    search,
+    roleFilter,
+    activeFilter,
+    loading,
+    setSearch,
+    setPage,
+    setRoleFilter,
+    setActiveFilter,
+    fetchData,
+    handleDelete,
   };
 }

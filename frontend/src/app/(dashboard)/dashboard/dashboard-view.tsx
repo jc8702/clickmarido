@@ -17,25 +17,32 @@ export default function DashboardView() {
         subtitle="Visão de alto nível sobre funil de vendas, faturamento e qualidade técnica da empresa."
         icon={<TrendingUp className="w-8 h-8" />}
         iconBg="bg-accent/10 text-accent"
-        badge={{ label: "● Executivo em Tempo Real", className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" }}
+        badge={{
+          label: '● Executivo em Tempo Real',
+          className:
+            'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+        }}
         actions={[
           {
-            label: "Novo Lead",
-            href: "/clientes",
+            label: 'Novo Lead',
+            href: '/clientes',
             icon: <Plus className="w-5 h-5" />,
-            className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg",
+            className: 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg',
           },
           {
-            label: "Novo Orçamento",
-            href: "/orcamentos",
-            variant: "outline",
+            label: 'Novo Orçamento',
+            href: '/orcamentos',
+            variant: 'outline',
             icon: <FileText className="w-5 h-5" />,
-            className: "border-border bg-input/40 hover:bg-input/80 text-foreground",
+            className: 'border-border bg-input/40 hover:bg-input/80 text-foreground',
           },
         ]}
       />
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 animate-in-slide" style={{ animationDelay: '0.1s' }}>
+      <div
+        className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 animate-in-slide"
+        style={{ animationDelay: '0.1s' }}
+      >
         <KpiGrid metrics={metrics} isLoading={isLoading} isError={isError} />
       </div>
 

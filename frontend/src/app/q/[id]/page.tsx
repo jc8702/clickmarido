@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useRef, use } from "react";
-import { ApiClient } from "@/lib/api/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { CheckCircle2, Eraser, PenTool, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import Image from "next/image";
+import { useEffect, useState, useRef, use } from 'react';
+import { ApiClient } from '@/lib/api/client';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { CheckCircle2, Eraser, PenTool, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import Image from 'next/image';
 
 export default function PublicQuotePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const [quote, setQuote] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
@@ -24,10 +24,12 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
   useEffect(() => {
     const fetchQuote = async () => {
       try {
-        const data = await ApiClient.get<Record<string, unknown>>(`/public/quotes/${resolvedParams.id}`);
+        const data = await ApiClient.get<Record<string, unknown>>(
+          `/public/quotes/${resolvedParams.id}`,
+        );
         setQuote(data);
       } catch (err: unknown) {
-        setError(err.message || "Orçamento não encontrado ou expirado.");
+        setError(err.message || 'Orçamento não encontrado ou expirado.');
       } finally {
         setLoading(false);
       }
@@ -36,15 +38,17 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
   }, [resolvedParams.id]);
 
   // Canvas drawing logic
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const startDrawing = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>,
+  ) => {
     e.preventDefault();
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     setIsDrawing(true);
-    
+
     // Get correct coordinates whether mouse or touch
     let clientX, clientY;
     if ('touches' in e) {
@@ -65,7 +69,7 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
     if (!isDrawing) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     let clientX, clientY;
@@ -90,7 +94,7 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
   const clearSignature = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setHasSignature(false);
@@ -98,23 +102,23 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
 
   const handleApprove = async () => {
     if (!hasSignature) {
-      toast.error("Por favor, assine o orçamento antes de aprovar.");
+      toast.error('Por favor, assine o orçamento antes de aprovar.');
       return;
     }
 
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const signatureBase64 = canvas.toDataURL("image/png");
+    const signatureBase64 = canvas.toDataURL('image/png');
 
     try {
       setSubmitting(true);
       await ApiClient.post(`/public/quotes/${resolvedParams.id}/sign`, {
         signature: signatureBase64,
       });
-      toast.success("Orçamento aprovado com sucesso!");
-      setQuote({ ...quote, status: "Aprovado" });
+      toast.success('Orçamento aprovado com sucesso!');
+      setQuote({ ...quote, status: 'Aprovado' });
     } catch (err: unknown) {
-      toast.error(err.message || "Erro ao aprovar orçamento.");
+      toast.error(err.message || 'Erro ao aprovar orçamento.');
     } finally {
       setSubmitting(false);
     }
@@ -151,20 +155,25 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
     );
   }
 
-  const isApproved = quote.status === "Aprovado";
+  const isApproved = quote.status === 'Aprovado';
 
   return (
     <div className="min-h-screen bg-muted/20 py-8 px-4 sm:px-6">
       <div className="max-w-3xl mx-auto space-y-6">
-        
         {/* CABEÇALHO DA EMPRESA */}
         <div className="text-center space-y-2">
           {quote.company?.logoUrl && (
             <div className="relative h-16 w-full">
-              <Image src={quote.company.logoUrl} alt={quote.company.name} fill className="object-contain" unoptimized />
+              <Image
+                src={quote.company.logoUrl}
+                alt={quote.company.name}
+                fill
+                className="object-contain"
+                unoptimized
+              />
             </div>
           )}
-          <h1 className="text-2xl font-bold">{quote.company?.name || "Prestador de Serviços"}</h1>
+          <h1 className="text-2xl font-bold">{quote.company?.name || 'Prestador de Serviços'}</h1>
           <p className="text-muted-foreground text-sm">
             Orçamento #{quote.number} • Emitido para: {quote.client?.name}
           </p>
@@ -177,13 +186,12 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
                 <CardTitle>Detalhes do Orçamento</CardTitle>
                 <CardDescription>Resumo dos serviços e valores propostos.</CardDescription>
               </div>
-              <Badge variant={isApproved ? "default" : "secondary"} className="text-sm">
+              <Badge variant={isApproved ? 'default' : 'secondary'} className="text-sm">
                 {quote.status}
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            
             {/* SERVIÇOS */}
             <div>
               <h3 className="font-semibold mb-3 border-b pb-2">Serviços</h3>
@@ -192,7 +200,9 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
                   <div key={idx} className="flex justify-between items-start text-sm">
                     <div>
                       <p className="font-medium">{item.service?.name}</p>
-                      {item.service?.description && <p className="text-muted-foreground text-xs">{item.service.description}</p>}
+                      {item.service?.description && (
+                        <p className="text-muted-foreground text-xs">{item.service.description}</p>
+                      )}
                       <p className="text-muted-foreground mt-1">
                         {item.quantity}x de R$ {Number(item.value).toFixed(2)}
                       </p>
@@ -246,7 +256,6 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
                 <span className="text-primary">R$ {Number(quote.totalValue).toFixed(2)}</span>
               </div>
             </div>
-
           </CardContent>
         </Card>
 
@@ -258,9 +267,7 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
                 <PenTool className="w-5 h-5 text-primary" />
                 Assinatura Digital
               </CardTitle>
-              <CardDescription>
-                Para aprovar o orçamento, assine no quadro abaixo.
-              </CardDescription>
+              <CardDescription>Para aprovar o orçamento, assine no quadro abaixo.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
               <div className="border-2 border-dashed border-border rounded-lg bg-background overflow-hidden relative">
@@ -284,20 +291,26 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
                 )}
               </div>
               <div className="flex justify-end mt-2">
-                <Button variant="ghost" size="sm" onClick={clearSignature} type="button" disabled={!hasSignature || submitting}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearSignature}
+                  type="button"
+                  disabled={!hasSignature || submitting}
+                >
                   <Eraser className="w-4 h-4 mr-2" />
                   Limpar Traço
                 </Button>
               </div>
 
               <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                <Button 
-                  className="w-full sm:w-auto flex-1" 
-                  size="lg" 
+                <Button
+                  className="w-full sm:w-auto flex-1"
+                  size="lg"
                   onClick={handleApprove}
                   disabled={!hasSignature || submitting}
                 >
-                  {submitting ? "Processando..." : "Aprovar Orçamento"}
+                  {submitting ? 'Processando...' : 'Aprovar Orçamento'}
                 </Button>
               </div>
             </CardContent>
@@ -308,14 +321,16 @@ export default function PublicQuotePage({ params }: { params: Promise<{ id: stri
               <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-2">
                 <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
-              <h2 className="text-xl font-bold text-green-700 dark:text-green-400">Orçamento Aprovado!</h2>
+              <h2 className="text-xl font-bold text-green-700 dark:text-green-400">
+                Orçamento Aprovado!
+              </h2>
               <p className="text-green-600 dark:text-green-500 max-w-md">
-                Obrigado pela preferência. A nossa equipe entrará em contato em breve para agendar o serviço.
+                Obrigado pela preferência. A nossa equipe entrará em contato em breve para agendar o
+                serviço.
               </p>
             </CardContent>
           </Card>
         )}
-
       </div>
     </div>
   );

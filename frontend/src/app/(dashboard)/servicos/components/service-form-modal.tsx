@@ -59,7 +59,9 @@ export function ServiceFormModal({ isOpen, onClose, onSuccess, service }: Servic
 
   if (!isOpen) return null;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
@@ -133,7 +135,9 @@ export function ServiceFormModal({ isOpen, onClose, onSuccess, service }: Servic
             {service ? 'Editar Serviço' : 'Novo Serviço no Catálogo'}
           </h3>
           <p className="text-zinc-500 text-xs mt-1">
-            {service ? 'Edite as informações cadastrais do serviço.' : 'Preencha os campos abaixo para adicionar o serviço no catálogo geral.'}
+            {service
+              ? 'Edite as informações cadastrais do serviço.'
+              : 'Preencha os campos abaixo para adicionar o serviço no catálogo geral.'}
           </p>
         </div>
 
@@ -147,7 +151,9 @@ export function ServiceFormModal({ isOpen, onClose, onSuccess, service }: Servic
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Nome do Serviço</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Nome do Serviço
+              </label>
               <input
                 type="text"
                 name="name"
@@ -160,7 +166,9 @@ export function ServiceFormModal({ isOpen, onClose, onSuccess, service }: Servic
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Categoria</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Categoria
+              </label>
               <select
                 name="category"
                 value={formData.category}
@@ -175,7 +183,9 @@ export function ServiceFormModal({ isOpen, onClose, onSuccess, service }: Servic
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Valor Cobrado (R$)</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Valor Cobrado (R$)
+              </label>
               <input
                 type="text"
                 name="value"
@@ -188,7 +198,9 @@ export function ServiceFormModal({ isOpen, onClose, onSuccess, service }: Servic
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Tempo Médio (minutos)</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Tempo Médio (minutos)
+              </label>
               <input
                 type="number"
                 name="averageTime"
@@ -201,7 +213,9 @@ export function ServiceFormModal({ isOpen, onClose, onSuccess, service }: Servic
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Complexidade</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Complexidade
+              </label>
               <select
                 name="complexity"
                 value={formData.complexity}
@@ -215,7 +229,9 @@ export function ServiceFormModal({ isOpen, onClose, onSuccess, service }: Servic
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Garantia (dias)</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Garantia (dias)
+              </label>
               <input
                 type="number"
                 name="warranty"
@@ -228,7 +244,9 @@ export function ServiceFormModal({ isOpen, onClose, onSuccess, service }: Servic
             </div>
 
             <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Especialidade Necessária (opcional)</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Especialidade Necessária (opcional)
+              </label>
               <input
                 type="text"
                 name="specialty"
@@ -240,7 +258,9 @@ export function ServiceFormModal({ isOpen, onClose, onSuccess, service }: Servic
             </div>
 
             <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Descrição Detalhada do Serviço</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Descrição Detalhada do Serviço
+              </label>
               <textarea
                 name="description"
                 value={formData.description}
@@ -260,7 +280,10 @@ export function ServiceFormModal({ isOpen, onClose, onSuccess, service }: Servic
                 onChange={handleInputChange}
                 className="w-4 h-4 rounded border-zinc-800 bg-zinc-900 text-violet-600 focus:ring-violet-500/25 focus:ring-offset-zinc-950 cursor-pointer"
               />
-              <label htmlFor="active-checkbox" className="text-xs font-bold text-zinc-300 uppercase tracking-wider cursor-pointer select-none">
+              <label
+                htmlFor="active-checkbox"
+                className="text-xs font-bold text-zinc-300 uppercase tracking-wider cursor-pointer select-none"
+              >
                 Serviço Ativo e Disponível no Catálogo
               </label>
             </div>

@@ -19,7 +19,9 @@ export function useApi<T>(url: string, options: UseApiOptions = {}) {
         let result;
         const method = options.method || 'get';
         if (method === 'get') {
-          result = await ApiClient.get<T>(url, { params: payload as Record<string, string | number | boolean | undefined> });
+          result = await ApiClient.get<T>(url, {
+            params: payload as Record<string, string | number | boolean | undefined>,
+          });
         } else if (method === 'post') {
           result = await ApiClient.post<T>(url, payload);
         } else if (method === 'put') {
@@ -37,7 +39,7 @@ export function useApi<T>(url: string, options: UseApiOptions = {}) {
         setLoading(false);
       }
     },
-    [url, options.method]
+    [url, options.method],
   );
 
   return { data, loading, error, execute };

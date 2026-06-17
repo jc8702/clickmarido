@@ -27,7 +27,7 @@ const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
           onValueChange(newValue);
         }
       },
-      [controlledValue, onValueChange]
+      [controlledValue, onValueChange],
     );
 
     return (
@@ -37,7 +37,7 @@ const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
         </div>
       </TabsContext.Provider>
     );
-  }
+  },
 );
 Tabs.displayName = 'Tabs';
 
@@ -47,11 +47,11 @@ const TabsList = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
       ref={ref}
       className={cn(
         'inline-flex h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground',
-        className
+        className,
       )}
       {...props}
     />
-  )
+  ),
 );
 TabsList.displayName = 'TabsList';
 
@@ -78,12 +78,12 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
           isActive
             ? 'bg-background text-foreground shadow-sm font-semibold'
             : 'hover:text-foreground hover:bg-background/50',
-          className
+          className,
         )}
         {...props}
       />
     );
-  }
+  },
 );
 TabsTrigger.displayName = 'TabsTrigger';
 
@@ -104,14 +104,14 @@ const TabsContent = React.forwardRef<HTMLDivElement, TabsContentProps>(
         role="tabpanel"
         className={cn(
           'mt-4 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 animate-in fade-in-50 duration-200',
-          className
+          className,
         )}
         {...props}
       >
         {children}
       </div>
     );
-  }
+  },
 );
 TabsContent.displayName = 'TabsContent';
 

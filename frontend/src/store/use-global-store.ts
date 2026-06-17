@@ -4,7 +4,7 @@ interface GlobalState {
   isSidebarOpen: boolean;
   setSidebarOpen: (isOpen: boolean) => void;
   toggleSidebar: () => void;
-  
+
   // Future global states can be added here
 }
 

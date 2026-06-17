@@ -11,10 +11,7 @@ function getConfig() {
   if (typeof window === 'undefined') {
     return {
       url: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      key:
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-        '',
+      key: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
     };
   }
   try {
@@ -93,7 +90,7 @@ export const clientService = {
         created_at: client.createdAt,
         updated_at: client.updatedAt,
       },
-      { onConflict: 'id' }
+      { onConflict: 'id' },
     );
 
     if (error) {
@@ -170,7 +167,7 @@ export const serviceRequestService = {
         created_at: service.createdAt,
         updated_at: service.updatedAt,
       },
-      { onConflict: 'id' }
+      { onConflict: 'id' },
     );
 
     if (error) {
@@ -217,8 +214,7 @@ export const quoteService = {
         id: row.id as string,
         clientId: row.client_id as string,
         serviceRequestId: row.service_request_id as string | undefined,
-        items:
-          typeof row.items === 'string' ? JSON.parse(row.items as string) : row.items,
+        items: typeof row.items === 'string' ? JSON.parse(row.items as string) : row.items,
         totalValue: row.total_value as number,
         status: row.status as Quote['status'],
         validUntil: row.valid_until as string | undefined,

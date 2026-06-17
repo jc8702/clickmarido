@@ -34,11 +34,13 @@ export function SignatureModal({ isOpen, onClose, quoteId, onSuccess }: Signatur
     }
   }, [isOpen]);
 
-  const getCanvasCoords = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const getCanvasCoords = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>,
+  ) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-    
+
     if ('touches' in e) {
       if (e.touches.length === 0) return { x: 0, y: 0 };
       return {
@@ -53,7 +55,9 @@ export function SignatureModal({ isOpen, onClose, quoteId, onSuccess }: Signatur
     }
   };
 
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const startDrawing = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>,
+  ) => {
     e.preventDefault();
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -102,9 +106,12 @@ export function SignatureModal({ isOpen, onClose, quoteId, onSuccess }: Signatur
     setSigLoading(true);
     setSigError('');
     try {
-      const res = await ApiClient.post<{ success: boolean; data: Quote }>(`/quotes/${quoteId}/sign`, {
-        signature: dataUrl,
-      });
+      const res = await ApiClient.post<{ success: boolean; data: Quote }>(
+        `/quotes/${quoteId}/sign`,
+        {
+          signature: dataUrl,
+        },
+      );
 
       if (res.success) {
         onSuccess(res.data);
@@ -124,7 +131,9 @@ export function SignatureModal({ isOpen, onClose, quoteId, onSuccess }: Signatur
       <div className="relative w-full max-w-md rounded-2xl bg-zinc-950 border border-zinc-900 shadow-2xl p-6 space-y-5">
         <div>
           <h4 className="text-md font-bold text-white">Assinar Proposta Eletrônica</h4>
-          <p className="text-zinc-500 text-[11px] mt-0.5">Assine usando o mouse ou desenhando na tela.</p>
+          <p className="text-zinc-500 text-[11px] mt-0.5">
+            Assine usando o mouse ou desenhando na tela.
+          </p>
         </div>
 
         {sigError && (

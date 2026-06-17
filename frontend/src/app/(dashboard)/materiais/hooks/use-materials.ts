@@ -5,7 +5,12 @@ import { ApiClient } from '@/lib/api/client';
 import type { Material } from '../types';
 
 const CATEGORIES = [
-  'Hidráulico', 'Elétrico', 'Alvenaria', 'Pintura', 'Ferramentas', 'Outros',
+  'Hidráulico',
+  'Elétrico',
+  'Alvenaria',
+  'Pintura',
+  'Ferramentas',
+  'Outros',
 ] as const;
 
 interface MaterialsResponse {
@@ -56,7 +61,8 @@ export function useMaterials() {
   }, [fetchMaterials]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este material? Esta ação não pode ser desfeita.')) return;
+    if (!confirm('Tem certeza que deseja excluir este material? Esta ação não pode ser desfeita.'))
+      return;
     try {
       const res = await ApiClient.delete<{ success: boolean }>(`/materials/${id}`);
       if (res.success) fetchMaterials();
@@ -66,9 +72,18 @@ export function useMaterials() {
   };
 
   return {
-    materials, loading, search, categoryFilter, page, totalPages, limit,
-    setSearch, setCategoryFilter, setPage,
-    fetchMaterials, handleDelete,
+    materials,
+    loading,
+    search,
+    categoryFilter,
+    page,
+    totalPages,
+    limit,
+    setSearch,
+    setCategoryFilter,
+    setPage,
+    fetchMaterials,
+    handleDelete,
     categories: CATEGORIES,
   };
 }

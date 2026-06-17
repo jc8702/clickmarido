@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { QuotesService } from './quotes.service';
+import { QuotesRepository } from './quotes.repository';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { prismaMock } from '../../core/prisma/prisma.service.mock';
 import { NotFoundException } from '@nestjs/common';
@@ -16,6 +17,10 @@ describe('QuotesService', () => {
         {
           provide: PrismaService,
           useValue: prismaMock,
+        },
+        {
+          provide: QuotesRepository,
+          useFactory: () => new QuotesRepository(prismaMock),
         },
       ],
     }).compile();

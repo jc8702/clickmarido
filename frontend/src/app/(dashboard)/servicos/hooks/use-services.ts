@@ -111,13 +111,14 @@ export function useServices() {
     setCategoryFilter,
     setStatusFilter,
     handleDelete,
-    fetchServices: () => fetchServices({
-      page,
-      limit,
-      search,
-      category: categoryFilter,
-      active: statusFilter === 'active' ? 'true' : statusFilter === 'inactive' ? 'false' : '',
-    }),
+    fetchServices: () =>
+      fetchServices({
+        page,
+        limit,
+        search,
+        category: categoryFilter,
+        active: statusFilter === 'active' ? 'true' : statusFilter === 'inactive' ? 'false' : '',
+      }),
     setSelectedService: (service: Service | null) => {},
   };
 }

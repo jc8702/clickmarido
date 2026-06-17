@@ -30,17 +30,20 @@ export const AccessibleInput: React.FC<AccessibleInputProps> = ({
   const hintId = `${inputId}-hint`;
   const errorId = `${inputId}-error`;
 
-  const describedBy = [
-    hint ? hintId : null,
-    error ? errorId : null,
-  ].filter(Boolean).join(' ') || undefined;
+  const describedBy =
+    [hint ? hintId : null, error ? errorId : null].filter(Boolean).join(' ') || undefined;
 
   return (
     <div className={`flex flex-col gap-1 ${className || ''}`}>
       <label htmlFor={inputId} className="font-medium text-slate-900">
-        {label} {required && <span aria-hidden="true" className="text-red-500">*</span>}
+        {label}{' '}
+        {required && (
+          <span aria-hidden="true" className="text-red-500">
+            *
+          </span>
+        )}
       </label>
-      
+
       <input
         id={inputId}
         required={required}
@@ -50,13 +53,13 @@ export const AccessibleInput: React.FC<AccessibleInputProps> = ({
         className="px-3 py-2 border rounded-md border-slate-300 focus-visible:ring-4 focus-visible:ring-blue-300 focus-visible:border-blue-500 focus-visible:outline-none aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-red-200"
         {...props}
       />
-      
+
       {hint && !error && (
         <span id={hintId} className="text-sm text-slate-500">
           {hint}
         </span>
       )}
-      
+
       {error && (
         <span id={errorId} className="text-sm font-medium text-red-500" role="alert">
           {error}

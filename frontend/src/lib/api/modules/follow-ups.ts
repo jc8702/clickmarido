@@ -13,8 +13,8 @@ export interface FollowUp {
   sent30DaysAt?: string;
   sent90Days: boolean;
   sent90DaysAt?: string;
-  client?: { name: string, phone: string };
-  serviceOrder?: { number: number, updatedAt: string };
+  client?: { name: string; phone: string };
+  serviceOrder?: { number: number; updatedAt: string };
 }
 
 export const getFollowUps = async () => {

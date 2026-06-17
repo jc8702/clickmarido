@@ -38,9 +38,7 @@ describe('CSRF Token Handling', () => {
     let capturedHeaders: Headers | null = null;
 
     server.use(
-      http.get(`${API_URL}/api/csrf-token`, () =>
-        HttpResponse.json({ token: 'test-csrf-token' }),
-      ),
+      http.get(`${API_URL}/api/csrf-token`, () => HttpResponse.json({ token: 'test-csrf-token' })),
       http.post(`${API_URL}/api/test-endpoint`, async ({ request }) => {
         capturedHeaders = request.headers;
         return HttpResponse.json({ success: true }, { status: 201 });
@@ -108,9 +106,7 @@ describe('CSRF Token Handling', () => {
     let capturedHeaders: Headers | null = null;
 
     server.use(
-      http.get(`${API_URL}/api/csrf-token`, () =>
-        HttpResponse.json({ token: 'test-csrf-token' }),
-      ),
+      http.get(`${API_URL}/api/csrf-token`, () => HttpResponse.json({ token: 'test-csrf-token' })),
       http.put(`${API_URL}/api/test-endpoint`, async ({ request }) => {
         capturedHeaders = request.headers;
         return HttpResponse.json({ success: true }, { status: 200 });
@@ -137,9 +133,7 @@ describe('CSRF Token Handling', () => {
     let capturedHeaders: Headers | null = null;
 
     server.use(
-      http.get(`${API_URL}/api/csrf-token`, () =>
-        HttpResponse.json({ token: 'test-csrf-token' }),
-      ),
+      http.get(`${API_URL}/api/csrf-token`, () => HttpResponse.json({ token: 'test-csrf-token' })),
       http.delete(`${API_URL}/api/test-endpoint`, async ({ request }) => {
         capturedHeaders = request.headers;
         return HttpResponse.json({ success: true }, { status: 200 });

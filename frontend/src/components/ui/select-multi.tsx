@@ -1,5 +1,5 @@
 import * as React from 'react';
-import Select, { Props as SelectProps, MenuListProps, GroupBase } from 'react-select';
+import Select, { Props as SelectProps, MenuListProps } from 'react-select';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -8,7 +8,7 @@ export interface SelectMultiProps extends SelectProps {
   error?: boolean;
 }
 
-function VirtualizedMenuList(props: MenuListProps<unknown, boolean, GroupBase<unknown>>) {
+function VirtualizedMenuList(props: MenuListProps<Option>) {
   const { children, maxHeight } = props;
   const parentRef = React.useRef<HTMLDivElement>(null);
   const items = React.Children.toArray(children);

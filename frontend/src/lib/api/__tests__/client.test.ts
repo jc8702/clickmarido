@@ -30,7 +30,7 @@ describe('ApiClient', () => {
       expect.objectContaining({
         method: 'GET',
         headers: expect.any(Headers),
-      })
+      }),
     );
     expect(data).toEqual(mockData);
   });
@@ -45,7 +45,7 @@ describe('ApiClient', () => {
     await ApiClient.get('/test', { params: { search: 'John Doe', page: 1, limit: 10 } });
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining('search=John+Doe&page=1&limit=10'),
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 
@@ -58,7 +58,7 @@ describe('ApiClient', () => {
     } as Response);
 
     await ApiClient.get('/test');
-    
+
     const fetchCall = vi.mocked(fetch).mock.calls[0];
     const headers = fetchCall[1]?.headers as Headers;
     expect(headers.get('Authorization')).toBe('Bearer test_token');
@@ -73,7 +73,7 @@ describe('ApiClient', () => {
     } as Response);
 
     await ApiClient.get('/test');
-    
+
     const fetchCall = vi.mocked(fetch).mock.calls[0];
     const headers = fetchCall[1]?.headers as Headers;
     expect(headers.get('x-company-id')).toBe('company_123');
@@ -83,7 +83,11 @@ describe('ApiClient', () => {
   it('should retry on server error (500) and succeed eventually', async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({ ok: false, status: 500, json: async () => ({}) } as Response)
-      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ success: true }) } as Response);
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ success: true }),
+      } as Response);
 
     // Mock sleep to be instant in tests
     vi.spyOn(ApiClient as any, 'sleep').mockResolvedValue(undefined);
@@ -94,10 +98,10 @@ describe('ApiClient', () => {
   });
 
   it('should not retry on client error (400) except 429', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({ 
-      ok: false, 
-      status: 400, 
-      json: async () => ({ message: 'Bad Request' }) 
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      json: async () => ({ message: 'Bad Request' }),
     } as Response);
 
     vi.spyOn(ApiClient as any, 'sleep').mockResolvedValue(undefined);
@@ -117,7 +121,7 @@ describe('ApiClient', () => {
     const data = await ApiClient.get('/test');
     expect(data).toEqual({ nested: 'value' }); // Expecting unwrapped data
   });
-  
+
   it('should throw ApiError properly when request fails', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
@@ -147,13 +151,13 @@ describe('ApiClient', () => {
 
     const bodyData = { name: 'New Item' };
     await ApiClient.post('/test', bodyData);
-    
+
     expect(fetch).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify(bodyData),
-      })
+      }),
     );
   });
 

@@ -32,7 +32,7 @@ export class ApiClient {
 
   private static async getHeaders(customHeaders: HeadersInit = {}): Promise<Headers> {
     const headers = new Headers(customHeaders);
-    
+
     // Inject Content-Type by default if not FormData
     if (!headers.has('Content-Type') && headers.get('Content-Type') !== 'none') {
       headers.set('Content-Type', 'application/json');
@@ -55,7 +55,9 @@ export class ApiClient {
         headers.set('Authorization', `Bearer ${token}`);
       }
 
-      const companyId = localStorage.getItem('clickmarido_active_company_id') || localStorage.getItem('clickmarido_active_tenant_id');
+      const companyId =
+        localStorage.getItem('clickmarido_active_company_id') ||
+        localStorage.getItem('clickmarido_active_tenant_id');
       if (companyId) {
         headers.set('x-company-id', companyId);
         headers.set('x-tenant-id', companyId);
@@ -69,14 +71,11 @@ export class ApiClient {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  private static async request<T>(
-    endpoint: string,
-    options: RequestOptions = {}
-  ): Promise<T> {
+  private static async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
     const { params, headers, retries = 3, retryDelay = 1000, ...restOptions } = options;
-    
+
     let url = `${API_URL}/api${endpoint}`;
-    
+
     if (params) {
       const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
@@ -119,7 +118,7 @@ export class ApiClient {
         }
 
         const json = await response.json();
-        
+
         // Handle NestJS TransformInterceptor pattern { success: true, data: T }
         if (json && typeof json === 'object' && 'success' in json && 'data' in json) {
           return json.data as T;
@@ -128,9 +127,14 @@ export class ApiClient {
         return json as T;
       } catch (error) {
         lastError = error;
-        
+
         // Don't retry if it's a client error (4xx) except 429
-        if (error instanceof ApiError && error.status >= 400 && error.status < 500 && error.status !== 429) {
+        if (
+          error instanceof ApiError &&
+          error.status >= 400 &&
+          error.status < 500 &&
+          error.status !== 429
+        ) {
           throw error;
         }
 

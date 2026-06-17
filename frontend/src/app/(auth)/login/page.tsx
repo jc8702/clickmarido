@@ -23,7 +23,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'E-mail ou senha inválidos. Tente novamente.');
+      setError(err.message || 'E-mail ou senha inválidos. Tente novamente.');
     } finally {
       setLoading(false);
     }

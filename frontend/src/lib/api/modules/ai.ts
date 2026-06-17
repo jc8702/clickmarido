@@ -57,5 +57,5 @@ export const aiApi = {
    */
   suggestCrossSell: async (currentServices: string[]) => {
     return await ApiClient.post<AiSuggestionResponse>('/ai/sales/cross-sell', { currentServices });
-  }
+  },
 };

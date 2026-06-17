@@ -1,6 +1,14 @@
 'use client';
 
-import { Package, Loader2, AlertTriangle, ArrowRightLeft, History, Edit, Trash2 } from 'lucide-react';
+import {
+  Package,
+  Loader2,
+  AlertTriangle,
+  ArrowRightLeft,
+  History,
+  Edit,
+  Trash2,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { Material } from '../types';
@@ -10,7 +18,10 @@ function formatCurrency(value: number): string {
 }
 
 function formatNumber(value: number): string {
-  return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+  return new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
 }
 
 interface MaterialsTableProps {
@@ -25,7 +36,17 @@ interface MaterialsTableProps {
   onHistory: (material: Material) => void;
 }
 
-export function MaterialsTable({ materials, loading, page, totalPages, onPageChange, onEdit, onDelete, onMovement, onHistory }: MaterialsTableProps) {
+export function MaterialsTable({
+  materials,
+  loading,
+  page,
+  totalPages,
+  onPageChange,
+  onEdit,
+  onDelete,
+  onMovement,
+  onHistory,
+}: MaterialsTableProps) {
   if (loading) {
     return (
       <div className="rounded-2xl border border-zinc-900 bg-zinc-950 p-12 text-center">
@@ -67,17 +88,25 @@ export function MaterialsTable({ materials, loading, page, totalPages, onPageCha
                       <div className="text-[10px] text-zinc-500 font-mono mt-1">ID: {mat.id}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <Badge className="bg-zinc-900 text-zinc-300 border-zinc-800">{mat.category}</Badge>
+                      <Badge className="bg-zinc-900 text-zinc-300 border-zinc-800">
+                        {mat.category}
+                      </Badge>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className={`font-bold ${isLowStock ? 'text-red-400' : 'text-emerald-400'}`}>
+                        <span
+                          className={`font-bold ${isLowStock ? 'text-red-400' : 'text-emerald-400'}`}
+                        >
                           {formatNumber(mat.quantity)}
                         </span>
-                        <span className="text-[10px] text-zinc-500 mt-0.5">Mín: {formatNumber(mat.minimumStock)}</span>
+                        <span className="text-[10px] text-zinc-500 mt-0.5">
+                          Mín: {formatNumber(mat.minimumStock)}
+                        </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-mono text-zinc-300">{formatCurrency(mat.averageCost)}</td>
+                    <td className="px-6 py-4 font-mono text-zinc-300">
+                      {formatCurrency(mat.averageCost)}
+                    </td>
                     <td className="px-6 py-4">
                       {isLowStock ? (
                         <div className="flex items-center gap-1.5 text-red-400 text-xs font-bold">
@@ -93,16 +122,40 @@ export function MaterialsTable({ materials, loading, page, totalPages, onPageCha
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" onClick={() => onHistory(mat)} className="h-8 w-8 text-blue-400 hover:text-blue-300 hover:bg-blue-400/10" title="Histórico">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onHistory(mat)}
+                          className="h-8 w-8 text-blue-400 hover:text-blue-300 hover:bg-blue-400/10"
+                          title="Histórico"
+                        >
                           <History className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => onMovement(mat)} className="h-8 w-8 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-400/10" title="Movimentar">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onMovement(mat)}
+                          className="h-8 w-8 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-400/10"
+                          title="Movimentar"
+                        >
                           <ArrowRightLeft className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => onEdit(mat)} className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-800" title="Editar">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onEdit(mat)}
+                          className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-800"
+                          title="Editar"
+                        >
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => onDelete(mat.id)} className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-400/10" title="Excluir">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onDelete(mat.id)}
+                          className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-400/10"
+                          title="Excluir"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -118,13 +171,26 @@ export function MaterialsTable({ materials, loading, page, totalPages, onPageCha
       {totalPages > 1 && (
         <div className="p-4 border-t border-zinc-900 flex items-center justify-between text-xs text-zinc-500">
           <div>
-            Página <span className="font-bold text-white">{page}</span> de <span className="font-bold text-white">{totalPages}</span>
+            Página <span className="font-bold text-white">{page}</span> de{' '}
+            <span className="font-bold text-white">{totalPages}</span>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => onPageChange(Math.max(1, page - 1))} disabled={page === 1} className="h-8 border-zinc-800 hover:bg-zinc-900">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(Math.max(1, page - 1))}
+              disabled={page === 1}
+              className="h-8 border-zinc-800 hover:bg-zinc-900"
+            >
               Anterior
             </Button>
-            <Button variant="outline" size="sm" onClick={() => onPageChange(Math.min(totalPages, page + 1))} disabled={page === totalPages} className="h-8 border-zinc-800 hover:bg-zinc-900">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+              disabled={page === totalPages}
+              className="h-8 border-zinc-800 hover:bg-zinc-900"
+            >
               Próxima
             </Button>
           </div>

@@ -49,14 +49,17 @@ export function PageHeader({
     <div
       className={cn(
         'flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-border pb-8',
-        className
+        className,
       )}
     >
       <div className="space-y-2">
         {/* Breadcrumbs */}
         {breadcrumbs && breadcrumbs.length > 0 && (
           <nav className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">
-            <Link href="/dashboard" className="hover:text-primary transition-colors flex items-center gap-1">
+            <Link
+              href="/dashboard"
+              className="hover:text-primary transition-colors flex items-center gap-1"
+            >
               <Home className="w-3 h-3" />
               Dashboard
             </Link>
@@ -87,18 +90,12 @@ export function PageHeader({
 
         {/* Título */}
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-4">
-          {icon && (
-            <div className={cn('p-2 rounded-2xl shrink-0', iconBg)}>
-              {icon}
-            </div>
-          )}
+          {icon && <div className={cn('p-2 rounded-2xl shrink-0', iconBg)}>{icon}</div>}
           {title}
         </h1>
 
         {/* Subtítulo */}
-        {subtitle && (
-          <p className="text-muted-foreground font-medium">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-muted-foreground font-medium">{subtitle}</p>}
       </div>
 
       {/* Ações */}
@@ -117,7 +114,10 @@ export function PageHeader({
                 <Link key={idx} href={action.href}>
                   <Button
                     variant={action.variant ?? 'default'}
-                    className={cn('h-11 px-6 rounded-xl font-bold transition-all hover:scale-105', action.className)}
+                    className={cn(
+                      'h-11 px-6 rounded-xl font-bold transition-all hover:scale-105',
+                      action.className,
+                    )}
                   >
                     {btnContent}
                   </Button>
@@ -130,7 +130,10 @@ export function PageHeader({
                 key={idx}
                 variant={action.variant ?? 'default'}
                 onClick={action.onClick}
-                className={cn('h-11 px-6 rounded-xl font-bold transition-all hover:scale-105', action.className)}
+                className={cn(
+                  'h-11 px-6 rounded-xl font-bold transition-all hover:scale-105',
+                  action.className,
+                )}
               >
                 {btnContent}
               </Button>

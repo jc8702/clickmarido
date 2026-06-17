@@ -25,18 +25,30 @@ export function QuoteFormModal({
   onSuccess,
 }: QuoteFormModalProps) {
   const {
-    formClientId, setFormClientId,
-    formDiscount, setFormDiscount,
-    formTravelFee, setFormTravelFee,
-    formStatus, setFormStatus,
-    formServices, formMaterials,
-    newMaterialDesc, setNewMaterialDesc,
-    newMaterialQty, setNewMaterialQty,
-    newMaterialVal, setNewMaterialVal,
-    formError, formLoading,
+    formClientId,
+    setFormClientId,
+    formDiscount,
+    setFormDiscount,
+    formTravelFee,
+    setFormTravelFee,
+    formStatus,
+    setFormStatus,
+    formServices,
+    formMaterials,
+    newMaterialDesc,
+    setNewMaterialDesc,
+    newMaterialQty,
+    setNewMaterialQty,
+    newMaterialVal,
+    setNewMaterialVal,
+    formError,
+    formLoading,
     calculateTotal,
-    handleAddServiceRow, handleUpdateServiceRow, handleRemoveServiceRow,
-    handleAddMaterialItem, handleRemoveMaterialItem,
+    handleAddServiceRow,
+    handleUpdateServiceRow,
+    handleRemoveServiceRow,
+    handleAddMaterialItem,
+    handleRemoveMaterialItem,
     handleSubmit,
   } = useQuoteForm({ quote, clients, catalogServices, onSuccess, onClose });
 
@@ -64,21 +76,29 @@ export function QuoteFormModal({
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Cliente</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Cliente
+              </label>
               <select
                 value={formClientId}
                 onChange={(e) => setFormClientId(e.target.value)}
                 required
                 className="w-full h-10 px-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50"
               >
-                <option value="" disabled>Selecione um cliente...</option>
-                {clients.map(c => (
-                  <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>
+                <option value="" disabled>
+                  Selecione um cliente...
+                </option>
+                {clients.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} ({c.phone})
+                  </option>
                 ))}
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Status Inicial</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Status Inicial
+              </label>
               <select
                 value={formStatus}
                 onChange={(e) => setFormStatus(e.target.value)}
@@ -114,14 +134,19 @@ export function QuoteFormModal({
             ) : (
               <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                 {formServices.map((row, index) => (
-                  <div key={index} className="flex gap-2 items-center bg-zinc-900/30 p-2 border border-zinc-900 rounded-xl">
+                  <div
+                    key={index}
+                    className="flex gap-2 items-center bg-zinc-900/30 p-2 border border-zinc-900 rounded-xl"
+                  >
                     <select
                       value={row.serviceId}
                       onChange={(e) => handleUpdateServiceRow(index, 'serviceId', e.target.value)}
                       className="flex-1 h-9 px-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none"
                     >
-                      {catalogServices.map(cs => (
-                        <option key={cs.id} value={cs.id}>{cs.name} ({formatCurrency(cs.value)})</option>
+                      {catalogServices.map((cs) => (
+                        <option key={cs.id} value={cs.id}>
+                          {cs.name} ({formatCurrency(cs.value)})
+                        </option>
                       ))}
                     </select>
                     <input
@@ -156,7 +181,9 @@ export function QuoteFormModal({
           </div>
 
           <div className="space-y-3">
-            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">Materiais Fornecidos</label>
+            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">
+              Materiais Fornecidos
+            </label>
 
             <div className="flex flex-col md:flex-row gap-2 bg-zinc-900/20 p-3 border border-zinc-900 rounded-xl">
               <input
@@ -197,11 +224,18 @@ export function QuoteFormModal({
             {formMaterials.length > 0 && (
               <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
                 {formMaterials.map((m, index) => (
-                  <div key={index} className="flex justify-between items-center bg-zinc-900/40 p-2 border border-zinc-900 rounded-xl text-xs">
+                  <div
+                    key={index}
+                    className="flex justify-between items-center bg-zinc-900/40 p-2 border border-zinc-900 rounded-xl text-xs"
+                  >
                     <div className="font-bold text-zinc-350">{m.description}</div>
                     <div className="flex items-center gap-4">
-                      <div className="text-zinc-500 font-semibold">{m.quantity}x {formatCurrency(m.value)}</div>
-                      <div className="font-bold text-zinc-300">{formatCurrency(m.quantity * m.value)}</div>
+                      <div className="text-zinc-500 font-semibold">
+                        {m.quantity}x {formatCurrency(m.value)}
+                      </div>
+                      <div className="font-bold text-zinc-300">
+                        {formatCurrency(m.quantity * m.value)}
+                      </div>
                       <Button
                         type="button"
                         variant="ghost"
@@ -219,7 +253,9 @@ export function QuoteFormModal({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-zinc-900 pt-4">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Valor de Deslocamento (Visita)</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Valor de Deslocamento (Visita)
+              </label>
               <input
                 type="number"
                 min="0"
@@ -230,7 +266,9 @@ export function QuoteFormModal({
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Desconto Especial</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                Desconto Especial
+              </label>
               <input
                 type="number"
                 min="0"
@@ -244,8 +282,12 @@ export function QuoteFormModal({
 
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-zinc-950 border border-zinc-900 p-4 rounded-xl">
             <div>
-              <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">Valor Final Estimado</p>
-              <p className="text-2xl font-black text-emerald-400">{formatCurrency(calculateTotal())}</p>
+              <p className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">
+                Valor Final Estimado
+              </p>
+              <p className="text-2xl font-black text-emerald-400">
+                {formatCurrency(calculateTotal())}
+              </p>
             </div>
 
             <div className="flex gap-2">

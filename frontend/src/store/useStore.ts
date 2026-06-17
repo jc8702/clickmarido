@@ -27,8 +27,8 @@ export const useStore = create<RootState>()(
           theme: state.theme,
           sidebarOpen: state.sidebarOpen,
         }),
-      }
+      },
     ),
-    { name: 'ClickMarido Store' }
-  )
+    { name: 'ClickMarido Store' },
+  ),
 );

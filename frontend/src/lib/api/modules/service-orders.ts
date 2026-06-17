@@ -78,5 +78,7 @@ export const addChecklistItem = async (id: string, item: string) => {
 };
 
 export const toggleChecklistItem = async (id: string, checklistId: string, checked: boolean) => {
-  return await ApiClient.put<unknown>(`/service-orders/${id}/checklist/${checklistId}`, { checked });
+  return await ApiClient.put<unknown>(`/service-orders/${id}/checklist/${checklistId}`, {
+    checked,
+  });
 };

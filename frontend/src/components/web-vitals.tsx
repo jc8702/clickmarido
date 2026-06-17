@@ -23,7 +23,8 @@ function sendToAnalytics(metric: Metric) {
   }
 
   if (process.env.NODE_ENV === 'development') {
-    const rating = metric.rating === 'good' ? '🟢' : metric.rating === 'needs-improvement' ? '🟡' : '🔴';
+    const rating =
+      metric.rating === 'good' ? '🟢' : metric.rating === 'needs-improvement' ? '🟡' : '🔴';
     console.log(`${rating} ${metric.name}: ${Math.round(metric.value)}ms (${metric.rating})`);
   }
 }

@@ -1,6 +1,6 @@
-import { useState } from "react"
-import { Search, Filter, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from 'react';
+import { Search, Filter, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface FilterOption {
   label: string;
@@ -29,13 +29,13 @@ interface FilterPanelProps {
 export function FilterPanel({
   search,
   onSearchChange,
-  searchPlaceholder = "Buscar...",
+  searchPlaceholder = 'Buscar...',
   filters = [],
   activeFilters = {},
   onFilterChange,
   onClearFilters,
   showDateRange = false,
-  dateRange = { from: "", to: "" },
+  dateRange = { from: '', to: '' },
   onDateRangeChange,
 }: FilterPanelProps) {
   return (
@@ -51,11 +51,11 @@ export function FilterPanel({
           className="w-full h-10 pl-10 pr-4 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50"
         />
       </div>
-      
+
       {(filters.length > 0 || showDateRange) && (
         <div className="flex flex-wrap gap-2 items-center">
           <Filter className="w-4 h-4 text-zinc-500 hidden md:block mr-1" />
-          
+
           {showDateRange && (
             <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-xl px-3 h-10">
               <input
@@ -65,7 +65,9 @@ export function FilterPanel({
                 aria-label="Data inicial"
                 className="bg-transparent text-xs text-zinc-300 focus:outline-none"
               />
-              <span className="text-zinc-500 text-xs" aria-hidden="true">até</span>
+              <span className="text-zinc-500 text-xs" aria-hidden="true">
+                até
+              </span>
               <input
                 type="date"
                 value={dateRange.to}
@@ -75,23 +77,27 @@ export function FilterPanel({
               />
             </div>
           )}
-          
-          {filters.map(filter => (
+
+          {filters.map((filter) => (
             <select
               key={filter.id}
-              value={activeFilters[filter.id] || ""}
+              value={activeFilters[filter.id] || ''}
               onChange={(e) => onFilterChange?.(filter.id, e.target.value)}
               aria-label={filter.label}
               className="h-10 px-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50"
             >
               <option value="">{filter.label}</option>
-              {filter.options.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              {filter.options.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
               ))}
             </select>
           ))}
-          
-          {(Object.values(activeFilters).some(v => v !== "") || dateRange.from || dateRange.to) && (
+
+          {(Object.values(activeFilters).some((v) => v !== '') ||
+            dateRange.from ||
+            dateRange.to) && (
             <Button
               variant="ghost"
               size="sm"
@@ -105,5 +111,5 @@ export function FilterPanel({
         </div>
       )}
     </div>
-  )
+  );
 }

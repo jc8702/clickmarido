@@ -16,9 +16,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const filters = useChartFilters();
 
   return (
-    <DashboardContext.Provider value={{ metrics, filters }}>
-      {children}
-    </DashboardContext.Provider>
+    <DashboardContext.Provider value={{ metrics, filters }}>{children}</DashboardContext.Provider>
   );
 }
 

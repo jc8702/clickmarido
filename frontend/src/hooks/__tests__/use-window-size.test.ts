@@ -7,8 +7,16 @@ describe('useWindowSize', () => {
   const originalInnerHeight = window.innerHeight;
 
   beforeAll(() => {
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
-    Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 768 });
+    Object.defineProperty(window, 'innerWidth', {
+      writable: true,
+      configurable: true,
+      value: 1024,
+    });
+    Object.defineProperty(window, 'innerHeight', {
+      writable: true,
+      configurable: true,
+      value: 768,
+    });
   });
 
   afterAll(() => {
@@ -23,13 +31,13 @@ describe('useWindowSize', () => {
 
   it('updates dimensions on resize event', () => {
     const { result } = renderHook(() => useWindowSize());
-    
+
     act(() => {
       window.innerWidth = 800;
       window.innerHeight = 600;
       window.dispatchEvent(new Event('resize'));
     });
-    
+
     expect(result.current).toEqual({ width: 800, height: 600 });
   });
 });

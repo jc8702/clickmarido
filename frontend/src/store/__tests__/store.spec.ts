@@ -23,9 +23,9 @@ describe('Global Store (Zustand Slices)', () => {
   it('deve logar o usuário e salvar o token (AuthSlice)', () => {
     const { login } = useStore.getState();
     const mockUser = { id: '1', name: 'Admin', email: 'admin@test.com', role: 'admin' as const };
-    
+
     login(mockUser, 'fake-jwt-token');
-    
+
     const state = useStore.getState();
     expect(state.isAuthenticated).toBe(true);
     expect(state.user).toEqual(mockUser);
@@ -35,9 +35,9 @@ describe('Global Store (Zustand Slices)', () => {
   it('deve adicionar um cliente na lista (ClientsSlice)', () => {
     const { addClient } = useStore.getState();
     const mockClient = { id: 'c1', name: 'João', email: 'joao@test.com' };
-    
+
     addClient(mockClient);
-    
+
     const state = useStore.getState();
     expect(state.clients).toHaveLength(1);
     expect(state.clients[0]).toEqual(mockClient);
@@ -45,7 +45,7 @@ describe('Global Store (Zustand Slices)', () => {
 
   it('deve alternar o tema e a sidebar (UiSlice)', () => {
     const { toggleTheme, toggleSidebar } = useStore.getState();
-    
+
     expect(useStore.getState().theme).toBe('light');
     toggleTheme();
     expect(useStore.getState().theme).toBe('dark');

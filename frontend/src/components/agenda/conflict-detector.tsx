@@ -23,7 +23,9 @@ export function ConflictDetector({ startTime, endTime, technicianId }: ConflictD
     } else {
       setHasConflict(false);
     }
-    return () => { ignore = true; };
+    return () => {
+      ignore = true;
+    };
   }, [startTime, endTime, technicianId, checkConflicts]);
 
   if (!hasConflict) return null;

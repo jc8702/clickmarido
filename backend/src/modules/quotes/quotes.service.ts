@@ -46,7 +46,9 @@ export class QuotesService {
         where: { id: item.serviceId, companyId, deletedAt: null },
       });
       if (!dbService) {
-        throw new NotFoundException(`Serviço com ID ${item.serviceId} não encontrado no catálogo.`);
+        throw new NotFoundException(
+          `Serviço com ID ${item.serviceId} não encontrado no catálogo.`,
+        );
       }
       servicesTotal += item.quantity * item.value;
     }
@@ -74,11 +76,11 @@ export class QuotesService {
         status,
       };
 
-      const servicesData = services.map(s => ({
+      const servicesData = services.map((s) => ({
         serviceId: s.serviceId,
         quantity: s.quantity,
         value: s.value,
-      })) as any[];
+      })) as Array<{ serviceId: string; quantity: number; value: number }>;
 
       return this.quotesRepository.create(data, servicesData, tx);
     });
@@ -124,7 +126,11 @@ export class QuotesService {
       }
     }
 
-    const [items, total] = await this.quotesRepository.findManyWithCount(where, skip, limit);
+    const [items, total] = await this.quotesRepository.findManyWithCount(
+      where,
+      skip,
+      limit,
+    );
 
     return {
       success: true,
@@ -193,60 +199,74 @@ export class QuotesService {
       }
     }
 
-    const updatedQuote = await this.quotesRepository.executeTransaction(async (tx) => {
-      let activeServices = existingQuote.services.map(s => ({
-        serviceId: s.serviceId,
-        quantity: s.quantity,
-        value: s.value,
-      }));
-
-      let servicesDataToUpdate = undefined;
-
-      if (services) {
-        servicesDataToUpdate = services.map(s => ({
+    const updatedQuote = await this.quotesRepository.executeTransaction(
+      async (tx) => {
+        let activeServices = existingQuote.services.map((s) => ({
           serviceId: s.serviceId,
           quantity: s.quantity,
           value: s.value,
         }));
-        activeServices = servicesDataToUpdate;
-      }
 
-      let servicesTotal = 0;
-      for (const item of activeServices) {
-        servicesTotal += item.quantity * item.value;
-      }
+        let servicesDataToUpdate = undefined;
 
-      const activeMaterials = materials !== undefined
-        ? materials
-        : (existingQuote.materials as unknown as UpdateQuoteDto['materials']) || [];
-      const materialsTotal = activeMaterials.reduce(
-        (sum, m) => sum + m.quantity * m.value,
-        0,
-      );
+        if (services) {
+          servicesDataToUpdate = services.map((s) => ({
+            serviceId: s.serviceId,
+            quantity: s.quantity,
+            value: s.value,
+          }));
+          activeServices = servicesDataToUpdate;
+        }
 
-      const activeDiscount = discount !== undefined ? discount : existingQuote.discount;
-      const activeTravelFee = travelFee !== undefined ? travelFee : existingQuote.travelFee;
+        let servicesTotal = 0;
+        for (const item of activeServices) {
+          servicesTotal += item.quantity * item.value;
+        }
 
-      const rawTotal = servicesTotal + materialsTotal + activeTravelFee - activeDiscount;
-      const totalValue = Math.max(0, rawTotal);
+        const activeMaterials =
+          materials !== undefined
+            ? materials
+            : (existingQuote.materials as unknown as UpdateQuoteDto['materials']) ||
+              [];
+        const materialsTotal = activeMaterials.reduce(
+          (sum, m) => sum + m.quantity * m.value,
+          0,
+        );
 
-      const updateData: Prisma.QuoteUpdateInput = {
-        totalValue,
-      };
+        const activeDiscount =
+          discount !== undefined ? discount : existingQuote.discount;
+        const activeTravelFee =
+          travelFee !== undefined ? travelFee : existingQuote.travelFee;
 
-      if (clientId !== undefined) updateData.client = { connect: { id: clientId } };
-      if (discount !== undefined) updateData.discount = discount;
-      if (travelFee !== undefined) updateData.travelFee = travelFee;
-      if (materials !== undefined) updateData.materials = materials as unknown as Prisma.InputJsonValue;
-      if (status !== undefined) updateData.status = status;
-      if (signature !== undefined) {
-        updateData.signature = signature;
-        updateData.signedAt = new Date();
-        updateData.status = 'Aprovado';
-      }
+        const rawTotal =
+          servicesTotal + materialsTotal + activeTravelFee - activeDiscount;
+        const totalValue = Math.max(0, rawTotal);
 
-      return this.quotesRepository.update(id, updateData, servicesDataToUpdate, tx);
-    });
+        const updateData: Prisma.QuoteUpdateInput = {
+          totalValue,
+        };
+
+        if (clientId !== undefined)
+          updateData.client = { connect: { id: clientId } };
+        if (discount !== undefined) updateData.discount = discount;
+        if (travelFee !== undefined) updateData.travelFee = travelFee;
+        if (materials !== undefined)
+          updateData.materials = materials as unknown as Prisma.InputJsonValue;
+        if (status !== undefined) updateData.status = status;
+        if (signature !== undefined) {
+          updateData.signature = signature;
+          updateData.signedAt = new Date();
+          updateData.status = 'Aprovado';
+        }
+
+        return this.quotesRepository.update(
+          id,
+          updateData,
+          servicesDataToUpdate,
+          tx,
+        );
+      },
+    );
 
     return {
       success: true,

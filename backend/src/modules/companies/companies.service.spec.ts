@@ -59,10 +59,12 @@ describe('CompaniesService', () => {
       const company = CompanyFactory.build();
       prismaService.company.findUnique.mockResolvedValue(company);
 
-      await expect(service.create({
-        name: 'Another',
-        slug: company.slug,
-      })).rejects.toThrow(BadRequestException);
+      await expect(
+        service.create({
+          name: 'Another',
+          slug: company.slug,
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw if CNPJ already exists', async () => {
@@ -71,11 +73,13 @@ describe('CompaniesService', () => {
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce(company);
 
-      await expect(service.create({
-        name: 'Another',
-        slug: 'another',
-        cnpj: company.cnpj!,
-      })).rejects.toThrow(BadRequestException);
+      await expect(
+        service.create({
+          name: 'Another',
+          slug: 'another',
+          cnpj: company.cnpj!,
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -123,8 +127,9 @@ describe('CompaniesService', () => {
     it('should throw if company not found', async () => {
       prismaService.company.findFirst.mockResolvedValue(null);
 
-      await expect(service.findOne('non-existent'))
-        .rejects.toThrow(NotFoundException);
+      await expect(service.findOne('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -145,8 +150,9 @@ describe('CompaniesService', () => {
     it('should throw if company not found', async () => {
       prismaService.company.findFirst.mockResolvedValue(null);
 
-      await expect(service.update('non-existent', {}))
-        .rejects.toThrow(NotFoundException);
+      await expect(service.update('non-existent', {})).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -154,7 +160,11 @@ describe('CompaniesService', () => {
     it('should soft delete a company', async () => {
       const company = CompanyFactory.build();
       prismaService.company.findFirst.mockResolvedValue(company);
-      prismaService.$transaction.mockResolvedValue([company, { count: 0 }, { count: 0 }]);
+      prismaService.$transaction.mockResolvedValue([
+        company,
+        { count: 0 },
+        { count: 0 },
+      ]);
 
       const result = await service.remove(company.id);
 
@@ -164,8 +174,9 @@ describe('CompaniesService', () => {
     it('should throw if company not found', async () => {
       prismaService.company.findFirst.mockResolvedValue(null);
 
-      await expect(service.remove('non-existent'))
-        .rejects.toThrow(NotFoundException);
+      await expect(service.remove('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

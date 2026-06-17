@@ -9,9 +9,9 @@ describe('FormField Component', () => {
     render(
       <FormField label="Email" htmlFor="email">
         <Input id="email" placeholder="email@example.com" />
-      </FormField>
+      </FormField>,
     );
-    
+
     expect(screen.getByText('Email')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('email@example.com')).toBeInTheDocument();
   });
@@ -20,11 +20,10 @@ describe('FormField Component', () => {
     render(
       <FormField label="Email" htmlFor="email" error="Invalid email">
         <Input id="email" />
-      </FormField>
+      </FormField>,
     );
-    
+
     expect(screen.getByText('Invalid email')).toBeInTheDocument();
     expect(screen.getByText('Invalid email').className).toContain('text-destructive');
   });
-
 });

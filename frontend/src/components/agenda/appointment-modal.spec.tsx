@@ -22,7 +22,7 @@ describe('AppointmentModal', () => {
 
   it('validates required fields by relying on HTML5', () => {
     render(<AppointmentModal open={true} onClose={vi.fn()} onSave={vi.fn()} />);
-    
+
     const titleInput = screen.getByPlaceholderText(/descreva o serviço/i);
     expect(titleInput).toBeRequired();
   });

@@ -17,7 +17,7 @@ const parseErrorResponse = async (response: Response): Promise<ApiError> => {
   } catch {
     // Falha ao parsear JSON
   }
-  
+
   return {
     code: `HTTP_${response.status}`,
     message: response.statusText || 'Erro inesperado no servidor',
@@ -67,7 +67,7 @@ export const apiFetch = async (url: string, options: FetchOptions = {}): Promise
           message: 'Sem conexão com a internet',
           timestamp: new Date().toISOString(),
           path: url,
-          requestId: 'unknown'
+          requestId: 'unknown',
         });
         toast.error('Você está offline. Verifique sua conexão.');
         throw error;

@@ -1,7 +1,15 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel } from './select';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  SelectGroup,
+  SelectLabel,
+} from './select';
 import { expect, test, describe } from 'vitest';
 
 // ResizeObserver mock is usually needed for Radix UI select in JSDOM
@@ -25,9 +33,9 @@ describe('Select Component', () => {
         <SelectContent>
           <SelectItem value="1">Option 1</SelectItem>
         </SelectContent>
-      </Select>
+      </Select>,
     );
-    
+
     expect(screen.getByText('Select an option')).toBeInTheDocument();
   });
 
@@ -41,12 +49,12 @@ describe('Select Component', () => {
           <SelectItem value="opt1">Option 1</SelectItem>
           <SelectItem value="opt2">Option 2</SelectItem>
         </SelectContent>
-      </Select>
+      </Select>,
     );
-    
+
     const trigger = screen.getByRole('combobox');
     await userEvent.click(trigger);
-    
+
     expect(screen.getByRole('option', { name: 'Option 1' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Option 2' })).toBeInTheDocument();
   });

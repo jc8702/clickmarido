@@ -29,6 +29,6 @@ export const useErrorStore = create<ErrorState>()(
     }),
     {
       name: 'clickmarido-error-storage',
-    }
-  )
+    },
+  ),
 );

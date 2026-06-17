@@ -7,7 +7,7 @@ import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
-import { EventDialog, EventDialogData } from './event-dialog';
+import { EventDialog } from './event-dialog';
 
 const locales = {
   'pt-BR': ptBR,
@@ -21,9 +21,7 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-const DnDCalendar = withDragAndDrop(Calendar) as React.ComponentType<
-  React.ComponentProps<typeof Calendar> & Record<string, unknown>
->;
+const DnDCalendar = withDragAndDrop(Calendar);
 
 interface CalendarViewProps {
   events: Record<string, unknown>[];
@@ -35,46 +33,45 @@ interface CalendarViewProps {
 export function CalendarView({ events, loading, onEventMove, onEventSave }: CalendarViewProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<EventDialogData | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<Record<string, unknown> | null>(null);
 
   const moveEvent = async ({
     event,
     start,
     end,
   }: {
-    event: object;
+    event: Record<string, unknown>;
     start: Date;
     end: Date;
   }) => {
-    await onEventMove(event as Record<string, unknown>, start, end);
+    await onEventMove(event, start, end);
   };
 
   const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
-    setSelectedSlot({ start, end, title: '', data: undefined });
+    setSelectedSlot({ start, end, title: '', data: null });
     setIsEditMode(false);
     setDialogOpen(true);
   };
 
-  const handleSelectEvent = (event: object) => {
-    const evt = event as Record<string, unknown>;
+  const handleSelectEvent = (event: Record<string, unknown>) => {
     setSelectedSlot({
-      title: evt.title as string,
-      start: evt.start as Date,
-      end: evt.end as Date,
-      technicianId: evt.resourceId as string,
-      data: evt.data as Record<string, unknown>, // Pega o payload original salvo (contém ID etc)
+      title: event.title,
+      start: event.start,
+      end: event.end,
+      technicianId: event.resourceId,
+      data: event.data, // Pega o payload original salvo (contém ID etc)
     });
     setIsEditMode(true);
     setDialogOpen(true);
   };
 
-  const handleSaveEvent = async (data: EventDialogData) => {
+  const handleSaveEvent = async (data: import('./event-dialog').EventDialogData) => {
     await onEventSave(data);
     setDialogOpen(false);
   };
 
   const eventStyleGetter = (
-    event: object,
+    event: Record<string, unknown>,
     start: Date,
     end: Date,
     isSelected: boolean,
@@ -105,8 +102,8 @@ export function CalendarView({ events, loading, onEventMove, onEventSave }: Cale
       <DnDCalendar
         localizer={localizer}
         events={events}
-        startAccessor={(event) => (event as Record<string, unknown>).start as Date}
-        endAccessor={(event) => (event as Record<string, unknown>).end as Date}
+        startAccessor={(event) => (event as Record<string, unknown>).start}
+        endAccessor={(event) => (event as Record<string, unknown>).end}
         style={{ height: '100%', width: '100%', minHeight: '600px' }}
         onEventDrop={moveEvent}
         onEventResize={moveEvent}

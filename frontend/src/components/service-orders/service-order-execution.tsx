@@ -118,14 +118,11 @@ export function ServiceOrderExecution({ os, onUpdate }: ExecutionProps) {
           <hr />
           <h4 className="font-bold">Serviços</h4>
           <ul className="list-disc list-inside">
-            {os.services?.map((s) => {
-              const item = s as Record<string, unknown>;
-              return (
-              <li key={item.id as string}>
-                {item.quantity as number}x {item.name as string}
+            {os.services?.map((s) => (
+              <li key={s.id}>
+                {s.quantity}x {s.name}
               </li>
-              );
-            })}
+            ))}
           </ul>
         </div>
       )}
@@ -148,25 +145,22 @@ export function ServiceOrderExecution({ os, onUpdate }: ExecutionProps) {
             </button>
           </div>
           <div className="space-y-2 mt-4">
-            {os.checklists?.map((s) => {
-              const item = s as Record<string, unknown>;
-              return (
+            {os.checklists?.map((item) => (
               <label
-                key={item.id as string}
+                key={item.id}
                 className="flex items-center gap-2 border p-2 rounded cursor-pointer"
               >
                 <input
                   type="checkbox"
-                  checked={!!item.checked}
-                  onChange={(e) => handleToggle(item.id as string, e.target.checked)}
+                  checked={item.checked}
+                  onChange={(e) => handleToggle(item.id, e.target.checked)}
                   className="w-5 h-5"
                 />
                 <span className={item.checked ? 'line-through text-muted-foreground' : ''}>
-                  {item.item as string}
+                  {item.item}
                 </span>
               </label>
-              );
-            })}
+            ))}
           </div>
         </div>
       )}
@@ -183,15 +177,12 @@ export function ServiceOrderExecution({ os, onUpdate }: ExecutionProps) {
             />
             <div className="flex flex-wrap gap-2 justify-center">
               {os.photos
-                ?.filter((s) => (s as Record<string, unknown>).type === 'antes')
-                .map((s) => {
-                  const p = s as Record<string, unknown>;
-                  return (
-                  <div key={p.id as string} className="relative w-24 h-24">
-                    <Image src={p.url as string} alt="Antes" fill className="object-cover rounded" />
+                ?.filter((p) => p.type === 'antes')
+                .map((p) => (
+                  <div key={p.id} className="relative w-24 h-24">
+                    <Image src={p.url} alt="Antes" fill className="object-cover rounded" />
                   </div>
-                  );
-                })}
+                ))}
             </div>
           </div>
           <div className="border p-4 rounded text-center">
@@ -204,15 +195,12 @@ export function ServiceOrderExecution({ os, onUpdate }: ExecutionProps) {
             />
             <div className="flex flex-wrap gap-2 justify-center">
               {os.photos
-                ?.filter((s) => (s as Record<string, unknown>).type === 'depois')
-                .map((s) => {
-                  const p = s as Record<string, unknown>;
-                  return (
-                  <div key={p.id as string} className="relative w-24 h-24">
-                    <Image src={p.url as string} alt="Depois" fill className="object-cover rounded" />
+                ?.filter((p) => p.type === 'depois')
+                .map((p) => (
+                  <div key={p.id} className="relative w-24 h-24">
+                    <Image src={p.url} alt="Depois" fill className="object-cover rounded" />
                   </div>
-                  );
-                })}
+                ))}
             </div>
           </div>
         </div>

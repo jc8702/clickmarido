@@ -12,7 +12,7 @@ export interface ClientsSlice {
   selectedClient: Client | null;
   loading: boolean;
   error: string | null;
-  
+
   setClients: (clients: Client[]) => void;
   selectClient: (client: Client | null) => void;
   addClient: (client: Client) => void;
@@ -35,13 +35,24 @@ export const createClientsSlice: StateCreator<
 
   setClients: (clients) => set({ clients }, false, 'clients/setClients'),
   selectClient: (client) => set({ selectedClient: client }, false, 'clients/selectClient'),
-  addClient: (client) => set((state) => ({ clients: [...state.clients, client] }), false, 'clients/addClient'),
-  updateClient: (id, data) => set((state) => ({
-    clients: state.clients.map((c) => (c.id === id ? { ...c, ...data } : c)),
-  }), false, 'clients/updateClient'),
-  deleteClient: (id) => set((state) => ({
-    clients: state.clients.filter((c) => c.id !== id),
-  }), false, 'clients/deleteClient'),
+  addClient: (client) =>
+    set((state) => ({ clients: [...state.clients, client] }), false, 'clients/addClient'),
+  updateClient: (id, data) =>
+    set(
+      (state) => ({
+        clients: state.clients.map((c) => (c.id === id ? { ...c, ...data } : c)),
+      }),
+      false,
+      'clients/updateClient',
+    ),
+  deleteClient: (id) =>
+    set(
+      (state) => ({
+        clients: state.clients.filter((c) => c.id !== id),
+      }),
+      false,
+      'clients/deleteClient',
+    ),
   setLoading: (loading) => set({ loading }, false, 'clients/setLoading'),
   setError: (error) => set({ error }, false, 'clients/setError'),
 });

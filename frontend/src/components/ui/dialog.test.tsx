@@ -23,13 +23,13 @@ describe('Dialog Component', () => {
           <DialogTitle>Dialog Title</DialogTitle>
           <DialogDescription>Dialog desc</DialogDescription>
         </DialogContent>
-      </Dialog>
+      </Dialog>,
     );
-    
+
     expect(screen.queryByText('Dialog Title')).not.toBeInTheDocument();
-    
+
     await userEvent.click(screen.getByText('Open Dialog'));
-    
+
     expect(screen.getByText('Dialog Title')).toBeInTheDocument();
     expect(screen.getByText('Dialog desc')).toBeInTheDocument();
   });

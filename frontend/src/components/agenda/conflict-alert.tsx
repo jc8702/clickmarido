@@ -20,12 +20,8 @@ export function ConflictAlert({ conflict, onForce, onCancel, loading }: Conflict
             <AlertTriangle className="w-6 h-6" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-lg font-bold text-white tracking-tight">
-              Conflito de Horário
-            </h3>
-            <p className="text-sm text-zinc-400 leading-relaxed">
-              {conflict.message}
-            </p>
+            <h3 className="text-lg font-bold text-white tracking-tight">Conflito de Horário</h3>
+            <p className="text-sm text-zinc-400 leading-relaxed">{conflict.message}</p>
           </div>
         </div>
 

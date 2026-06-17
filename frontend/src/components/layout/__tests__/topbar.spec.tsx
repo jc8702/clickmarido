@@ -3,19 +3,19 @@ import { describe, it, expect, vi } from 'vitest';
 import { Topbar } from '../topbar';
 
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/dashboard'
+  usePathname: () => '/dashboard',
 }));
 
 vi.mock('next-themes', () => ({
-  useTheme: () => ({ theme: 'light', setTheme: vi.fn() })
+  useTheme: () => ({ theme: 'light', setTheme: vi.fn() }),
 }));
 
 vi.mock('@/contexts/auth-context', () => ({
-  useAuth: () => ({ user: { name: 'Test User' }, logout: vi.fn() })
+  useAuth: () => ({ user: { name: 'Test User' }, logout: vi.fn() }),
 }));
 
 vi.mock('@/components/layout/dashboard-layout', () => ({
-  useLayout: () => ({ isSidebarOpen: true, setSidebarOpen: vi.fn() })
+  useLayout: () => ({ isSidebarOpen: true, setSidebarOpen: vi.fn() }),
 }));
 
 describe('Topbar', () => {

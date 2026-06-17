@@ -14,14 +14,14 @@ describe('Tabs Component', () => {
         </TabsList>
         <TabsContent value="tab1">Content 1</TabsContent>
         <TabsContent value="tab2">Content 2</TabsContent>
-      </Tabs>
+      </Tabs>,
     );
-    
+
     expect(screen.getByText('Content 1')).toBeInTheDocument();
     expect(screen.queryByText('Content 2')).not.toBeInTheDocument();
-    
+
     await userEvent.click(screen.getByText('Tab 2'));
-    
+
     expect(screen.queryByText('Content 1')).not.toBeInTheDocument();
     expect(screen.getByText('Content 2')).toBeInTheDocument();
   });

@@ -20,7 +20,7 @@ export class AppPerformanceObserver {
 
     try {
       this.observer.observe({
-        entryTypes: ['measure', 'navigation', 'resource', 'longtask']
+        entryTypes: ['measure', 'navigation', 'resource', 'longtask'],
       });
     } catch (e) {
       console.warn('PerformanceObserver config not fully supported in this browser.', e);
@@ -41,7 +41,9 @@ export class AppPerformanceObserver {
       const resourceEntry = entry as PerformanceResourceTiming;
       // Alertar se um recurso demorar mais que 1 segundo para carregar
       if (resourceEntry.duration > 1000) {
-        console.warn(`[Performance] Slow resource loaded (${resourceEntry.duration.toFixed(2)}ms): ${resourceEntry.name}`);
+        console.warn(
+          `[Performance] Slow resource loaded (${resourceEntry.duration.toFixed(2)}ms): ${resourceEntry.name}`,
+        );
       }
     }
   }

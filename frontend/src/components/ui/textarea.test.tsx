@@ -16,5 +16,4 @@ describe('Textarea Component', () => {
     await userEvent.type(textarea, 'Hello World');
     expect(textarea).toHaveValue('Hello World');
   });
-
 });

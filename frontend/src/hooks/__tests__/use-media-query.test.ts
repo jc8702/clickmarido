@@ -7,7 +7,7 @@ describe('useMediaQuery', () => {
   let matchMediaMock: any;
 
   beforeAll(() => {
-    matchMediaMock = vi.fn().mockImplementation(query => ({
+    matchMediaMock = vi.fn().mockImplementation((query) => ({
       matches: false,
       media: query,
       onchange: null,
@@ -28,5 +28,4 @@ describe('useMediaQuery', () => {
     const { result } = renderHook(() => useMediaQuery('(min-width: 768px)'));
     expect(result.current).toBe(false);
   });
-
 });

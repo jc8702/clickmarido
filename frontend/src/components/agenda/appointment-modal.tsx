@@ -43,10 +43,10 @@ export function AppointmentModal({
   const [title, setTitle] = useState(appointment?.title || '');
   const [description, setDescription] = useState(appointment?.description || '');
   const [startTime, setStartTime] = useState(
-    appointment ? toLocalDatetime(appointment.startTime) : (defaultStart || '')
+    appointment ? toLocalDatetime(appointment.startTime) : defaultStart || '',
   );
   const [endTime, setEndTime] = useState(
-    appointment ? toLocalDatetime(appointment.endTime) : (defaultEnd || '')
+    appointment ? toLocalDatetime(appointment.endTime) : defaultEnd || '',
   );
   const [clientId, setClientId] = useState(appointment?.clientId || '');
   const [technicianId, setTechnicianId] = useState(appointment?.technicianId || '');
@@ -121,11 +121,16 @@ export function AppointmentModal({
                 {appointment ? 'Editar Compromisso' : 'Novo Compromisso'}
               </h3>
               <p className="text-xs text-zinc-500 mt-0.5">
-                {appointment ? 'Altere as informações do agendamento.' : 'Registre um novo horário na agenda.'}
+                {appointment
+                  ? 'Altere as informações do agendamento.'
+                  : 'Registre um novo horário na agenda.'}
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-500 hover:text-white transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-500 hover:text-white transition-colors"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -145,7 +150,9 @@ export function AppointmentModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Título</label>
+            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+              Título
+            </label>
             <input
               type="text"
               required
@@ -163,11 +170,7 @@ export function AppointmentModal({
             setEndTime={setEndTime}
           />
 
-          <ConflictDetector 
-            startTime={startTime} 
-            endTime={endTime} 
-            technicianId={technicianId} 
-          />
+          <ConflictDetector startTime={startTime} endTime={endTime} technicianId={technicianId} />
 
           <ClientSelector
             clientId={clientId}
@@ -184,7 +187,9 @@ export function AppointmentModal({
           />
 
           <div className="space-y-1">
-            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Observações</label>
+            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+              Observações
+            </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -224,9 +229,13 @@ export function AppointmentModal({
                 className="bg-amber-500 hover:bg-amber-600 text-zinc-950 h-10 px-5 rounded-lg text-xs font-bold disabled:opacity-50"
               >
                 {saving ? (
-                  <><Loader2 className="w-4 h-4 animate-spin mr-1" /> Salvando...</>
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-1" /> Salvando...
+                  </>
+                ) : appointment ? (
+                  'Salvar Alterações'
                 ) : (
-                  appointment ? 'Salvar Alterações' : 'Criar Compromisso'
+                  'Criar Compromisso'
                 )}
               </Button>
             </div>

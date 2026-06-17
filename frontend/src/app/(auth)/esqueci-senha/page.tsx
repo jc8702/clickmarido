@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { Mail, Loader2, ArrowLeft, Send } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ApiClient } from "@/lib/api/client";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { Mail, Loader2, ArrowLeft, Send } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ApiClient } from '@/lib/api/client';
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,10 +19,12 @@ export default function ForgotPasswordPage() {
     setError(null);
 
     try {
-      await ApiClient.post("/auth/forgot-password", { email });
+      await ApiClient.post('/auth/forgot-password', { email });
       setSuccess(true);
     } catch (err: unknown) {
-      setError((err as Error).message || "Houve um erro ao solicitar a recuperação. Tente novamente.");
+      setError(
+        (err as Error).message || 'Houve um erro ao solicitar a recuperação. Tente novamente.',
+      );
     } finally {
       setLoading(false);
     }
@@ -55,12 +57,16 @@ export default function ForgotPasswordPage() {
                   <Send className="h-5 w-5" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="font-bold text-zinc-900 dark:text-zinc-100">Instruções enviadas!</h3>
+                  <h3 className="font-bold text-zinc-900 dark:text-zinc-100">
+                    Instruções enviadas!
+                  </h3>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                    Se o e-mail estiver cadastrado, um link de redefinição de senha foi enviado com sucesso. Verifique sua caixa de entrada e spam.
+                    Se o e-mail estiver cadastrado, um link de redefinição de senha foi enviado com
+                    sucesso. Verifique sua caixa de entrada e spam.
                   </p>
                   <p className="text-[10px] text-amber-500 font-semibold bg-amber-500/5 p-2 rounded border border-amber-500/10">
-                    💡 Dica de desenvolvimento: Confira o console do backend ou a tabela `AppLog` para ver o link gerado!
+                    💡 Dica de desenvolvimento: Confira o console do backend ou a tabela `AppLog`
+                    para ver o link gerado!
                   </p>
                 </div>
                 <Link href="/login" className="block mt-4">
@@ -112,7 +118,10 @@ export default function ForgotPasswordPage() {
                   )}
                 </Button>
 
-                <Link href="/login" className="flex items-center justify-center gap-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 pt-2 transition-colors">
+                <Link
+                  href="/login"
+                  className="flex items-center justify-center gap-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 pt-2 transition-colors"
+                >
                   <ArrowLeft className="h-3.5 w-3.5" />
                   <span>Voltar para o Login</span>
                 </Link>

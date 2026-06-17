@@ -46,11 +46,15 @@ export const getFinancialSummary = async (companyId: string) => {
 };
 
 export const getFinancialDre = async (companyId: string, month: number, year: number) => {
-  return await ApiClient.get<FinancialDre>(`/financial/dre?companyId=${companyId}&month=${month}&year=${year}`);
+  return await ApiClient.get<FinancialDre>(
+    `/financial/dre?companyId=${companyId}&month=${month}&year=${year}`,
+  );
 };
 
 export const getFinancialProjection = async (companyId: string, days: number = 30) => {
-  return await ApiClient.get<FinancialProjection[]>(`/financial/projection?companyId=${companyId}&days=${days}`);
+  return await ApiClient.get<FinancialProjection[]>(
+    `/financial/projection?companyId=${companyId}&days=${days}`,
+  );
 };
 
 export const createTransaction = async (data: Partial<FinancialTransaction>) => {

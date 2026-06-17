@@ -10,7 +10,10 @@ interface TechnicianSelectorProps {
 }
 
 export function TechnicianSelector({
-  technicianId, setTechnicianId, serviceOrderId, setServiceOrderId
+  technicianId,
+  setTechnicianId,
+  serviceOrderId,
+  setServiceOrderId,
 }: TechnicianSelectorProps) {
   const { technicians, serviceOrders } = useAppointmentContext();
 
@@ -25,13 +28,17 @@ export function TechnicianSelector({
         >
           <option value="">Sem técnico</option>
           {technicians.map((t) => (
-            <option key={t.id} value={t.id}>{t.name}</option>
+            <option key={t.id} value={t.id}>
+              {t.name}
+            </option>
           ))}
         </select>
       </div>
 
       <div className="space-y-1">
-        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Ordem de Serviço (opcional)</label>
+        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+          Ordem de Serviço (opcional)
+        </label>
         <select
           value={serviceOrderId}
           onChange={(e) => setServiceOrderId(e.target.value)}
@@ -39,7 +46,9 @@ export function TechnicianSelector({
         >
           <option value="">Nenhuma</option>
           {serviceOrders.map((so) => (
-            <option key={so.id} value={so.id}>OS #{so.number}</option>
+            <option key={so.id} value={so.id}>
+              OS #{so.number}
+            </option>
           ))}
         </select>
       </div>

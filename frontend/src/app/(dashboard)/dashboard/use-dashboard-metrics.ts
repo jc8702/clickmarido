@@ -18,7 +18,7 @@ export const useDashboardMetrics = () => {
     getExecutiveDashboard,
     {
       refreshInterval: 5000, // Real-time pooling a cada 5 segundos
-    }
+    },
   );
 
   return {
