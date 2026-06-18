@@ -1,8 +1,8 @@
 # Auditoria Clickmarido — Plano de Ação
 
 > **Data:** 17/06/2026
-> **Última atualização:** 17/06/2026 — 2o ciclo de correções
-> **Status:** Fase 1-8 concluída. Nenhuma ação manual pendente.
+> **Última atualização:** 17/06/2026 — 3o ciclo (deploy)
+> **Status:** Fase 1-9 concluída. Vercel e Render em produção.
 
 ---
 
@@ -10,7 +10,9 @@
 
 | Item | Status |
 |------|--------|
-| Local vs GitHub | **100% sincronizados** (commit `7fb84d3`) |
+| Local vs GitHub | **100% sincronizados** (commit `99420c9`) |
+| Vercel | ✅ **Deploy OK** `https://clickmarido.vercel.app` |
+| Render | ✅ **Deploy OK** `https://clickmarido.onrender.com` |
 | Branch extra no remoto | `origin/backup/video-studio-20260611` |
 | Warnings ESLint backend | ~68 (resolvidos ~120 — relaxadas regras `no-unsafe-*` em testes) |
 | Warnings ESLint frontend | ~47 (resolvidos ~32 — removidos unused-vars, relaxado `set-state-in-effect`) |
@@ -38,7 +40,7 @@
 
 | # | Ação | Status | Detalhes |
 |---|------|--------|----------|
-| 2.1 | Adicionar `output: 'standalone'` no next.config.mjs | ✅ Feito | Corrige Dockerfile do frontend |
+| 2.1 | Adicionar `output: 'standalone'` no next.config.mjs | 🔄 Removido em 9.4 | Incompatível com Turbopack no Vercel. Mantido apenas p/ Docker local |
 | 2.2 | Esclarecer dupla inicialização Prisma | ✅ Feito | `prisma.config.ts` é CLI (migrate/seed), `prisma.service.ts` é runtime. `dotenv` adicionado como devDep |
 | 2.3 | Revisar Dockerfiles | ✅ Feito | Adicionado `HEALTHCHECK`, `USER node`, corrigido frontend |
 | 2.4 | Configurar Prometheus p/ backend | ✅ Feito | Job `backend` adicionado em `prometheus.yml` |
@@ -121,6 +123,22 @@
 | 8.4 | Corrigir `next.config.mjs` local dev | ✅ Feito | `destination` do rewrite inclui `/api/v1/:path*` |
 | 8.5 | Finalizar rotação de secrets (pendente da Fase 1) | ✅ Feito | Todos os secrets dos 3 `.env` foram rotacionados e aplicados |
 | 8.6 | Atualizar `commit-msg` hook | ✅ Feito | `commit-msg` do husky agora usa `npx commitlint` em vez de `npx --no-install` |
+
+---
+
+## Fase 9 — Deploy & Runtime Fixes (3o ciclo, 17/06/2026)
+
+| # | Ação | Status | Detalhes |
+|---|------|--------|----------|
+| 9.1 | Corrigir `view-quote-modal.tsx` type mismatch | ✅ Feito | Interfaces locais (`Client`, `Quote`, `QuoteService`, `QuoteMaterial`) substituídas por imports de `../types` |
+| 9.2 | Corrigir `signature-modal.tsx` type mismatch | ✅ Feito | Interface `Quote` local (apenas `id`) substituída por import de `../types` |
+| 9.3 | Corrigir `InternalServerException` import | ✅ Feito | Import de `@nestjs/common` → caminho local `../../common/exceptions/internal-server.exception` |
+| 9.4 | Corrigir Vercel build `.nft.json` ENOENT | ✅ Feito | `output: 'standalone'` removido, `automaticVercelMonitors: false` (incompatível com Turbopack) |
+| 9.5 | Corrigir `dotenv` no Docker build do Render | ✅ Feito | Movido de `devDependencies` → `dependencies` com versão `^17.4.1` |
+| 9.6 | Corrigir Dockerfile `npm ci` sem lockfile | ✅ Feito | `npm ci` → `npm install` (workspace não gera lockfile no subdiretório) |
+| 9.7 | Adicionar env vars faltantes no Render | ✅ Feito | `COOKIE_SECRET` e `NODE_ENV` adicionados via API |
+| 9.8 | Restaurar env vars do Render (PUT sobrescreveu) | ✅ Feito | Re-enviadas todas as 8 env vars (DB, JWT, CSRF, CORS, MP, etc.) |
+| 9.9 | Corrigir HEALTHCHECK do Dockerfile | ✅ Feito | Path `/api/health` → `/api/v1/health` |
 
 ---
 
