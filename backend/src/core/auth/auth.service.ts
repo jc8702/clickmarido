@@ -3,8 +3,8 @@ import {
   UnauthorizedException,
   BadRequestException,
   NotFoundException,
-  InternalServerException,
 } from '@nestjs/common';
+import { InternalServerException } from '../../common/exceptions/internal-server.exception';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
