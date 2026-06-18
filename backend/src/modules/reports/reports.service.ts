@@ -18,7 +18,7 @@ const EXPORT_LIMIT = 10_000;
 interface DashboardData {
   totalLeads: number;
   totalQuotes: number;
-  conversionRate: number;
+  conversionRate: number | null;
   completedOrders: number;
   totalRevenue: number;
   totalProfit: number;
@@ -38,7 +38,7 @@ interface CommercialReportData {
 
 interface OperationalReportData {
   productivity: { name: string; concluídas: number }[];
-  avgTimeDays: number;
+  avgTimeDays: number | null;
 }
 
 interface FinancialReportData {
@@ -136,7 +136,7 @@ export class ReportsService {
       const conversionRate =
         totalQuotesCount > 0
           ? (approvedQuotesCount / totalQuotesCount) * 100
-          : 0;
+          : null;
 
       const totalRevenueSafe = totalRevenue._sum.value ?? 0;
       const totalExpenseSafe = totalExpense._sum.value ?? 0;

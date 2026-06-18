@@ -5,6 +5,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Backend source
+COPY backend/package.json backend/package-lock.json ./backend/
 COPY backend/ ./backend/
 
 # Install com ci usando lockfile da raiz (workspace-aware, reproduzível)

@@ -7,7 +7,7 @@ import { isApiError } from '@/lib/api/errors';
 export interface DashboardMetrics {
   totalLeads: number;
   totalQuotes: number;
-  conversionRate: number;
+  conversionRate: number | null;
   completedOrders: number;
   totalRevenue: number;
   totalProfit: number;

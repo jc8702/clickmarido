@@ -3,7 +3,7 @@ import { ApiClient } from '../client';
 export interface ExecutiveDashboard {
   totalLeads: number;
   totalQuotes: number;
-  conversionRate: number;
+  conversionRate: number | null;
   completedOrders: number;
   totalRevenue: number;
   totalProfit: number;
@@ -14,7 +14,7 @@ export interface ExecutiveDashboard {
 export interface CommercialReport {
   totalQuotes: number;
   approvedQuotes: number;
-  conversionRate: number;
+  conversionRate: number | null;
   totalRevenue: number;
   completedOrders: number;
   ticketMedio: number;
@@ -23,7 +23,7 @@ export interface CommercialReport {
 
 export interface OperationalReport {
   productivity: { name: string; concluídas: number }[];
-  avgTimeDays: number;
+  avgTimeDays: number | null;
 }
 
 export interface FinancialReport {
