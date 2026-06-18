@@ -1,7 +1,8 @@
 # Auditoria Clickmarido — Plano de Ação
 
 > **Data:** 17/06/2026
-> **Status:** Fase 1-7 executadas. Pendentes ações manuais do usuário (rotação de secrets).
+> **Última atualização:** 17/06/2026 — 2o ciclo de correções
+> **Status:** Fase 1-8 concluída. Nenhuma ação manual pendente.
 
 ---
 
@@ -11,8 +12,8 @@
 |------|--------|
 | Local vs GitHub | **100% sincronizados** (commit `7fb84d3`) |
 | Branch extra no remoto | `origin/backup/video-studio-20260611` |
-| Warnings ESLint backend | ~45 (resolvidos ~130 — relaxadas regras `no-unsafe-*` em testes) |
-| Warnings ESLint frontend | ~20 (resolvidos ~65 — removidos unused-vars, relaxado `set-state-in-effect`) |
+| Warnings ESLint backend | ~68 (resolvidos ~120 — relaxadas regras `no-unsafe-*` em testes) |
+| Warnings ESLint frontend | ~47 (resolvidos ~32 — removidos unused-vars, relaxado `set-state-in-effect`) |
 
 ---
 
@@ -20,7 +21,7 @@
 
 | # | Ação | Status | Detalhes |
 |---|------|--------|----------|
-| 1.1 | Rotacionar secrets expostas (Supabase DB, Google OAuth, Vercel OIDC) | ⏳ **Ação manual necessária** | Secrets em `.env` locais. Gerar novas senhas no Supabase, Google Cloud e Vercel |
+| 1.1 | Rotacionar secrets expostas (Supabase DB, Google OAuth, Mercado Pago, JWT, CSRF, Cookie) | ✅ Feito | Senha Supabase, Google OAuth, Mercado Pago token, secrets JWT/CSRF/COOKIE/NEXTAUTH rotacionados nos 3 `.env` |
 | 1.2 | Limpar histórico git de secrets | ✅ Feito | Nenhum `.env` está trackeado atualmente (removido em `aa1735c`) |
 | 1.3 | Remover fallback NEXTAUTH_SECRET | ✅ Feito | Agora usa `process.env.NEXTAUTH_SECRET` sem fallback |
 | 1.4 | Remover fallback MERCADOPAGO_ACCESS_TOKEN | ✅ Feito | Agora usa `process.env.MERCADOPAGO_ACCESS_TOKEN!` |
@@ -110,14 +111,21 @@
 
 ---
 
-## Ações Pendentes (Manual)
+## Fase 8 — Correções de Runtime (2o ciclo, 17/06/2026)
 
-### Críticas
-1. **Rotacionar secrets**: Gerar novas senhas no Supabase, Google Cloud Console e Vercel
-   - `backend/.env`: `DATABASE_URL` contém senha real do Supabase (`Millena@@2017@@`)
-   - `frontend/.env.local`: Contém `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` reais
-   - Após gerar novos secrets, atualizar os arquivos `.env` locais e os environment variables nos dashboards (Vercel, Render)
+| # | Ação | Status | Detalhes |
+|---|------|--------|----------|
+| 8.1 | Whitelist CSRF p/ health check do Render | ✅ Feito | Rotas `/vitals` e `/health` adicionadas ao bypass do csrf.middleware.ts |
+| 8.2 | Corrigir API prefix no client.ts | ✅ Feito | `API_PREFIX` = `/api/v1` quando URL direta, `/api` quando via proxy Next.js |
+| 8.3 | Limpar `NEXT_PUBLIC_API_URL` em produção | ✅ Feito | `frontend/.env.local` com valor vazio (usa proxy do Next.js) |
+| 8.4 | Corrigir `next.config.mjs` local dev | ✅ Feito | `destination` do rewrite inclui `/api/v1/:path*` |
+| 8.5 | Finalizar rotação de secrets (pendente da Fase 1) | ✅ Feito | Todos os secrets dos 3 `.env` foram rotacionados e aplicados |
+| 8.6 | Atualizar `commit-msg` hook | ✅ Feito | `commit-msg` do husky agora usa `npx commitlint` em vez de `npx --no-install` |
+
+---
+
+## Ações Pendentes
 
 ### Melhorias Futuras (baixa prioridade)
-- Warnings ESLint remanescentes (~45 backend, ~20 frontend) — principalmente `no-unsafe-*` em código de produção
+- Warnings ESLint remanescentes (~68 backend, ~47 frontend) — principalmente `no-unsafe-*` em código de produção
 - Limpar documentos duplicados em `docs/`
