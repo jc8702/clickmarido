@@ -1,6 +1,15 @@
 import { ApiError } from './errors';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// Sanitiza a URL removendo caracteres de nova linha (\r\n) que podem vir de variáveis de ambiente mal formatadas
+const rawApiUrl = (process.env.NEXT_PUBLIC_API_URL || '').trim().replace(/[\r\n]+/g, '');
+
+// Em produção no Vercel, se a URL apontar para o próprio vercel.app ou estiver vazia,
+// usamos uma string vazia para que as chamadas sejam relativas (/api/...) e
+// o rewrite do next.config.mjs as roteie corretamente para o backend com /v1.
+const API_URL =
+  !rawApiUrl || rawApiUrl.includes('vercel.app')
+    ? ''
+    : rawApiUrl;
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
@@ -14,7 +23,7 @@ export class ApiClient {
   private static async getCsrfToken(): Promise<string | null> {
     if (this.csrfToken) return this.csrfToken;
     try {
-      const response = await fetch(`${API_URL}/api/v1/csrf-token`, {
+      const response = await fetch(`${API_URL}/api/csrf-token`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

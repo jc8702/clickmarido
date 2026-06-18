@@ -26,8 +26,10 @@ const nextConfig = {
     return {
       fallback: [
         {
+          // Proxy: /api/auth/login → backendUrl/api/v1/auth/login
+          // O backend NestJS usa prefixo global 'api' + versionamento 'v1'
           source: '/api/:path*',
-          destination: `${backendUrl}/api/:path*`,
+          destination: `${backendUrl}/api/v1/:path*`,
         },
       ],
     };
