@@ -9,7 +9,7 @@ services:
     restart: always
     environment:
       DATABASE_URL: ${DATABASE_URL}
-      JWT_SECRET: ${JWT_SECRET:-clickmarido-super-secret-key-change-in-production-12345}
+      JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
       PORT: 3001
       EVOLUTION_API_URL: ${EVOLUTION_API_URL}

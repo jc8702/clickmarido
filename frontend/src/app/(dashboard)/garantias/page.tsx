@@ -8,8 +8,6 @@ import {
   createWarranty,
   updateWarrantyStatus,
 } from '@/lib/api/modules/warranties';
-import { ApiClient } from '@/lib/api/client';
-import { getServiceOrders } from '@/lib/api/modules/service-orders';
 import { format, differenceInDays } from 'date-fns';
 
 export default function GarantiasPage() {

@@ -17,17 +17,24 @@ const backendUrl = rawBackendUrl && !rawBackendUrl.includes('vercel.app')
   ? rawBackendUrl
   : 'https://clickmarido.onrender.com';
 
+function extractHostname(url) {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return '';
+  }
+}
+
+const backendHostname = extractHostname(backendUrl);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  typescript: { ignoreBuildErrors: true },
-  eslint: { ignoreDuringBuilds: true },
+  output: 'standalone',
   async rewrites() {
     return {
       fallback: [
         {
-          // Proxy: /api/auth/login → backendUrl/api/v1/auth/login
-          // O backend NestJS usa prefixo global 'api' + versionamento 'v1'
           source: '/api/:path*',
           destination: `${backendUrl}/api/v1/:path*`,
         },
@@ -36,12 +43,14 @@ const nextConfig = {
   },
   images: {
     formats: ['image/avif', 'image/webp'],
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-    ],
+    remotePatterns: backendHostname
+      ? [
+          {
+            protocol: 'https',
+            hostname: backendHostname,
+          },
+        ]
+      : [],
   },
 };
 

@@ -4,10 +4,9 @@ import {
   IsNumber,
   IsArray,
   ValidateNested,
-  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 class ServiceDto {
   @IsString()

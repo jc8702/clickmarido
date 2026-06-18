@@ -32,7 +32,6 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { SentryInterceptor } from './common/interceptors/sentry.interceptor';
-import { PermissionsGuard } from './common/guards/permissions.guard';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { AiModule } from './modules/ai/ai.module';
 import { GeolocationModule } from './core/geolocation/geolocation.module';

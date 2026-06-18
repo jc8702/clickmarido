@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsNumber, Min } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateMaterialDto {
   @IsString()

@@ -23,7 +23,7 @@ export class FinancialService {
     private readonly reportGenerator: ReportGeneratorService,
   ) {
     this.client = new MercadoPagoConfig({
-      accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || 'TEST-dummy-token',
+      accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
     });
   }
 

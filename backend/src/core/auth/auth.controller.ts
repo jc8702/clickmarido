@@ -7,8 +7,6 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-  HttpException,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import {
   ApiTags,

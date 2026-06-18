@@ -1,10 +1,15 @@
 'use client';
 
 import * as Sentry from '@sentry/nextjs';
-import NextError from 'next/error';
 import { useEffect } from 'react';
 
-export default function GlobalError({ error }: { error: Error & { digest?: string } }) {
+export default function GlobalError({
+  error,
+  unstable_retry,
+}: {
+  error: Error & { digest?: string };
+  unstable_retry: () => void;
+}) {
   useEffect(() => {
     Sentry.captureException(error);
   }, [error]);
@@ -20,7 +25,7 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
               Ocorreu um erro inesperado. Nossa equipe foi notificada automaticamente.
             </p>
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => unstable_retry()}
               className="inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground h-11 px-6 font-semibold hover:bg-primary/90 transition-colors"
             >
               Tentar novamente

@@ -2,18 +2,21 @@ import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
+import { withPerformanceMonitoring } from '../../common/prisma/prisma.extension';
 
 @Injectable()
 export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
+  public readonly extended: ReturnType<typeof withPerformanceMonitoring>;
+
   constructor() {
-    // Usamos a DATABASE_URL que aponta para o Session Pooler (IPv4) no Render
     const connectionString = process.env.DATABASE_URL;
     const pool = new Pool({ connectionString });
     const adapter = new PrismaPg(pool);
     super({ adapter });
+    this.extended = withPerformanceMonitoring(this);
   }
 
   async onModuleInit() {

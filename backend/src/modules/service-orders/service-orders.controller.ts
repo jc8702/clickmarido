@@ -5,7 +5,6 @@ import {
   Body,
   Put,
   Param,
-  Delete,
   Query,
   UseGuards,
   BadRequestException,

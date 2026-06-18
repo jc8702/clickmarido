@@ -15,12 +15,12 @@ async function bootstrap() {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     integrations: [nodeProfilingIntegration()],
-    tracesSampleRate: 1.0,
-    profilesSampleRate: 1.0,
+    tracesSampleRate: 0.1,
+    profilesSampleRate: 0.1,
     environment: process.env.NODE_ENV || 'development',
   });
 
-  app.use(cookieParser(process.env.COOKIE_SECRET || 'cookie-secret'));
+  app.use(cookieParser(process.env.COOKIE_SECRET));
 
   // Headers de segurança HTTP (XSS, Clickjacking, MIME sniffing, etc.)
   app.use(

@@ -11,6 +11,10 @@ const API_URL =
     ? ''
     : rawApiUrl;
 
+// Quando chamamos diretamente o backend (sem proxy do Next.js), precisamos do prefixo /api/v1
+// Quando usamos o proxy (URL relativa), o next.config.mjs já adiciona /v1 automaticamente
+const API_PREFIX = API_URL ? '/api/v1' : '/api';
+
 interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
   retries?: number;
@@ -23,7 +27,7 @@ export class ApiClient {
   private static async getCsrfToken(): Promise<string | null> {
     if (this.csrfToken) return this.csrfToken;
     try {
-      const response = await fetch(`${API_URL}/api/csrf-token`, {
+      const response = await fetch(`${API_URL}${API_PREFIX}/csrf-token`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -83,7 +87,7 @@ export class ApiClient {
   private static async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
     const { params, headers, retries = 3, retryDelay = 1000, ...restOptions } = options;
 
-    let url = `${API_URL}/api${endpoint}`;
+    let url = `${API_URL}${API_PREFIX}${endpoint}`;
 
     if (params) {
       const searchParams = new URLSearchParams();

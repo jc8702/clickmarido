@@ -3,7 +3,6 @@ import { AiService } from './ai.service';
 import {
   ApiTags,
   ApiOperation,
-  ApiOkResponse,
   ApiCreatedResponse,
   ApiBadRequestResponse,
   ApiUnauthorizedResponse,

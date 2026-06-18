@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
@@ -8,6 +8,7 @@ import { ptBR } from 'date-fns/locale/pt-BR';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import { EventDialog, EventDialogData } from './event-dialog';
+import type { ComponentType, ComponentProps } from 'react';
 
 const locales = {
   'pt-BR': ptBR,
@@ -21,8 +22,8 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-const DnDCalendar = withDragAndDrop(Calendar) as React.ComponentType<
-  React.ComponentProps<typeof Calendar> & Record<string, unknown>
+const DnDCalendar = withDragAndDrop(Calendar) as ComponentType<
+  ComponentProps<typeof Calendar> & Record<string, unknown>
 >;
 
 interface CalendarViewProps {

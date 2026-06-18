@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsIn } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateHistoryDto {
   @IsString()
