@@ -300,6 +300,10 @@ model Quote {
   @@unique([number, companyId])
   @@index([companyId])
   @@index([companyId, status])
+  @@index([companyId, deletedAt])
+  // Índice composto para queries de reports: WHERE companyId AND deletedAt IS NULL
+  // Cobre: groupBy status, findMany com deletedAt: null
+  @@index([companyId, status, deletedAt])
   @@index([clientId])
   @@index([status])
   @@map("quotes")
@@ -372,6 +376,9 @@ model ServiceOrder {
   @@unique([number, companyId])
   @@index([companyId])
   @@index([companyId, status])
+  // Índice composto para reports: WHERE companyId AND status = 'Concluído' AND deletedAt IS NULL
+  // Evita seq scan com filtro triplo em tabela de alto volume
+  @@index([companyId, status, deletedAt])
   @@index([companyId, scheduledAt])
   @@index([clientId])
   @@index([technicianId])
@@ -442,8 +449,13 @@ model FinancialTransaction {
 
   @@index([companyId])
   @@index([companyId, type])
+  // Índice composto para aggregate de receitas/despesas: WHERE companyId AND type AND deletedAt IS NULL
+  @@index([companyId, deletedAt])
+  @@index([companyId, type, deletedAt])
   @@index([companyId, status])
   @@index([companyId, dueDate])
+  // Índice para relatório financeiro ordenado por data
+  @@index([companyId, transactionDate])
   @@index([transactionDate])
   @@map("financial_transactions")
 }

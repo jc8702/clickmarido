@@ -6,10 +6,7 @@ const rawApiUrl = (process.env.NEXT_PUBLIC_API_URL || '').trim().replace(/[\r\n]
 // Em produção no Vercel, se a URL apontar para o próprio vercel.app ou estiver vazia,
 // usamos uma string vazia para que as chamadas sejam relativas (/api/...) e
 // o rewrite do next.config.mjs as roteie corretamente para o backend com /v1.
-const API_URL =
-  !rawApiUrl || rawApiUrl.includes('vercel.app')
-    ? ''
-    : rawApiUrl;
+const API_URL = !rawApiUrl || rawApiUrl.includes('vercel.app') ? '' : rawApiUrl;
 
 // Quando chamamos diretamente o backend (sem proxy do Next.js), precisamos do prefixo /api/v1
 // Quando usamos o proxy (URL relativa), o next.config.mjs já adiciona /v1 automaticamente
@@ -23,6 +20,15 @@ interface RequestOptions extends RequestInit {
 
 export class ApiClient {
   private static csrfToken: string | null = null;
+
+  // ─── Token Refresh State ────────────────────────────────────────────────────
+  // Previne múltiplos refreshes simultâneos (race condition quando várias
+  // requisições falham com 401 ao mesmo tempo).
+  private static isRefreshing = false;
+  private static refreshQueue: Array<{
+    resolve: (token: string | null) => void;
+  }> = [];
+  // ────────────────────────────────────────────────────────────────────────────
 
   private static async getCsrfToken(): Promise<string | null> {
     if (this.csrfToken) return this.csrfToken;
@@ -84,6 +90,84 @@ export class ApiClient {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  /**
+   * Tenta renovar o access token usando o refresh token armazenado.
+   * Implementa o padrão de fila: múltiplos requests que recebem 401 ao mesmo
+   * tempo aguardam na fila em vez de disparar múltiplos refreshes.
+   *
+   * @returns novo accessToken ou null se o refresh falhar
+   */
+  private static async tryRefreshToken(): Promise<string | null> {
+    if (typeof window === 'undefined') return null;
+
+    // O refreshToken é armazenado em cookie pelo AuthContext (não em localStorage)
+    const cookieMatch = document.cookie
+      .split(';')
+      .map((c) => c.trim())
+      .find((c) => c.startsWith('clickmarido_refresh_token='));
+    const refreshToken = cookieMatch?.split('=')[1] ?? null;
+
+    if (!refreshToken) return null;
+
+    // Se já há um refresh em andamento, entra na fila
+    if (this.isRefreshing) {
+      return new Promise<string | null>((resolve) => {
+        this.refreshQueue.push({ resolve });
+      });
+    }
+
+    this.isRefreshing = true;
+
+    try {
+      const response = await fetch(`${API_URL}${API_PREFIX}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Refresh falhou');
+      }
+
+      const data = await response.json();
+      // Backend retorna { success: true, data: { accessToken, refreshToken } }
+      const payload = data?.data ?? data;
+      const newAccessToken: string = payload.accessToken;
+      const newRefreshToken: string | undefined = payload.refreshToken;
+
+      // Persiste o novo accessToken em localStorage (lido pelo getHeaders)
+      localStorage.setItem('clickmarido_auth_token', newAccessToken);
+      if (newRefreshToken) {
+        // Renova o cookie de refresh com mais 7 dias
+        const expires = new Date();
+        expires.setDate(expires.getDate() + 7);
+        document.cookie = `clickmarido_refresh_token=${newRefreshToken}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
+      }
+
+      // Resolve todos os requests que estavam aguardando
+      this.refreshQueue.forEach(({ resolve }) => resolve(newAccessToken));
+      return newAccessToken;
+    } catch {
+      // Refresh falhou: limpa sessão e redireciona
+      this.refreshQueue.forEach(({ resolve }) => resolve(null));
+      localStorage.removeItem('clickmarido_auth_token');
+      localStorage.removeItem('clickmarido_active_company_id');
+      // Expira os cookies de sessão
+      document.cookie =
+        'clickmarido_refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      document.cookie =
+        'clickmarido_session_active=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      return null;
+    } finally {
+      this.isRefreshing = false;
+      this.refreshQueue = [];
+    }
+  }
+
   private static async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
     const { params, headers, retries = 3, retryDelay = 1000, ...restOptions } = options;
 
@@ -117,10 +201,22 @@ export class ApiClient {
         });
 
         if (!response.ok) {
-          // If CSRF failed, reset token and retry
+          // CSRF inválido: reseta token para buscar novo na próxima tentativa
           if (response.status === 403) {
             this.csrfToken = null;
           }
+
+          // ✅ 401: tenta refresh automático uma vez
+          if (response.status === 401 && attempt === 0) {
+            const newToken = await this.tryRefreshToken();
+            if (newToken) {
+              // Retry imediato com novo token (não conta como tentativa de retryDelay)
+              continue;
+            }
+            // tryRefreshToken já fez o redirect; apenas lança para encerrar
+            throw new ApiError(401, 'Sessão expirada');
+          }
+
           const errorData = await response.json().catch(() => ({}));
           const message = errorData.message || `HTTP Error: ${response.status}`;
           throw new ApiError(response.status, message, errorData.code, errorData.details);

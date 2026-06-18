@@ -24,9 +24,16 @@
     "prettier": "^3.8.4"
   },
   "lint-staged": {
-    "*.{ts,tsx,mjs,js}": [
+    "backend/**/*.{ts,js,mjs}": [
       "prettier --write",
-      "eslint --fix"
+      "eslint --config backend/eslint.config.mjs --fix"
+    ],
+    "frontend/**/*.{ts,tsx,js,mjs}": [
+      "prettier --write",
+      "eslint --config frontend/eslint.config.mjs --fix"
+    ],
+    "*.{ts,tsx,mjs,js}": [
+      "prettier --write"
     ]
   },
   "commitlint": {

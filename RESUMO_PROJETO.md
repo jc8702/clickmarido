@@ -6,6 +6,23 @@
 - **Última Atualização:** [17/06/2026 - 20:52]
 
 ## Histórico de Alterações
+- **[18/06/2026 - 11:21]:** Implementação ULTRAPROMPT 05 — SWR Dashboard Refresh + Error Handling.
+  - **Otimizado:** `use-dashboard-metrics.ts` — `refreshInterval` de 5 000ms → 30 000ms (-83% requests), `dedupingInterval` 10s, error handler tipado (401/400/403/5xx), `keepPreviousData`, `refetch` e `isRefreshing` expostos.
+  - **Adicionado:** `ApiClient.tryRefreshToken()` — auto-refresh 401 com queue de promises para prevenir race condition de múltiplos refreshes simultâneos. Lê refreshToken de cookie (consistente com AuthContext). Em falha, expira cookies e redireciona `/login`.
+  - **Artefato:** `SWR_FIX_05.md` com comparativo antes/depois, padrão de queue, e testes DevTools.
+  - Arquivos modificados: `frontend/src/app/(dashboard)/dashboard/use-dashboard-metrics.ts`, `frontend/src/lib/api/client.ts`.
+- **[18/06/2026 - 11:16]:** Implementação ULTRAPROMPT 04 — Registro Reports Middleware & Guards.
+  - **Corrigido:** `company.middleware.ts` — removido fallback `|| ''` (companyId vazio inicializava ALS com valor falsy).
+  - **Reescrito:** `company-context.guard.ts` — lógica defensiva: verifica ALS, sincroniza com `request.user`, bloqueia se store ausente.
+  - **Atualizado:** `reports.module.ts` — `CompanyContextGuard` adicionado nos providers do módulo.
+  - **Atualizado:** `app.module.ts` — `CompanyContextGuard` registrado como `APP_GUARD` global, cobrindo todos os 9+ controllers com `getCompanyId()`.
+  - **Artefato:** `REPORTS_GUARDS_FIX_04.md` com confirmação de todos os arquivos e teste curl.
+  - Arquivos modificados: `company.middleware.ts`, `company-context.guard.ts`, `reports.module.ts`, `app.module.ts`.
+- **[18/06/2026 - 11:06]:** Diagnóstico arquitetural do bug `CompanyContext.getCompanyId() → null`.
+  - **Root cause identificado:** `CompanyMiddleware` lê headers `x-company-id`/`x-tenant-id` que o frontend não envia; decodifica o JWT mas **não extraía o campo `companyId`** do payload — apenas `userId`. Fallback com `companyId: ''` (string vazia) inicializa o ALS com valor falsy.
+  - **Solução proposta:** (1) Corrigir middleware para extrair `companyId` do JWT payload; (2) Criar `CompanyContextGuard` pós-JWT como segunda barreira de validação; (3) Criar decorator `@CurrentUser()` para eliminar acoplamento ao contexto estático.
+  - **Artefato gerado:** `COMPANY_CONTEXT_FIX_02.md` (análise completa sem execução de comandos).
+  - Arquivos analisados: `company.context.ts`, `company.middleware.ts`, `jwt.strategy.ts`, `reports.controller.ts`, `app.module.ts`.
 - **[17/06/2026 - 20:52]:** Auditoria de segurança git e limpeza de arquivos comprometidos.
   - **CRÍTICO**: Removidos `test_regex.js` e `backend/test_db.js` do tracking (continham credenciais de banco Supabase hardcoded expostas no GitHub).
   - Removido `backend/dist/` (432 arquivos de build compilado) do tracking — desnecessário no controle de versão.

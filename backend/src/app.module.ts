@@ -6,7 +6,8 @@ import {
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { CompanyContextGuard } from './common/guards/company-context.guard';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './core/prisma/prisma.module';
@@ -30,6 +31,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { CompanyMiddleware } from './common/company/company.middleware';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
+import { CacheModule } from './core/cache/cache.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { SentryInterceptor } from './common/interceptors/sentry.interceptor';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
@@ -54,7 +56,7 @@ import { envValidationSchema } from './core/config/env-validation';
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
-        limit: 100,
+        limit: 10,
       },
     ]),
     PrismaModule,
@@ -78,6 +80,7 @@ import { envValidationSchema } from './core/config/env-validation';
     AiModule,
     GeolocationModule,
     LoggerModule,
+    CacheModule,
     ScheduleModule.forRoot(),
     PrometheusModule.register({
       defaultMetrics: {
@@ -88,9 +91,12 @@ import { envValidationSchema } from './core/config/env-validation';
   controllers: [AppController, MetricsController],
   providers: [
     AppService,
+    CompanyContextGuard,
     {
+      // Registrado como guard global: aplica-se a todos os endpoints após JwtAuthGuard.
+      // O guard é permissivo para rotas públicas (request.user === undefined).
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: CompanyContextGuard,
     },
     {
       provide: APP_INTERCEPTOR,

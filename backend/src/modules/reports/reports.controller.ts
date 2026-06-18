@@ -6,9 +6,10 @@ import {
   Res,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from '../../core/auth/jwt-auth.guard';
-import { PermissionsGuard } from '../../common/guards/permissions.guard';
+import { CompanyContextGuard } from '../../common/guards/company-context.guard';
 import { CompanyContext } from '../../common/company/company.context';
 import {
   ApiTags,
@@ -20,14 +21,19 @@ import {
 } from '@nestjs/swagger';
 
 @Controller('reports')
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, CompanyContextGuard, ThrottlerGuard)
 @ApiTags('Reports')
 @ApiBearerAuth('JWT-auth')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
+  /**
+   * Dashboard Executivo — leitura de KPIs agregados.
+   * Rate limit: 10 req/min por IP (mais permissivo — usado em polling SWR 30s).
+   */
   @Get('dashboard')
-  @ApiOperation({ summary: 'Operation getDashboard' })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @ApiOperation({ summary: 'Dashboard executivo com KPIs aggregados' })
   @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
   @ApiBadRequestResponse({ description: 'Dados inválidos.' })
   @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
@@ -37,8 +43,13 @@ export class ReportsController {
     return this.reportsService.getExecutiveDashboard(companyId);
   }
 
+  /**
+   * Relatório comercial — orçamentos, conversão e top serviços.
+   * Rate limit: 10 req/min.
+   */
   @Get('commercial')
-  @ApiOperation({ summary: 'Operation getCommercial' })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @ApiOperation({ summary: 'Relatório comercial: funil de vendas e conversão' })
   @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
   @ApiBadRequestResponse({ description: 'Dados inválidos.' })
   @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
@@ -48,8 +59,13 @@ export class ReportsController {
     return this.reportsService.getCommercialReport(companyId);
   }
 
+  /**
+   * Relatório operacional — produtividade dos técnicos e SLA.
+   * Rate limit: 10 req/min.
+   */
   @Get('operational')
-  @ApiOperation({ summary: 'Operation getOperational' })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @ApiOperation({ summary: 'Relatório operacional: produtividade e SLA' })
   @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
   @ApiBadRequestResponse({ description: 'Dados inválidos.' })
   @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
@@ -59,8 +75,15 @@ export class ReportsController {
     return this.reportsService.getOperationalReport(companyId);
   }
 
+  /**
+   * Relatório financeiro — receitas, despesas e evolução mensal.
+   * Rate limit: 10 req/min.
+   */
   @Get('financial')
-  @ApiOperation({ summary: 'Operation getFinancial' })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @ApiOperation({
+    summary: 'Relatório financeiro: receitas, despesas e lucratividade',
+  })
   @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
   @ApiBadRequestResponse({ description: 'Dados inválidos.' })
   @ApiUnauthorizedResponse({ description: 'Não autorizado.' })
@@ -70,8 +93,13 @@ export class ReportsController {
     return this.reportsService.getFinancialReport(companyId);
   }
 
+  /**
+   * Export financeiro em XLSX — operação pesada.
+   * Rate limit reduzido: 5 req/min (evita geração excessiva de planilhas).
+   */
   @Get('export/financial')
-  @ApiOperation({ summary: 'Operation exportFinancial' })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @ApiOperation({ summary: 'Exportar relatório financeiro em Excel (.xlsx)' })
   @ApiOkResponse({ description: 'Operação realizada com sucesso.' })
   @ApiBadRequestResponse({ description: 'Dados inválidos.' })
   @ApiUnauthorizedResponse({ description: 'Não autorizado.' })

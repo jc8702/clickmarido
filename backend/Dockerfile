@@ -1,19 +1,33 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY package.json ./
-RUN npm install
-COPY . .
+
+# Root workspace files (lockfile garantido para npm ci)
+COPY package.json package-lock.json ./
+
+# Backend source
+COPY backend/ ./backend/
+
+# Install com ci usando lockfile da raiz (workspace-aware, reproduzível)
+RUN npm ci --legacy-peer-deps --prefer-offline
+
+WORKDIR /app/backend
 RUN npx prisma generate
 RUN npm run build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
-COPY package.json ./
-RUN npm install --omit=dev --ignore-scripts
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
+
+# Root workspace files para instalação reproduzível
+COPY package.json package-lock.json ./
+
+# Apenas produção
+RUN npm ci --omit=dev --ignore-scripts --legacy-peer-deps
+
+# Artifacts do build
+COPY --from=builder /app/backend/dist ./dist
+COPY --from=builder /app/backend/prisma ./prisma
+COPY --from=builder /app/backend/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/backend/node_modules/@prisma/client ./node_modules/@prisma/client
 
 ENV NODE_ENV=production
 ENV PORT=3001

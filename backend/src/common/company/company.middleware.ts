@@ -12,8 +12,9 @@ export class CompanyMiddleware implements NestMiddleware {
       (req.query['companyId'] as string) ||
       (req.query['tenantId'] as string);
 
-    // Tenta decodificar o JWT opcionalmente para capturar o userId no contexto
+    // Tenta decodificar o JWT opcionalmente para capturar o userId e companyId
     let userId: string | undefined;
+    let jwtCompanyId: string | undefined;
     const authHeader = req.headers['authorization'];
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
@@ -28,15 +29,20 @@ export class CompanyMiddleware implements NestMiddleware {
         );
         const payload = JSON.parse(jsonPayload);
         userId = payload.sub || payload.userId;
+        jwtCompanyId = payload.companyId;
       } catch (e) {
         // Ignora erro de decode
       }
     }
 
-    if (!companyId) {
-      return CompanyContext.run({ companyId: '', userId }, next);
+    const resolvedCompanyId = companyId || jwtCompanyId;
+
+    if (!resolvedCompanyId) {
+      // Sem companyId disponível: não inicializar ALS com valor inválido.
+      // O CompanyContextGuard irá bloquear a requisição se necessário.
+      return next();
     }
 
-    return CompanyContext.run({ companyId, userId }, next);
+    return CompanyContext.run({ companyId: resolvedCompanyId, userId }, next);
   }
 }
