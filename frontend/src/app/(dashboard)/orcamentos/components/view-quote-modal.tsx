@@ -3,43 +3,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { XCircle, Printer, Share2, Award, Wrench } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-
-interface Client {
-  name: string;
-  phone: string;
-  email?: string;
-  address?: string;
-}
-
-interface QuoteService {
-  quantity: number;
-  value: number;
-  service?: {
-    name: string;
-    category: string;
-  };
-}
-
-interface QuoteMaterial {
-  description: string;
-  quantity: number;
-  value: number;
-}
-
-interface Quote {
-  id: string;
-  number: number;
-  status: string;
-  createdAt: string;
-  client: Client;
-  services: QuoteService[];
-  materials?: QuoteMaterial[];
-  travelFee: number;
-  discount: number;
-  totalValue: number;
-  signature?: string;
-  signedAt?: string;
-}
+import type { Quote, Client, QuoteServiceItem, QuoteMaterialItem } from '../types';
 
 interface ViewQuoteModalProps {
   isOpen: boolean;
