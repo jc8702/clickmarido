@@ -4,6 +4,7 @@
   "description": "Click Marido ERP Backend - API Gateway",
   "private": true,
   "scripts": {
+    "preinstall": "rm -rf node_modules",
     "prepare": "husky",
     "build": "nest build",
     "start": "nest start",
