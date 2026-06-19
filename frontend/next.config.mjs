@@ -30,7 +30,6 @@ const backendHostname = extractHostname(backendUrl);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  outputFileTracing: false,
   async rewrites() {
     return {
       fallback: [
@@ -61,7 +60,6 @@ const sentryConfig = {
   silent: true,
   hideSourceMaps: true,
   widenClientFileUpload: true,
-  automaticVercelMonitors: false,
 };
 
 export default withBundleAnalyzer(withSerwist(withSentryConfig(nextConfig, sentryConfig)));
