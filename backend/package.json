@@ -15,11 +15,11 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "prisma:generate": "npx prisma generate",
-    "prisma:migrate": "npx prisma migrate dev",
-    "prisma:deploy": "npx prisma migrate deploy",
-    "prisma:seed": "npx ts-node prisma/seed.ts",
-    "postinstall": "npx prisma generate"
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:seed": "ts-node prisma/seed.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
