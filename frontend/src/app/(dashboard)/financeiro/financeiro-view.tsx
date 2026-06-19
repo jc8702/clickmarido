@@ -18,7 +18,9 @@ import {
   Activity,
   FileText,
   CalendarDays,
+  ArrowLeft,
 } from 'lucide-react';
+import { PageHeader } from '@/components/layout/page-header';
 
 const COMPANY_ID = '6fb48ab0-08ab-49bd-9eab-57dd4f923ff1'; // MOCK for MVP
 

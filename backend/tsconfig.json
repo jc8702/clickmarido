@@ -20,5 +20,11 @@
     "strictPropertyInitialization": false,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "disabled_modules",
+    "**/disabled_modules/**"
+  ]
 }

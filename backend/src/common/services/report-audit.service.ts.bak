@@ -1,0 +1,119 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../core/prisma/prisma.service';
+import { CompanyContext } from '../company/company.context';
+import { REPORT_TYPES } from '../decorators/report-permissions.decorator';
+
+export interface ReportAccessLog {
+  userId: string;
+  companyId: string;
+  reportType: string;
+  endpoint: string;
+  action: string;
+  ipAddress: string;
+  userAgent: string;
+  hasData: boolean;
+  error?: string;
+  statusCode?: number;
+  timestamp: Date;
+}
+
+@Injectable()
+export class ReportAuditService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async logReportAccess(logData: Omit<ReportAccessLog, 'timestamp'>) {
+    try {
+      await this.prisma.auditLog.create({
+        data: {
+          ...logData,
+          timestamp: new Date(),
+        },
+      });
+    } catch (error) {
+      console.error('Falha ao gravar log de auditoria de relatório:', error);
+    }
+  }
+
+  async getReportAccessPatterns(
+    companyId: string,
+    startDate: Date,
+    endDate: Date,
+  ) {
+    return this.prisma.auditLog.findMany({
+      where: {
+        companyId,
+        entityName: 'Report',
+        timestamp: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      orderBy: {
+        timestamp: 'desc',
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getMostAccessedReports(companyId: string, days: number = 30) {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const logs = await this.prisma.auditLog.findMany({
+      where: {
+        companyId,
+        entityName: 'Report',
+        timestamp: {
+          gte: startDate,
+        },
+      },
+      select: {
+        entityId: true,
+        timestamp: true,
+      },
+    });
+
+    // Agrupa por tipo de relatório
+    const reportCounts: Record<string, number> = {};
+    logs.forEach((log) => {
+      const reportType = log.entityId;
+      reportCounts[reportType] = (reportCounts[reportType] || 0) + 1;
+    });
+
+    return Object.entries(reportCounts)
+      .map(([reportType, count]) => ({
+        reportType,
+        accessCount: count,
+      }))
+      .sort((a, b) => b.accessCount - a.accessCount);
+  }
+
+  async getReportAccessErrors(companyId: string, days: number = 7) {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    return this.prisma.auditLog.findMany({
+      where: {
+        companyId,
+        entityName: 'Report',
+        action: {
+          contains: '_ERROR',
+        },
+        timestamp: {
+          gte: startDate,
+        },
+      },
+      orderBy: {
+        timestamp: 'desc',
+      },
+    });
+  }
+}

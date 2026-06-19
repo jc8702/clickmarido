@@ -1,0 +1,163 @@
+import { Injectable, NestMiddleware, MiddlewareFunction } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
+import { LoggerService } from '../core/logger/logger.service';
+import { CompanyContext } from '../company/company.context';
+
+interface RateLimitEntry {
+  count: number;
+  resetTime: number;
+  requests: Array<{
+    timestamp: number;
+    path: string;
+    userAgent: string;
+    ip: string;
+  }>;
+}
+
+@Injectable()
+export class AdvancedRateLimitMiddleware implements NestMiddleware {
+  private readonly store = new Map<string, RateLimitEntry>();
+  private readonly windowSize = 15 * 60 * 1000; // 15 minutos
+  private readonly maxRequests = 100; // requests por janela
+  private readonly cleanupInterval = 60 * 1000; // 1 minuto
+
+  constructor(
+    private readonly logger: LoggerService,
+  ) {
+    // Cleanup automático de entradas expiradas
+    setInterval(() => this.cleanupExpiredEntries(), this.cleanupInterval);
+  }
+
+  resolve(): MiddlewareFunction {
+    return (req: Request, res: Response, next: NextFunction) => {
+      const key = this.getClientKey(req);
+      const entry = this.getOrCreateEntry(key);
+
+      // Verificar se o limite foi excedido
+      if (entry.count >= this.maxRequests) {
+        const remainingTime = Math.ceil((entry.resetTime - Date.now()) / 1000);
+        
+        this.logger.warn(
+          `Rate limit exceeded for ${key}. Remaining time: ${remainingTime}s`,
+          'RATE_LIMIT'
+        );
+
+        return res.status(429).json({
+          error: 'Too Many Requests',
+          message: 'Você atingiu o limite de requisições. Tente novamente mais tarde.',
+          retryAfter: remainingTime,
+          limit: this.maxRequests,
+          window: this.windowSize / 1000,
+        });
+      }
+
+      // Registrar requisição
+      entry.count++;
+      entry.requests.push({
+        timestamp: Date.now(),
+        path: req.path,
+        userAgent: req.headers['user-agent'] || 'unknown',
+        ip: this.getClientIP(req),
+      });
+
+      // Adicionar headers de rate limiting
+      res.setHeader('X-RateLimit-Limit', this.maxRequests);
+      res.setHeader('X-RateLimit-Remaining', this.maxRequests - entry.count);
+      res.setHeader('X-RateLimit-Reset', Math.ceil(entry.resetTime / 1000));
+      res.setHeader('Retry-After', Math.ceil((entry.resetTime - Date.now()) / 1000));
+
+      // Log para monitoramento
+      if (entry.count > this.maxRequests * 0.8) {
+        this.logger.warn(
+          `High rate limit usage: ${entry.count}/${this.maxRequests} for ${key}`,
+          'RATE_LIMIT'
+        );
+      }
+
+      next();
+    };
+  }
+
+  private getClientKey(req: Request): string {
+    const companyId = CompanyContext.getCompanyId() || 'anonymous';
+    const userId = (req as any).user?.id || 'anonymous';
+    const ip = this.getClientIP(req);
+    
+    // Priorizar userId para usuários autenticados
+    if (userId !== 'anonymous') {
+      return `user:${userId}`;
+    }
+    
+    // Fallback para IP + Company para usuários não autenticados
+    return `ip:${ip}:company:${companyId}`;
+  }
+
+  private getClientIP(req: Request): string {
+    return req.headers['x-forwarded-for'] as string || 
+           req.headers['x-real-ip'] as string || 
+           req.connection.remoteAddress || 
+           req.socket.remoteAddress || 
+           'unknown';
+  }
+
+  private getOrCreateEntry(key: string): RateLimitEntry {
+    const now = Date.now();
+    const entry = this.store.get(key);
+
+    if (!entry || now > entry.resetTime) {
+      // Criar nova entrada
+      const newEntry: RateLimitEntry = {
+        count: 0,
+        resetTime: now + this.windowSize,
+        requests: [],
+      };
+      this.store.set(key, newEntry);
+      return newEntry;
+    }
+
+    return entry;
+  }
+
+  private cleanupExpiredEntries(): void {
+    const now = Date.now();
+    let cleanedCount = 0;
+
+    for (const [key, entry] of this.store.entries()) {
+      if (now > entry.resetTime) {
+        this.store.delete(key);
+        cleanedCount++;
+      }
+    }
+
+    if (cleanedCount > 0) {
+      this.logger.log(`Cleaned up ${cleanedCount} expired rate limit entries`, 'RATE_LIMIT');
+    }
+  }
+
+  // Método para verificar limite atual (para uso interno)
+  public getCurrentLimit(key: string): { count: number; remaining: number; resetTime: number } {
+    const entry = this.store.get(key);
+    if (!entry || Date.now() > entry.resetTime) {
+      return { count: 0, remaining: this.maxRequests, resetTime: Date.now() + this.windowSize };
+    }
+
+    return {
+      count: entry.count,
+      remaining: this.maxRequests - entry.count,
+      resetTime: entry.resetTime,
+    };
+  }
+
+  // Método para resetar limite (para uso administrativo)
+  public resetLimit(key: string): boolean {
+    const entry = this.store.get(key);
+    if (entry) {
+      entry.count = 0;
+      entry.resetTime = Date.now() + this.windowSize;
+      entry.requests = [];
+      this.logger.log(`Rate limit reset for ${key}`, 'RATE_LIMIT');
+      return true;
+    }
+    return false;
+  }
+}

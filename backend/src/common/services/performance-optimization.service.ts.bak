@@ -1,0 +1,354 @@
+import { Injectable } from '@nestjs/common';
+import { LoggerService } from '../../core/logger/logger.service';
+import { CompanyContext } from '../company/company.context';
+
+export interface PerformanceMetrics {
+  requestCount: number;
+  averageResponseTime: number;
+  slowRequestCount: number;
+  errorRate: number;
+  cacheHitRate: number;
+  memoryUsage: number;
+  cpuUsage: number;
+  databaseQueryCount: number;
+  averageQueryTime: number;
+}
+
+export interface PerformanceAlert {
+  type: 'warning' | 'critical';
+  message: string;
+  timestamp: number;
+  metrics: Partial<PerformanceMetrics>;
+  suggestions: string[];
+}
+
+@Injectable()
+export class PerformanceOptimizationService {
+  private readonly metrics: PerformanceMetrics = {
+    requestCount: 0,
+    averageResponseTime: 0,
+    slowRequestCount: 0,
+    errorRate: 0,
+    cacheHitRate: 0,
+    memoryUsage: 0,
+    cpuUsage: 0,
+    databaseQueryCount: 0,
+    averageQueryTime: 0,
+  };
+
+  private readonly alerts: PerformanceAlert[] = [];
+  private readonly slowRequestThreshold = 1000; // 1 segundo
+  private readonly errorRateThreshold = 0.05; // 5%
+  private readonly cacheHitRateThreshold = 0.7; // 70%
+  private readonly cleanupInterval = 5 * 60 * 1000; // 5 minutos
+  private readonly maxAlerts = 100;
+
+  constructor(
+    private readonly logger: LoggerService,
+  ) {
+    this.startMonitoring();
+  }
+
+  // Registrar métricas de requisição
+  recordRequest(
+    responseTime: number,
+    success: boolean,
+    cacheHit: boolean,
+    queryCount: number,
+    queryTime: number,
+  ): void {
+    this.metrics.requestCount++;
+    
+    // Atualizar tempo médio de resposta
+    this.metrics.averageResponseTime = 
+      (this.metrics.averageResponseTime * (this.metrics.requestCount - 1) + responseTime) / this.metrics.requestCount;
+
+    // Contar requisições lentas
+    if (responseTime > this.slowRequestThreshold) {
+      this.metrics.slowRequestCount++;
+    }
+
+    // Calcular taxa de erro
+    if (!success) {
+      this.metrics.errorRate = (this.metrics.errorRate * (this.metrics.requestCount - 1) + 1) / this.metrics.requestCount;
+    }
+
+    // Calcular taxa de cache hit
+    if (cacheHit) {
+      this.metrics.cacheHitRate = (this.metrics.cacheHitRate * (this.metrics.requestCount - 1) + 1) / this.metrics.requestCount;
+    }
+
+    // Atualizar métricas de banco de dados
+    this.metrics.databaseQueryCount = 
+      (this.metrics.databaseQueryCount * (this.metrics.requestCount - 1) + queryCount) / this.metrics.requestCount;
+    
+    this.metrics.averageQueryTime = 
+      (this.metrics.averageQueryTime * (this.metrics.requestCount - 1) + queryTime) / this.metrics.requestCount;
+
+    // Verificar alertas
+    this.checkAlerts();
+  }
+
+  // Verificar condições de alerta
+  private checkAlerts(): void {
+    const alerts: PerformanceAlert[] = [];
+
+    // Alerta para requisições lentas
+    if (this.metrics.slowRequestCount / this.metrics.requestCount > 0.1) {
+      alerts.push({
+        type: 'warning',
+        message: 'High percentage of slow requests detected',
+        timestamp: Date.now(),
+        metrics: { slowRequestCount: this.metrics.slowRequestCount },
+        suggestions: [
+          'Consider implementing query optimization',
+          'Check for database bottlenecks',
+          'Review API endpoints for performance issues',
+        ],
+      });
+    }
+
+    // Alerta para taxa de erro alta
+    if (this.metrics.errorRate > this.errorRateThreshold) {
+      alerts.push({
+        type: 'critical',
+        message: 'High error rate detected',
+        timestamp: Date.now(),
+        metrics: { errorRate: this.metrics.errorRate },
+        suggestions: [
+          'Check error logs for patterns',
+          'Review API error handling',
+          'Consider implementing circuit breakers',
+        ],
+      });
+    }
+
+    // Alerta para taxa de cache hit baixa
+    if (this.metrics.cacheHitRate < this.cacheHitRateThreshold) {
+      alerts.push({
+        type: 'warning',
+        message: 'Low cache hit rate detected',
+        timestamp: Date.now(),
+        metrics: { cacheHitRate: this.metrics.cacheHitRate },
+        suggestions: [
+          'Review cache strategies',
+          'Consider increasing cache TTL',
+          'Check cache key patterns',
+        ],
+      });
+    }
+
+    // Alerta para tempo médio de consulta alto
+    if (this.metrics.averageQueryTime > 100) {
+      alerts.push({
+        type: 'warning',
+        message: 'High average database query time',
+        timestamp: Date.now(),
+        metrics: { averageQueryTime: this.metrics.averageQueryTime },
+        suggestions: [
+          'Optimize database queries',
+          'Consider adding database indexes',
+          'Review query performance',
+        ],
+      });
+    }
+
+    // Adicionar novos alertas
+    alerts.forEach(alert => {
+      this.alerts.push(alert);
+      this.logger.warn(alert.message, 'PERFORMANCE');
+    });
+
+    // Limitar número de alertas
+    if (this.alerts.length > this.maxAlerts) {
+      this.alerts.splice(0, this.alerts.length - this.maxAlerts);
+    }
+  }
+
+  // Obter métricas atuais
+  getMetrics(): PerformanceMetrics {
+    return { ...this.metrics };
+  }
+
+  // Obter alertes recentes
+  getAlerts(limit: number = 10): PerformanceAlert[] {
+    return this.alerts.slice(-limit);
+  }
+
+  // Obter recomendações de otimização
+  getOptimizationSuggestions(): string[] {
+    const suggestions: string[] = [];
+
+    // Análise de cache
+    if (this.metrics.cacheHitRate < 0.8) {
+      suggestions.push('Consider implementing intelligent caching strategies');
+      suggestions.push('Review cache TTL settings for different endpoints');
+    }
+
+    // Análise de banco de dados
+    if (this.metrics.averageQueryTime > 50) {
+      suggestions.push('Optimize database queries and add appropriate indexes');
+      suggestions.push('Consider implementing query result caching');
+    }
+
+    // Análise de requisições lentas
+    if (this.metrics.slowRequestCount > 0) {
+      suggestions.push('Implement request timeout handling');
+      suggestions.push('Consider adding rate limiting for slow endpoints');
+    }
+
+    // Análise de erro
+    if (this.metrics.errorRate > 0.02) {
+      suggestions.push('Improve error handling and monitoring');
+      suggestions.push('Consider implementing retry mechanisms for failed requests');
+    }
+
+    // Sugestões gerais
+    suggestions.push('Consider implementing CDN for static assets');
+    suggestions.push('Review and optimize API response sizes');
+    suggestions.push('Consider implementing connection pooling');
+
+    return suggestions;
+  }
+
+  // Gerar relatório de performance
+  generatePerformanceReport(): {
+    summary: string;
+    metrics: PerformanceMetrics;
+    alerts: PerformanceAlert[];
+    suggestions: string[];
+    recommendations: string[];
+  } {
+    const health = this.getSystemHealth();
+    
+    return {
+      summary: `System performance is ${health.status}. ${health.message}`,
+      metrics: this.getMetrics(),
+      alerts: this.getAlerts(),
+      suggestions: this.getOptimizationSuggestions(),
+      recommendations: this.getRecommendations(),
+    };
+  }
+
+  // Obter saúde do sistema
+  getSystemHealth(): {
+    status: 'excellent' | 'good' | 'warning' | 'critical';
+    message: string;
+  } {
+    const score = this.calculatePerformanceScore();
+    
+    if (score >= 90) {
+      return { status: 'excellent', message: 'System is performing excellently' };
+    } else if (score >= 75) {
+      return { status: 'good', message: 'System is performing well' };
+    } else if (score >= 60) {
+      return { status: 'warning', message: 'System needs attention' };
+    } else {
+      return { status: 'critical', message: 'System performance is poor' };
+    }
+  }
+
+  // Calcular pontuação de performance
+  private calculatePerformanceScore(): number {
+    let score = 100;
+
+    // Penalizar por taxa de erro
+    score -= this.metrics.errorRate * 200;
+
+    // Penalizar por taxa de cache hit baixa
+    score -= (1 - this.metrics.cacheHitRate) * 50;
+
+    // Penalizar por tempo de resposta lento
+    score -= Math.min(this.metrics.averageResponseTime / 10, 20);
+
+    // Penalizar por tempo de consulta lento
+    score -= Math.min(this.metrics.averageQueryTime / 5, 15);
+
+    // Penalizar por requisições lentas
+    score -= Math.min(this.metrics.slowRequestCount / this.metrics.requestCount * 50, 25);
+
+    return Math.max(0, Math.min(100, score));
+  }
+
+  // Obter recomendações específicas
+  private getRecommendations(): string[] {
+    const recommendations: string[] = [];
+
+    // Recomendações baseadas em métricas
+    if (this.metrics.averageResponseTime > 500) {
+      recommendations.push('Implement response compression');
+      recommendations.push('Consider using edge caching');
+    }
+
+    if (this.metrics.databaseQueryCount > 10) {
+      recommendations.push('Implement query batching');
+      recommendations.push('Consider using database connection pooling');
+    }
+
+    if (this.metrics.memoryUsage > 80) {
+      recommendations.push('Implement memory optimization');
+      recommendations.push('Consider using memory-efficient data structures');
+    }
+
+    // Recomendações proativas
+    recommendations.push('Implement performance monitoring dashboard');
+    recommendations.push('Set up automated performance alerts');
+    recommendations.push('Regular performance audits');
+
+    return recommendations;
+  }
+
+  // Iniciar processo de monitoramento
+  private startMonitoring(): void {
+    // Monitoramento periódico
+    setInterval(() => {
+      this.logPeriodicMetrics();
+    }, this.cleanupInterval);
+
+    // Limpeza de métricas antigas
+    setInterval(() => {
+      this.cleanupOldMetrics();
+    }, this.cleanupInterval * 2);
+  }
+
+  // Logar métricas periódicas
+  private logPeriodicMetrics(): void {
+    const health = this.getSystemHealth();
+    
+    this.logger.info(
+      `Performance metrics: ${health.status} - ` +
+      `Avg Response: ${this.metrics.averageResponseTime}ms, ` +
+      `Error Rate: ${(this.metrics.errorRate * 100).toFixed(2)}%, ` +
+      `Cache Hit: ${(this.metrics.cacheHitRate * 100).toFixed(2)}%`,
+      'PERFORMANCE'
+    );
+  }
+
+  // Limpar métricas antigas
+  private cleanupOldMetrics(): void {
+    // Resetear métricas se necessário
+    if (this.metrics.requestCount > 10000) {
+      this.logger.info('Resetting performance metrics', 'PERFORMANCE');
+      this.metrics.requestCount = 0;
+      this.metrics.averageResponseTime = 0;
+      this.metrics.slowRequestCount = 0;
+      this.metrics.errorRate = 0;
+      this.metrics.cacheHitRate = 0;
+      this.metrics.databaseQueryCount = 0;
+      this.metrics.averageQueryTime = 0;
+    }
+  }
+
+  // Método para resetar métricas
+  resetMetrics(): void {
+    this.metrics.requestCount = 0;
+    this.metrics.averageResponseTime = 0;
+    this.metrics.slowRequestCount = 0;
+    this.metrics.errorRate = 0;
+    this.metrics.cacheHitRate = 0;
+    this.metrics.databaseQueryCount = 0;
+    this.metrics.averageQueryTime = 0;
+    
+    this.logger.info('Performance metrics reset', 'PERFORMANCE');
+  }
+}

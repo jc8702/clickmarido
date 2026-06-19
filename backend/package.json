@@ -1,15 +1,11 @@
 {
-  "name": "backend",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "name": "clickmarido-backend",
+  "version": "1.0.0",
+  "description": "Click Marido ERP Backend - API Gateway",
   "private": true,
-  "license": "UNLICENSED",
   "scripts": {
     "prepare": "husky",
-    "build": "nest build --webpack",
-    "swagger:gen": "ts-node --project tsconfig.build.json scripts/generate-openapi.ts",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "build": "nest build",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -18,8 +14,11 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:deploy": "npx prisma migrate deploy",
+    "prisma:seed": "npx ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -47,10 +46,10 @@
     "csrf-csrf": "^4.0.3",
     "date-fns": "^4.4.0",
     "dompurify": "^3.4.10",
+    "dotenv": "^17.4.1",
     "helmet": "^8.2.0",
     "joi": "^18.2.1",
     "jsdom": "^29.1.1",
-    "dotenv": "^17.4.1",
     "mercadopago": "^3.1.0",
     "nest-winston": "^1.10.2",
     "passport": "^0.7.0",
@@ -79,7 +78,6 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/jsdom": "^28.0.3",
-    "@types/node": "^24.0.0",
     "@types/passport-jwt": "^4.0.1",
     "@types/pdfkit": "^0.17.6",
     "@types/pg": "^8.20.0",
@@ -132,16 +130,16 @@
     ],
     "coverageThreshold": {
       "global": {
-        "branches": 80,
-        "functions": 80,
-        "lines": 80,
-        "statements": 80
+        "branches": 85,
+        "functions": 85,
+        "lines": 85,
+        "statements": 85
       },
       "./src/modules/**/*.service.ts": {
-        "statements": 85,
-        "branches": 50,
-        "functions": 85,
-        "lines": 85
+        "statements": 90,
+        "branches": 60,
+        "functions": 90,
+        "lines": 90
       }
     }
   },
@@ -153,5 +151,8 @@
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }

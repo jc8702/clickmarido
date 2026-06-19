@@ -1,0 +1,41 @@
+import { Injectable, NestMiddleware, MiddlewareFunction } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
+import { LoggerService } from '../core/logger/logger.service';
+import { CompanyContext } from '../company/company.context';
+
+@Injectable()
+export class SecurityHeadersMiddleware implements NestMiddleware {
+  constructor(
+    private readonly logger: LoggerService,
+  ) {}
+
+  resolve(): MiddlewareFunction {
+    return (req: Request, res: Response, next: NextFunction) => {
+      // Security Headers
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Frame-Options', 'DENY');
+      res.setHeader('X-XSS-Protection', '1; mode=block');
+      res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+      res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none';");
+
+      // Performance Headers
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+
+      // Request ID for tracking
+      const requestId = this.generateRequestId();
+      res.setHeader('X-Request-ID', requestId);
+      req.headers['x-request-id'] = requestId;
+
+      // Log security headers
+      this.logger.log(`Security headers applied for ${req.method} ${req.url}`, 'SECURITY');
+
+      next();
+    };
+  }
+
+  private generateRequestId(): string {
+    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+}

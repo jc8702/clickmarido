@@ -1,0 +1,140 @@
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+} from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { LoggerService } from '../../core/logger/logger.service';
+import { CompanyContext } from '../company/company.context';
+
+@Injectable()
+export class DetailedLoggingInterceptor implements NestInterceptor {
+  constructor(private readonly logger: LoggerService) {}
+
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    const request = context.switchToHttp().getRequest();
+    const { method, url, body, params, query } = request;
+    const startTime = Date.now();
+
+    // Extrair informações do usuário e empresa
+    const userId = CompanyContext.getUserId();
+    const companyId = CompanyContext.getCompanyId();
+
+    // Log de requisição recebida
+    this.logger.log(
+      `[${method}] ${url} - User: ${userId || 'anonymous'} | Company: ${companyId || 'none'}`,
+      'HTTP_REQUEST',
+    );
+
+    // Log de parâmetros importantes (sem sensíveis)
+    const safeParams = {
+      params: this.sanitizeData(params),
+      query: this.sanitizeData(query),
+      body: this.sanitizeBody(body),
+    };
+
+    if (Object.keys(safeParams).some(key => Object.keys(safeParams[key]).length > 0)) {
+      this.logger.debug(
+        `Request parameters: ${JSON.stringify(safeParams)}`,
+        'HTTP_REQUEST',
+      );
+    }
+
+    return next.handle().pipe(
+      tap({
+        next: (response) => {
+          const duration = Date.now() - startTime;
+          const responseSize = this.getResponseSize(response);
+
+          this.logger.log(
+            `[${method}] ${url} - ${duration}ms - ${responseSize} bytes - User: ${userId || 'anonymous'}`,
+            'HTTP_RESPONSE',
+          );
+
+          // Log de respostas grandes ou lentas
+          if (duration > 1000) {
+            this.logger.warn(
+              `Slow request detected: ${method} ${url} took ${duration}ms`,
+              'PERFORMANCE',
+            );
+          }
+
+          if (responseSize > 1024 * 1024) { // > 1MB
+            this.logger.warn(
+              `Large response detected: ${responseSize} bytes`,
+              'PERFORMANCE',
+            );
+          }
+        },
+        error: (error) => {
+          const duration = Date.now() - startTime;
+          
+          this.logger.error(
+            `[${method}] ${url} - ${duration}ms - ERROR: ${error.message} - User: ${userId || 'anonymous'}`,
+            error.stack,
+            'HTTP_ERROR',
+          );
+
+          // Log de erros específicos
+          if (error.status === 429) {
+            this.logger.warn(
+              `Rate limit exceeded for user: ${userId}`,
+              'RATE_LIMIT',
+            );
+          }
+
+          if (error.status >= 500) {
+            this.logger.error(
+              `Server error occurred: ${error.message}`,
+              error.stack,
+              'SERVER_ERROR',
+            );
+          }
+        },
+      }),
+    );
+  }
+
+  private sanitizeData(data: unknown): unknown {
+    if (!data || typeof data !== 'object') return data;
+
+    const sensitiveFields = ['password', 'token', 'secret', 'key', 'authorization'];
+    const sanitized = { ...data };
+
+    for (const key in sanitized) {
+      if (sensitiveFields.some(field => key.toLowerCase().includes(field))) {
+        sanitized[key] = '***REDACTED***';
+      }
+    }
+
+    return sanitized;
+  }
+
+  private sanitizeBody(body: unknown): unknown {
+    // Não log bodies de arquivos grandes
+    if (body && typeof body === 'object' && 'file' in body) {
+      return { ...body, file: '***FILE***' };
+    }
+
+    // Não log bodies de upload de imagens
+    if (body && typeof body === 'object' && 'image' in body) {
+      return { ...body, image: '***IMAGE***' };
+    }
+
+    return this.sanitizeData(body);
+  }
+
+  private getResponseSize(response: unknown): number {
+    if (typeof response === 'string') {
+      return Buffer.byteLength(response, 'utf8');
+    }
+
+    if (response && typeof response === 'object' && 'length' in response) {
+      return (response as any[]).length;
+    }
+
+    return JSON.stringify(response).length;
+  }
+}

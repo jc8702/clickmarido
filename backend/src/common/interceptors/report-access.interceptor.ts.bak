@@ -1,0 +1,115 @@
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+} from '@nestjs/common';
+import { Request } from 'express';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { PrismaService } from '../../core/prisma/prisma.service';
+import { CompanyContext } from '../company/company.context';
+import { REPORT_TYPES } from '../decorators/report-permissions.decorator';
+
+@Injectable()
+export class ReportAccessInterceptor implements NestInterceptor {
+  constructor(private readonly prisma: PrismaService) {}
+
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    const request = context.switchToHttp().getRequest<Request>();
+    const { method, url, headers } = request;
+
+    // Apenas auditamos endpoints de relatórios
+    if (!this.isReportEndpoint(url)) {
+      return next.handle();
+    }
+
+    const companyId = CompanyContext.getCompanyId();
+    const userId = CompanyContext.getUserId();
+
+    const reportType = this.detectReportType(url);
+    const action = this.detectAction(method, reportType);
+
+    const ipAddress = request.ip || request.connection.remoteAddress;
+    const userAgent = headers['user-agent'];
+
+    return next.handle().pipe(
+      tap({
+        next: (response) => {
+          // Se houver um companyId ativo, salvamos o log de auditoria
+          if (companyId && userId) {
+            // Execução em background para não atrasar a resposta HTTP principal
+            this.prisma.auditLog
+              .create({
+                data: {
+                  action,
+                  entityName: 'Report',
+                  entityId: reportType,
+                  newValues: {
+                    reportType,
+                    endpoint: url,
+                    hasData: !!response,
+                  },
+                  oldValues: {},
+                  companyId,
+                  userId,
+                  ipAddress,
+                  userAgent,
+                },
+              })
+              .catch((err) => {
+                console.error('Falha ao gravar log de acesso ao relatório:', err);
+              });
+          }
+        },
+        error: (error) => {
+          // Também logamos erros de acesso a relatórios
+          if (companyId && userId) {
+            this.prisma.auditLog
+              .create({
+                data: {
+                  action: `${action}_ERROR`,
+                  entityName: 'Report',
+                  entityId: reportType,
+                  newValues: {
+                    reportType,
+                    endpoint: url,
+                    error: error.message,
+                    statusCode: error.status || 500,
+                  },
+                  oldValues: {},
+                  companyId,
+                  userId,
+                  ipAddress,
+                  userAgent,
+                },
+              })
+              .catch((err) => {
+                console.error('Falha ao gravar log de erro no relatório:', err);
+              });
+          }
+        },
+      }),
+    );
+  }
+
+  private isReportEndpoint(url: string): boolean {
+    return url.startsWith('/reports/');
+  }
+
+  private detectReportType(url: string): string {
+    if (url.includes('/dashboard')) return REPORT_TYPES.DASHBOARD;
+    if (url.includes('/commercial')) return REPORT_TYPES.COMMERCIAL;
+    if (url.includes('/operational')) return REPORT_TYPES.OPERATIONAL;
+    if (url.includes('/financial')) return REPORT_TYPES.FINANCIAL;
+    if (url.includes('/export/financial')) return REPORT_TYPES.EXPORT;
+    return 'UNKNOWN';
+  }
+
+  private detectAction(method: string, reportType: string): string {
+    if (method === 'GET') {
+      return `READ_${reportType}`;
+    }
+    return method;
+  }
+}

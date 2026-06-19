@@ -1,0 +1,380 @@
+import { Injectable } from '@nestjs/common';
+import { Request } from 'express';
+import { LoggerService } from '../../core/logger/logger.service';
+
+export interface SecurityThreat {
+  type: 'sql_injection' | 'xss' | 'csrf' | 'ddos' | 'suspicious_pattern';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  description: string;
+  timestamp: number;
+  ip: string;
+  userAgent: string;
+  requestPath: string;
+  evidence: Record<string, any>;
+}
+
+@Injectable()
+export class SecurityOptimizationService {
+  private readonly threats: SecurityThreat[] = [];
+  private readonly blockedIPs: Set<string> = new Set();
+  private readonly suspiciousPatterns: Map<string, number> = new Map();
+  private readonly cleanupInterval = 10 * 60 * 1000; // 10 minutos
+  private readonly maxThreats = 1000;
+  private readonly blockThreshold = 5; // Bloquear após 5 ameaças
+
+  constructor(
+    private readonly logger: LoggerService,
+  ) {
+    this.startMonitoring();
+  }
+
+  // Analisar requisição em busca de ameaças
+  analyzeRequest(req: Request): SecurityThreat | null {
+    const threat = this.detectThreats(req);
+    if (threat) {
+      this.handleThreat(threat);
+      return threat;
+    }
+    return null;
+  }
+
+  // Detectar possíveis ameaças
+  private detectThreats(req: Request): SecurityThreat | null {
+    const ip = this.getClientIP(req);
+    const userAgent = req.headers['user-agent'] || 'unknown';
+    const requestPath = req.path;
+    const body = req.body;
+    const query = req.query;
+
+    // Verificar SQL Injection
+    if (this.detectSQLInjection(body) || this.detectSQLInjection(query)) {
+      return {
+        type: 'sql_injection',
+        severity: 'high',
+        description: 'Potential SQL injection detected',
+        timestamp: Date.now(),
+        ip,
+        userAgent,
+        requestPath,
+        evidence: { body, query },
+      };
+    }
+
+    // Verificar XSS
+    if (this.detectXSS(body) || this.detectXSS(query)) {
+      return {
+        type: 'xss',
+        severity: 'high',
+        description: 'Potential XSS attack detected',
+        timestamp: Date.now(),
+        ip,
+        userAgent,
+        requestPath,
+        evidence: { body, query },
+      };
+    }
+
+    // Verificar padrões suspeitos
+    if (this.detectSuspiciousPattern(req)) {
+      return {
+        type: 'suspicious_pattern',
+        severity: 'medium',
+        description: 'Suspicious request pattern detected',
+        timestamp: Date.now(),
+        ip,
+        userAgent,
+        requestPath,
+        evidence: { method: req.method, headers: req.headers },
+      };
+    }
+
+    // Verificar DDoS
+    if (this.detectDDoS(ip)) {
+      return {
+        type: 'ddos',
+        severity: 'critical',
+        description: 'Potential DDoS attack detected',
+        timestamp: Date.now(),
+        ip,
+        userAgent,
+        requestPath,
+        evidence: { requestCount: this.getRequestCount(ip) },
+      };
+    }
+
+    return null;
+  }
+
+  // Detectar SQL Injection
+  private detectSQLInjection(data: any): boolean {
+    if (typeof data !== 'string') return false;
+
+    const sqlPatterns = [
+      /('|--|;|--|\/\*|\*\/|xp_|sp_|exec|execute|select|insert|update|delete|drop|create|alter|truncate)/gi,
+      /(\bunion\b\s+\bselect\b)/gi,
+      /(\bor\b\s+\b1\s*=\s*1\b)/gi,
+      /(\bwaitfor\b\s+\bdelay\b)/gi,
+    ];
+
+    return sqlPatterns.some(pattern => pattern.test(data));
+  }
+
+  // Detectar XSS
+  private detectXSS(data: any): boolean {
+    if (typeof data !== 'string') return false;
+
+    const xssPatterns = [
+      /(<script|<\/script|javascript:|vbscript:|onload=|onerror=|onclick=)/gi,
+      /(<iframe|<object|<embed|<link|<meta)/gi,
+      /(eval\(|alert\(|confirm\(|prompt\()/gi,
+    ];
+
+    return xssPatterns.some(pattern => pattern.test(data));
+  }
+
+  // Detectar padrões suspeitos
+  private detectSuspiciousPattern(req: Request): boolean {
+    const ip = this.getClientIP(req);
+    const userAgent = req.headers['user-agent'] || '';
+    
+    // Verificar User-Agent suspeito
+    const suspiciousUserAgents = [
+      /bot/i,
+      /crawler/i,
+      /spider/i,
+      /scanner/i,
+      /test/i,
+    ];
+
+    if (suspiciousUserAgents.some(pattern => pattern.test(userAgent))) {
+      return true;
+    }
+
+    // Verificar requisições muito rápidas (simulado)
+    const requestCount = this.getRequestCount(ip);
+    if (requestCount > 100) { // Mais de 100 requisições no mesmo IP
+      return true;
+    }
+
+    // Verificar paths suspeitos
+    const suspiciousPaths = [
+      /admin/i,
+      /wp-admin/i,
+      /phpmyadmin/i,
+      /\.php/i,
+      /\.asp/i,
+      /\.jsp/i,
+    ];
+
+    if (suspiciousPaths.some(pattern => pattern.test(req.path))) {
+      return true;
+    }
+
+    return false;
+  }
+
+  // Detectar DDoS
+  private detectDDoS(ip: string): boolean {
+    const requestCount = this.getRequestCount(ip);
+    return requestCount > 1000; // Mais de 1000 requisições do mesmo IP
+  }
+
+  // Obter contagem de requisições por IP
+  private getRequestCount(ip: string): number {
+    return this.suspiciousPatterns.get(ip) || 0;
+  }
+
+  // Incrementar contador de requisições
+  incrementRequestCount(ip: string): void {
+    const currentCount = this.getRequestCount(ip);
+    this.suspiciousPatterns.set(ip, currentCount + 1);
+  }
+
+  // Tratar ameaça detectada
+  private handleThreat(threat: SecurityThreat): void {
+    this.threats.push(threat);
+    
+    // Logar ameaça
+    this.logger.warn(
+      `Security threat detected: ${threat.type} - ${threat.description}`,
+      'SECURITY'
+    );
+
+    // Incrementar contador de requisições para o IP
+    this.incrementRequestCount(threat.ip);
+
+    // Verificar se IP deve ser bloqueado
+    if (this.getRequestCount(threat.ip) >= this.blockThreshold) {
+      this.blockIP(threat.ip);
+    }
+
+    // Limite de ameaças armazenadas
+    if (this.threats.length > this.maxThreats) {
+      this.threats.splice(0, this.threats.length - this.maxThreats);
+    }
+  }
+
+  // Bloquear IP
+  private blockIP(ip: string): void {
+    this.blockedIPs.add(ip);
+    this.logger.error(`IP blocked due to security threats: ${ip}`, 'SECURITY');
+  }
+
+  // Verificar se IP está bloqueado
+  isIPBlocked(ip: string): boolean {
+    return this.blockedIPs.has(ip);
+  }
+
+  // Obter estatísticas de segurança
+  getSecurityStats(): {
+    totalThreats: number;
+    blockedIPs: number;
+    threatsByType: Record<string, number>;
+    threatsBySeverity: Record<string, number>;
+    recentThreats: SecurityThreat[];
+  } {
+    const threatsByType: Record<string, number> = {};
+    const threatsBySeverity: Record<string, number> = {};
+
+    this.threats.forEach(threat => {
+      threatsByType[threat.type] = (threatsByType[threat.type] || 0) + 1;
+      threatsBySeverity[threat.severity] = (threatsBySeverity[threat.severity] || 0) + 1;
+    });
+
+    return {
+      totalThreats: this.threats.length,
+      blockedIPs: this.blockedIPs.size,
+      threatsByType,
+      threatsBySeverity,
+      recentThreats: this.threats.slice(-10),
+    };
+  }
+
+  // Obter recomendações de segurança
+  getSecurityRecommendations(): string[] {
+    const recommendations: string[] = [];
+
+    // Análise de ameaças
+    const stats = this.getSecurityStats();
+    
+    if (stats.totalThreats > 100) {
+      recommendations.push('Implement additional security measures');
+      recommendations.push('Consider using a Web Application Firewall (WAF)');
+    }
+
+    if (stats.blockedIPs > 10) {
+      recommendations.push('Review IP blocking policies');
+      recommendations.push('Consider implementing rate limiting');
+    }
+
+    if (stats.threatsByType.sql_injection > 10) {
+      recommendations.push('Strengthen SQL injection protection');
+      recommendations.push('Use parameterized queries');
+    }
+
+    if (stats.threatsByType.xss > 10) {
+      recommendations.push('Implement XSS protection');
+      recommendations.push('Use Content Security Policy (CSP)');
+    }
+
+    // Recomendações gerais
+    recommendations.push('Regular security audits');
+    recommendations.push('Keep all dependencies updated');
+    recommendations.push('Implement security monitoring');
+    recommendations.push('Conduct penetration testing');
+
+    return recommendations;
+  }
+
+  // Gerar relatório de segurança
+  generateSecurityReport(): {
+    summary: string;
+    stats: ReturnType<typeof this.getSecurityStats>;
+    recommendations: string[];
+    health: 'excellent' | 'good' | 'warning' | 'critical';
+  } {
+    const stats = this.getSecurityStats();
+    const recommendations = this.getSecurityRecommendations();
+    
+    // Determinar saúde do sistema
+    let health: 'excellent' | 'good' | 'warning' | 'critical' = 'excellent';
+    
+    if (stats.totalThreats > 500) {
+      health = 'critical';
+    } else if (stats.totalThreats > 200) {
+      health = 'warning';
+    } else if (stats.totalThreats > 50) {
+      health = 'good';
+    }
+
+    const summary = `Security status: ${health}. Detected ${stats.totalThreats} threats and blocked ${stats.blockedIPs} IPs.`;
+
+    return {
+      summary,
+      stats,
+      recommendations,
+      health,
+    };
+  }
+
+  // Obter IP do cliente
+  private getClientIP(req: Request): string {
+    return req.headers['x-forwarded-for'] as string || 
+           req.headers['x-real-ip'] as string || 
+           req.connection.remoteAddress || 
+           req.socket.remoteAddress || 
+           'unknown';
+  }
+
+  // Iniciar monitoramento
+  private startMonitoring(): void {
+    // Limpeza periódica
+    setInterval(() => {
+      this.cleanup();
+    }, this.cleanupInterval);
+  }
+
+  // Limpar dados antigos
+  private cleanup(): void {
+    const now = Date.now();
+    const oneDayAgo = now - 24 * 60 * 60 * 1000;
+
+    // Remover ameaças antigas
+    const oldThreatsCount = this.threats.length;
+    this.threats = this.threats.filter(threat => threat.timestamp > oneDayAgo);
+    
+    if (oldThreatsCount > this.threats.length) {
+      this.logger.info(`Cleaned up ${oldThreatsCount - this.threats.length} old security threats`, 'SECURITY');
+    }
+
+    // Remover IPs bloqueados há mais de 7 dias
+    const blockedIPsArray = Array.from(this.blockedIPs);
+    blockedIPsArray.forEach(ip => {
+      // Em uma implementação real, verificar quando o IP foi bloqueado
+      // Se há mais de 7 dias, remover do bloqueio
+      this.blockedIPs.delete(ip);
+    });
+
+    // Limpar padrões suspeitos antigos
+    const nowTime = Date.now();
+    for (const [ip, count] of this.suspiciousPatterns) {
+      if (count < 3) { // Remover IPs com poucas requisições suspeitas
+        this.suspiciousPatterns.delete(ip);
+      }
+    }
+  }
+
+  // Método para desbloquear IP (uso administrativo)
+  unblockIP(ip: string): boolean {
+    const unblocked = this.blockedIPs.delete(ip);
+    if (unblocked) {
+      this.logger.info(`IP unblocked: ${ip}`, 'SECURITY');
+    }
+    return unblocked;
+  }
+
+  // Método para obter lista de IPs bloqueados
+  getBlockedIPs(): string[] {
+    return Array.from(this.blockedIPs);
+  }
+}

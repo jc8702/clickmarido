@@ -1,223 +1,202 @@
-import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 
-const connectionString = process.env.DATABASE_URL;
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Iniciando semeadura do banco de dados (Seed)...');
+  console.log('🌱 Seeding database...');
 
-  // 1. Criar a Company (Empresa) padrão de teste
-  const company = await prisma.company.upsert({
-    where: { slug: 'matriz-sp' },
-    update: {},
-    create: {
-      name: 'Click Marido Matriz SP',
-      slug: 'matriz-sp',
-      cnpj: '12345678000199',
-      phone: '11999999999',
-      email: 'matriz@clickmarido.com.br',
-      address: 'Av. Paulista, 1000',
-      city: 'São Paulo',
-      state: 'SP',
-      active: true,
+  // Create a test company
+  const company = await prisma.company.create({
+    data: {
+      name: 'Click Marido Test',
+      cnpj: '12.345.678/0001-99',
+      phone: '(11) 99999-9999',
+      email: 'contato@clickmarido.com',
+      address: 'Rua Teste, 123, São Paulo, SP',
     },
   });
-  console.log(`🏢 Empresa padrão criada/verificada: ${company.name}`);
 
-  // 2. Criar as Permissões do sistema
-  const permissionsList = [
-    { action: '*', description: 'Acesso total de administrador' },
-    { action: 'client:create', description: 'Criar novos clientes' },
-    { action: 'client:read', description: 'Visualizar informações de clientes' },
-    { action: 'client:update', description: 'Atualizar dados de clientes' },
-    { action: 'client:delete', description: 'Excluir clientes do sistema' },
-    { action: 'service:create', description: 'Criar ordens de serviço' },
-    { action: 'service:read', description: 'Visualizar ordens de serviço' },
-    { action: 'service:update', description: 'Atualizar ordens de serviço' },
-    { action: 'service:delete', description: 'Excluir ordens de serviço' },
-    { action: 'quote:create', description: 'Criar novos orçamentos' },
-    { action: 'quote:read', description: 'Visualizar orçamentos' },
-    { action: 'quote:update', description: 'Atualizar orçamentos' },
-    { action: 'quote:delete', description: 'Excluir orçamentos' },
-    { action: 'user:create', description: 'Criar usuários da empresa' },
-    { action: 'user:read', description: 'Visualizar usuários do time' },
-    { action: 'user:update', description: 'Atualizar dados de usuários do time' },
-    { action: 'user:delete', description: 'Excluir usuários do time' },
-    { action: 'material:create', description: 'Criar novos materiais' },
-    { action: 'material:read', description: 'Visualizar materiais' },
-    { action: 'material:update', description: 'Atualizar materiais' },
-    { action: 'material:delete', description: 'Excluir materiais' },
-    { action: 'material:movement', description: 'Registrar movimentações de estoque' },
-  ];
+  console.log('✅ Created company:', company.name);
 
-  console.log('🔑 Semeando permissões...');
-  const permissionsMap = new Map();
-  for (const perm of permissionsList) {
-    const dbPerm = await prisma.permission.upsert({
-      where: { action: perm.action },
-      update: { description: perm.description },
-      create: { action: perm.action, description: perm.description },
-    });
-    permissionsMap.set(perm.action, dbPerm);
-  }
-
-  // 3. Criar os Perfis (Roles) para a Company
-  const rolesDefs = [
-    {
+  // Create a test user
+  const hashedPassword = await bcrypt.hash('password123', 12);
+  const user = await prisma.user.create({
+    data: {
+      email: 'admin@clickmarido.com',
       name: 'Administrador',
-      description: 'Acesso administrativo completo',
-      permissions: ['*'],
+      password: hashedPassword,
+      companyId: company.id,
+      role: 'ADMIN',
     },
-    {
-      name: 'Gestor',
-      description: 'Gestor operacional com amplos poderes de escrita',
-      permissions: [
-        'client:create', 'client:read', 'client:update',
-        'service:create', 'service:read', 'service:update',
-        'quote:create', 'quote:read', 'quote:update',
-        'user:create', 'user:read', 'user:update', 'user:delete',
-        'material:create', 'material:read', 'material:update', 'material:delete', 'material:movement',
-      ],
-    },
-    {
-      name: 'Atendente',
-      description: 'Responsável pelo atendimento e cadastro de clientes',
-      permissions: [
-        'client:create', 'client:read', 'client:update',
-        'service:read',
-        'quote:read',
-        'material:read',
-      ],
-    },
-    {
-      name: 'Financeiro',
-      description: 'Responsável pelo faturamento e liberação de orçamentos',
-      permissions: [
-        'client:read',
-        'service:read',
-        'quote:read', 'quote:update'
-      ],
-    },
-    {
-      name: 'Técnico',
-      description: 'Profissional de campo que executa serviços',
-      permissions: [
-        'client:read',
-        'service:read', 'service:update', // Técnico pode atualizar status do serviço
-        'material:read',
-      ],
-    },
-  ];
-
-  console.log('👤 Semeando papéis (Roles) e associando permissões...');
-  const rolesMap = new Map();
-  for (const roleDef of rolesDefs) {
-    // Busca os ids correspondentes das permissões definidas
-    const connectPermissions = roleDef.permissions.map((action) => ({
-      id: permissionsMap.get(action).id,
-    }));
-
-    const role = await prisma.role.upsert({
-      where: {
-        name_companyId: {
-          name: roleDef.name,
-          companyId: company.id,
-        },
-      },
-      update: {
-        permissions: {
-          set: connectPermissions,
-        },
-      },
-      create: {
-        name: roleDef.name,
-        description: roleDef.description,
-        companyId: company.id,
-        permissions: {
-          connect: connectPermissions,
-        },
-      },
-    });
-    rolesMap.set(roleDef.name, role);
-    console.log(` - Papel "${roleDef.name}" semeado com ${roleDef.permissions.length} permissões`);
-  }
-
-  // 4. Criar Usuários de Teste correspondentes a cada perfil
-  const userPasswordHash = await bcrypt.hash('senha123', 10);
-  const usersDefs = [
-    { email: 'admin@clickmarido.com.br', name: 'João Admin', roleName: 'Administrador' },
-    { email: 'gestor@clickmarido.com.br', name: 'Pedro Gestor', roleName: 'Gestor' },
-    { email: 'atendente@clickmarido.com.br', name: 'Ana Atendente', roleName: 'Atendente' },
-    { email: 'financeiro@clickmarido.com.br', name: 'Luísa Financeiro', roleName: 'Financeiro' },
-    { email: 'tecnico@clickmarido.com.br', name: 'Carlos Técnico', roleName: 'Técnico' },
-  ];
-
-  console.log('👥 Semeando usuários de teste (Senha padrão: "senha123")...');
-  for (const userDef of usersDefs) {
-    const role = rolesMap.get(userDef.roleName);
-    
-    const user = await prisma.user.upsert({
-      where: { email: userDef.email },
-      update: {
-        roles: {
-          set: [{ id: role.id }],
-        },
-      },
-      create: {
-        email: userDef.email,
-        name: userDef.name,
-        password: userPasswordHash,
-        companyId: company.id,
-        isActive: true,
-        roles: {
-          connect: [{ id: role.id }],
-        },
-      },
-    });
-    console.log(` - Usuário "${user.name}" (${user.email}) -> Perfil: ${userDef.roleName}`);
-  }
-
-  // 5. Semeando Catálogo de Serviços padrão
-  console.log('🛠️ Removendo catálogo antigo e semeando 83 novos serviços...');
-
-  // Remove todos os serviços existentes da empresa (hard delete para limpeza do seed)
-  await prisma.service.deleteMany({
-    where: { companyId: company.id },
   });
 
-  // Importa os 83 serviços do arquivo de dados
-  const servicesDefs: Array<{
-    name: string;
-    category: string;
-    description: string;
-    value: number;
-    averageTime: number;
-    complexity: string;
-    warranty: number;
-  }> = require('./services-data.json');
+  console.log('✅ Created user:', user.name);
 
-  for (const sDef of servicesDefs) {
-    await prisma.service.create({
+  // Create some sample service orders
+  const serviceOrders = await Promise.all([
+    prisma.serviceOrder.create({
       data: {
-        ...sDef,
+        title: 'Reparo de máquina de lavar',
+        description: 'A máquina não está drenando água corretamente',
+        status: 'OPEN',
+        priority: 'HIGH',
+        value: 150.00,
+        estimatedDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         companyId: company.id,
+        userId: user.id,
       },
-    });
-  }
-  console.log(` - Semeados ${servicesDefs.length} serviços no catálogo Click Marido.`);
+    }),
+    prisma.serviceOrder.create({
+      data: {
+        title: 'Manutenção de ar-condicionado',
+        description: 'Ar-condicionado não está esfriando',
+        status: 'IN_PROGRESS',
+        priority: 'MEDIUM',
+        value: 200.00,
+        estimatedDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        companyId: company.id,
+        userId: user.id,
+      },
+    }),
+    prisma.serviceOrder.create({
+      data: {
+        title: 'Instalação de chuveiro elétrico',
+        description: 'Instalação de novo chuveiro elétrico',
+        status: 'COMPLETED',
+        priority: 'LOW',
+        value: 80.00,
+        estimatedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        completedAt: new Date(),
+        companyId: company.id,
+        userId: user.id,
+      },
+    }),
+  ]);
 
-  console.log('✅ Semeadura concluída com sucesso!');
+  console.log('✅ Created service orders:', serviceOrders.length);
+
+  // Create some sample quotes
+  const quotes = await Promise.all([
+    prisma.quote.create({
+      data: {
+        value: 120.00,
+        description: 'Mão de obra e peças',
+        serviceOrderId: serviceOrders[0].id,
+      },
+    }),
+    prisma.quote.create({
+      data: {
+        value: 180.00,
+        description: 'Manutenção preventiva',
+        serviceOrderId: serviceOrders[1].id,
+      },
+    }),
+  ]);
+
+  console.log('✅ Created quotes:', quotes.length);
+
+  // Create some sample payments
+  const payments = await Promise.all([
+    prisma.payment.create({
+      data: {
+        value: 120.00,
+        status: 'PAID',
+        method: 'CASH',
+        serviceOrderId: serviceOrders[0].id,
+        quoteId: quotes[0].id,
+      },
+    }),
+    prisma.payment.create({
+      data: {
+        value: 90.00,
+        status: 'PENDING',
+        method: 'BANK_TRANSFER',
+        serviceOrderId: serviceOrders[1].id,
+      },
+    }),
+  ]);
+
+  console.log('✅ Created payments:', payments.length);
+
+  // Create some sample warranties
+  const warranties = await Promise.all([
+    prisma.warranty.create({
+      data: {
+        title: 'Garantia do reparo',
+        description: 'Garantia de 30 dias para o reparo da máquina de lavar',
+        status: 'ACTIVE',
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        companyId: company.id,
+        serviceOrderId: serviceOrders[0].id,
+        userId: user.id,
+      },
+    }),
+    prisma.warranty.create({
+      data: {
+        title: 'Garantia da manutenção',
+        description: 'Garantia de 90 dias para manutenção do ar-condicionado',
+        status: 'ACTIVE',
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+        companyId: company.id,
+        serviceOrderId: serviceOrders[1].id,
+        userId: user.id,
+      },
+    }),
+  ]);
+
+  console.log('✅ Created warranties:', warranties.length);
+
+  // Create some sample reports
+  const reports = await Promise.all([
+    prisma.report.create({
+      data: {
+        type: 'SERVICE_ORDERS',
+        title: 'Relatório de Ordens de Serviço',
+        data: {
+          totalOrders: 3,
+          completedOrders: 1,
+          pendingOrders: 2,
+          totalValue: 430.00,
+        },
+        companyId: company.id,
+        userId: user.id,
+      },
+    }),
+    prisma.report.create({
+      data: {
+        type: 'FINANCIAL',
+        title: 'Relatório Financeiro',
+        data: {
+          totalRevenue: 210.00,
+          pendingRevenue: 90.00,
+          totalExpenses: 50.00,
+          netProfit: 160.00,
+        },
+        companyId: company.id,
+        userId: user.id,
+      },
+    }),
+  ]);
+
+  console.log('✅ Created reports:', reports.length);
+
+  console.log('🎉 Database seeded successfully!');
+  console.log('');
+  console.log('Login credentials:');
+  console.log('Email: admin@clickmarido.com');
+  console.log('Password: password123');
+  console.log('');
+  console.log('You can now start the development servers:');
+  console.log('Backend: npm start:dev');
+  console.log('Frontend: npm run dev');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Erro durante a semeadura:', e);
+    console.error('❌ Error seeding database:', e);
     process.exit(1);
   })
   .finally(async () => {

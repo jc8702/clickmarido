@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
+// import getPalette from 'colorthief';
 
 const themes: { id: SystemTheme; name: string; preview: string }[] = [
   { id: 'default', name: 'Original Amber', preview: 'bg-amber-500' },
@@ -71,21 +72,31 @@ export default function SettingsPage() {
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setLogoUrl(url);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleMagicExtract = () => {
+const handleMagicExtract = () => {
+    if (!logoUrl) return;
     setExtracting(true);
-    setTimeout(() => {
-      setCustomPalette({
-        primary: '#f59e0b',
-        accent: '#3b82f6',
-        background: '#09090b',
-      });
-      setExtracting(false);
-    }, 1500);
+    
+    // TODO: Fix color extraction with ColorThief library
+    // For now, use default colors
+    const primary = '#09090b';
+    const accent = '#09090b';
+    const background = theme === 'default' ? '#09090b' : 'var(--background)';
+
+    setCustomPalette({
+      primary,
+      accent,
+      background,
+    });
+    
+    setExtracting(false);
   };
 
   return (

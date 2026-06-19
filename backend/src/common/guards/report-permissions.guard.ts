@@ -7,11 +7,12 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PrismaService } from '../../core/prisma/prisma.service';
-import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
+import { REPORTS_PERMISSIONS_KEY, RequireReportPermissions } from '../decorators/report-permissions.decorator';
 import { CompanyContext } from '../company/company.context';
+import { JwtAuthGuard } from '../../core/auth/jwt-auth.guard';
 
 @Injectable()
-export class PermissionsGuard implements CanActivate {
+export class ReportPermissionsGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private prisma: PrismaService,
@@ -19,17 +20,17 @@ export class PermissionsGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredPermissions = this.reflector.getAllAndOverride<string[]>(
-      PERMISSIONS_KEY,
+      REPORTS_PERMISSIONS_KEY,
       [context.getHandler(), context.getClass()],
     );
 
-    // Se nenhuma permissão específica for exigida, libera o acesso
+    // If no specific permissions required, allow access
     if (!requiredPermissions || requiredPermissions.length === 0) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest();
-    const user = request.user; // Injetado pelo JwtAuthGuard
+    const user = request.user; // Injected by JwtAuthGuard
 
     if (!user) {
       throw new UnauthorizedException('Usuário não autenticado');
@@ -37,14 +38,14 @@ export class PermissionsGuard implements CanActivate {
 
     const companyId = CompanyContext.getCompanyId();
 
-    // Validação multi-tenant: Garante que o usuário pertence ao tenant ativo
+    // Multi-tenant validation: Ensure user belongs to active tenant
     if (companyId && user.companyId !== companyId) {
       throw new ForbiddenException(
         'Acesso negado: O usuário não pertence a esta empresa',
       );
     }
 
-    // Busca o usuário com seu papel (Role)
+    // Fetch user with their role
     const dbUser = await this.prisma.user.findUnique({
       where: { id: user.id },
     });
@@ -53,15 +54,15 @@ export class PermissionsGuard implements CanActivate {
       throw new ForbiddenException('Usuário inativo ou não encontrado');
     }
 
-    // Define permissões baseadas no papel do usuário
+    // Define report permissions based on user role
     const userPermissions = new Set<string>();
     switch (dbUser.role) {
       case 'ADMIN':
-        // Admin tem todas as permissões
+        // Admin has all report permissions
         requiredPermissions.forEach(permission => userPermissions.add(permission));
         break;
       case 'MANAGER':
-        // Manager tem permissões de gerenciamento
+        // Manager has management and read permissions
         requiredPermissions.forEach(permission => {
           if (permission.includes('manage') || permission.includes('read')) {
             userPermissions.add(permission);
@@ -69,23 +70,22 @@ export class PermissionsGuard implements CanActivate {
         });
         break;
       case 'USER':
-        // User tem permissões básicas
+        // User has basic read permissions
         requiredPermissions.forEach(permission => {
-          if (permission.includes('read') || permission.includes('create')) {
+          if (permission.includes('read')) {
             userPermissions.add(permission);
           }
         });
         break;
     }
 
-    // Verifica se o usuário possui permissão de administrador global ("*")
-    // ou se possui pelo menos uma das permissões requeridas (OR check).
+    // Check if user has admin permission ("*") or at least one of the required permissions
     const hasPermission =
       userPermissions.has('*') ||
       requiredPermissions.some((perm) => userPermissions.has(perm));
 
     if (!hasPermission) {
-      throw new ForbiddenException('Permissões insuficientes para esta ação');
+      throw new ForbiddenException('Permissões insuficientes para acessar este relatório');
     }
 
     return true;

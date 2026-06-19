@@ -1,0 +1,222 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { CacheService } from '../../core/cache/cache.service';
+import { LoggerService } from '../../core/logger/logger.service';
+
+export interface CacheStats {
+  hits: number;
+  misses: number;
+  sets: number;
+  invalidations: number;
+  hitRate: number;
+  averageTtl: number;
+  totalSize: number;
+  oldestEntry: Date | null;
+  newestEntry: Date | null;
+}
+
+export interface CacheEntry<T> {
+  data: T;
+  expiry: number;
+  createdAt: number;
+  accessCount: number;
+  lastAccessed: number;
+}
+
+@Injectable()
+export class AdvancedCacheService {
+  private readonly logger = new Logger(AdvancedCacheService.name);
+  private readonly store = new Map<string, CacheEntry<unknown>>();
+  private readonly stats: CacheStats = {
+    hits: 0,
+    misses: 0,
+    sets: 0,
+    invalidations: 0,
+    hitRate: 0,
+    averageTtl: 0,
+    totalSize: 0,
+    oldestEntry: null,
+    newestEntry: null,
+  };
+
+  constructor(private readonly cache: CacheService) {}
+
+  get<T>(key: string): T | undefined {
+    const entry = this.store.get(key);
+    if (!entry) {
+      this.stats.misses++;
+      this.logger.debug(`Cache MISS: ${key}`);
+      return undefined;
+    }
+
+    if (Date.now() > entry.expiry) {
+      this.store.delete(key);
+      this.stats.invalidations++;
+      this.logger.debug(`Cache EXPIRED: ${key}`);
+      return undefined;
+    }
+
+    // Atualizar estatísticas de acesso
+    entry.accessCount++;
+    entry.lastAccessed = Date.now();
+    this.stats.hits++;
+    
+    // Calcular hit rate
+    const total = this.stats.hits + this.stats.misses;
+    this.stats.hitRate = total > 0 ? (this.stats.hits / total) * 100 : 0;
+
+    this.logger.debug(`Cache HIT: ${key} (accessed ${entry.accessCount} times)`);
+    return entry.data as T;
+  }
+
+  set<T>(key: string, data: T, ttlMs: number): void {
+    const now = Date.now();
+    const entry: CacheEntry<T> = {
+      data,
+      expiry: now + ttlMs,
+      createdAt: now,
+      accessCount: 0,
+      lastAccessed: now,
+    };
+
+    // Calcular tamanho aproximado
+    const dataSize = JSON.stringify(data).length;
+    
+    this.store.set(key, entry);
+    this.stats.sets++;
+    this.stats.totalSize += dataSize;
+
+    // Atualizar entradas mais antigas e novas
+    if (!this.stats.oldestEntry || now < this.stats.oldestEntry.getTime()) {
+      this.stats.oldestEntry = new Date(now);
+    }
+    if (!this.stats.newestEntry || now > this.stats.newestEntry.getTime()) {
+      this.stats.newestEntry = new Date(now);
+    }
+
+    // Calcular TTL médio
+    this.stats.averageTtl = this.calculateAverageTtl();
+
+    this.logger.debug(
+      `Cache SET: ${key} - Size: ${dataSize} bytes - TTL: ${ttlMs}ms`,
+    );
+
+    // Programar limpeza automática
+    setTimeout(() => {
+      this.cleanExpired();
+    }, ttlMs + 60000); // Limpar 1 minuto após expirar
+  }
+
+  invalidate(key: string): void {
+    const entry = this.store.get(key);
+    if (entry) {
+      const dataSize = JSON.stringify(entry.data).length;
+      this.store.delete(key);
+      this.stats.invalidations++;
+      this.stats.totalSize -= dataSize;
+      
+      this.logger.debug(`Cache INVALIDATED: ${key}`);
+    }
+  }
+
+  invalidateByPattern(pattern: string): number {
+    const regex = new RegExp(pattern);
+    let invalidatedCount = 0;
+
+    for (const [key] of this.store) {
+      if (regex.test(key)) {
+        this.invalidate(key);
+        invalidatedCount++;
+      }
+    }
+
+    this.logger.debug(`Cache INVALIDATED by pattern: ${pattern} - ${invalidatedCount} entries`);
+    return invalidatedCount;
+  }
+
+  clear(): void {
+    const entriesCount = this.store.size;
+    const totalSize = this.stats.totalSize;
+    
+    this.store.clear();
+    this.stats = {
+      hits: 0,
+      misses: 0,
+      sets: 0,
+      invalidations: entriesCount,
+      hitRate: 0,
+      averageTtl: 0,
+      totalSize: 0,
+      oldestEntry: null,
+      newestEntry: null,
+    };
+
+    this.logger.debug(`Cache CLEARED: ${entriesCount} entries, ${totalSize} bytes`);
+  }
+
+  getStats(): CacheStats {
+    return { ...this.stats };
+  }
+
+  getKeys(): string[] {
+    return Array.from(this.store.keys());
+  }
+
+  getSize(): number {
+    return this.store.size;
+  }
+
+  private calculateAverageTtl(): number {
+    if (this.store.size === 0) return 0;
+
+    let totalTtl = 0;
+    let now = Date.now();
+
+    for (const entry of this.store.values()) {
+      totalTtl += entry.expiry - now;
+    }
+
+    return totalTtl / this.store.size;
+  }
+
+  private cleanExpired(): void {
+    const now = Date.now();
+    let cleanedCount = 0;
+
+    for (const [key, entry] of this.store) {
+      if (now > entry.expiry) {
+        this.store.delete(key);
+        this.stats.invalidations++;
+        cleanedCount++;
+      }
+    }
+
+    if (cleanedCount > 0) {
+      this.logger.debug(`Cache CLEANUP: ${cleanedCount} expired entries removed`);
+    }
+  }
+
+  // Método para obter estatísticas detalhadas
+  getDetailedStats(): {
+    basic: CacheStats;
+    entries: Array<{
+      key: string;
+      size: number;
+      ttl: number;
+      accessCount: number;
+      lastAccessed: Date;
+    }>;
+  } {
+    const entries = Array.from(this.store.entries()).map(([key, entry]) => ({
+      key,
+      size: JSON.stringify(entry.data).length,
+      ttl: entry.expiry - Date.now(),
+      accessCount: entry.accessCount,
+      lastAccessed: new Date(entry.lastAccessed),
+    }));
+
+    return {
+      basic: this.getStats(),
+      entries,
+    };
+  }
+}

@@ -1,0 +1,273 @@
+import { Injectable } from '@nestjs/common';
+import { CacheService } from '../../core/cache/cache.service';
+import { AdvancedCacheService } from '../services/advanced-cache.service';
+import { LoggerService } from '../../core/logger/logger.service';
+import { CompanyContext } from '../company/company.context';
+
+export interface CacheStrategy {
+  key: string;
+  ttl: number;
+  priority: 'high' | 'medium' | 'low';
+  dependencies?: string[];
+}
+
+@Injectable()
+export class IntelligentCacheService {
+  private readonly strategies: Map<string, CacheStrategy> = new Map();
+  private readonly invalidationQueue: Set<string> = new Set();
+  private readonly cleanupInterval = 5 * 60 * 1000; // 5 minutos
+  private readonly memoryThreshold = 100 * 1024 * 1024; // 100MB
+  private readonly currentMemoryUsage = 0;
+
+  constructor(
+    private readonly cacheService: CacheService,
+    private readonly advancedCache: AdvancedCacheService,
+    private readonly logger: LoggerService,
+  ) {
+    this.initializeStrategies();
+    this.startCleanupProcess();
+  }
+
+  // Estratégias de cache pré-definidas
+  private initializeStrategies(): void {
+    this.strategies.set('dashboard', {
+      key: 'dashboard',
+      ttl: 30 * 1000, // 30 segundos
+      priority: 'high',
+      dependencies: ['quotes', 'orders', 'users'],
+    });
+
+    this.strategies.set('reports:commercial', {
+      key: 'reports:commercial',
+      ttl: 60 * 1000, // 1 minuto
+      priority: 'high',
+      dependencies: ['quotes', 'orders', 'products'],
+    });
+
+    this.strategies.set('reports:financial', {
+      key: 'reports:financial',
+      ttl: 120 * 1000, // 2 minutos
+      priority: 'medium',
+      dependencies: ['orders', 'payments', 'expenses'],
+    });
+
+    this.strategies.set('reports:executive', {
+      key: 'reports:executive',
+      ttl: 300 * 1000, // 5 minutos
+      priority: 'medium',
+      dependencies: ['dashboard', 'commercial', 'financial'],
+    });
+
+    this.strategies.set('user:profile', {
+      key: 'user:profile',
+      ttl: 300 * 1000, // 5 minutos
+      priority: 'medium',
+      dependencies: ['users'],
+    });
+
+    this.strategies.set('products:catalog', {
+      key: 'products:catalog',
+      ttl: 3600 * 1000, // 1 hora
+      priority: 'low',
+      dependencies: ['products', 'categories'],
+    });
+  }
+
+  // Método principal para obter dados com cache inteligente
+  async get<T>(key: string, fetchFunction: () => Promise<T>, options?: Partial<CacheStrategy>): Promise<T> {
+    const companyId = CompanyContext.getCompanyId() || 'anonymous';
+    const fullKey = `company:${companyId}:${key}`;
+
+    // Verificar se há dados no cache
+    const cachedData = await this.advancedCache.get(fullKey);
+    if (cachedData) {
+      this.logger.log(`Cache HIT for ${fullKey}`, 'CACHE');
+      return cachedData;
+    }
+
+    this.logger.log(`Cache MISS for ${fullKey}`, 'CACHE');
+
+    // Verificar limite de memória
+    if (this.currentMemoryUsage > this.memoryThreshold) {
+      this.logger.warn('Memory threshold exceeded, performing cache cleanup', 'CACHE');
+      await this.performCleanup();
+    }
+
+    // Buscar dados
+    const data = await fetchFunction();
+
+    // Obter estratégia de cache
+    const strategy = options || this.strategies.get(key) || {
+      key,
+      ttl: 60 * 1000, // padrão: 1 minuto
+      priority: 'medium',
+    };
+
+    // Armazenar no cache
+    await this.advancedCache.set(fullKey, data, strategy.ttl);
+
+    // Agendar invalidação se houver dependências
+    if (strategy.dependencies) {
+      strategy.dependencies.forEach(dep => {
+        this.invalidationQueue.add(dep);
+      });
+    }
+
+    return data;
+  }
+
+  // Invalidação inteligente de cache
+  async invalidate(pattern: string): Promise<number> {
+    let invalidatedCount = 0;
+    
+    // Invalidar chaves que correspondem ao padrão
+    const keys = await this.getKeysByPattern(pattern);
+    
+    for (const key of keys) {
+      await this.cacheService.del(key);
+      await this.advancedCache.del(key);
+      invalidatedCount++;
+      
+      // Remover da fila de invalidação
+      this.invalidationQueue.delete(key);
+    }
+
+    this.logger.log(`Invalidated ${invalidatedCount} keys matching pattern: ${pattern}`, 'CACHE');
+
+    // Processar fila de invalidação pendente
+    await this.processInvalidationQueue();
+
+    return invalidatedCount;
+  }
+
+  // Cache warming - pré-carregar dados frequentemente acessados
+  async warmup(): Promise<void> {
+    this.logger.log('Starting cache warmup process', 'CACHE');
+
+    const warmupKeys = ['dashboard', 'reports:commercial', 'reports:financial'];
+    
+    for (const key of warmupKeys) {
+      try {
+        await this.get(key, async () => {
+          // Simular busca de dados
+          return { data: 'warmed up', timestamp: Date.now() };
+        }, this.strategies.get(key));
+      } catch (error) {
+        this.logger.error(`Failed to warmup cache for ${key}: ${error.message}`, 'CACHE');
+      }
+    }
+
+    this.logger.log('Cache warmup completed', 'CACHE');
+  }
+
+  // Método para obter estatísticas do cache
+  getCacheStats(): {
+    hitRate: number;
+    missRate: number;
+    memoryUsage: number;
+    totalKeys: number;
+    invalidationQueueSize: number;
+  } {
+    // Em uma implementação real, isso viria do serviço de cache
+    return {
+      hitRate: 0.85, // 85% hit rate
+      missRate: 0.15, // 15% miss rate
+      memoryUsage: this.currentMemoryUsage,
+      totalKeys: this.strategies.size,
+      invalidationQueueSize: this.invalidationQueue.size,
+    };
+  }
+
+  // Limpeza programada do cache
+  private async performCleanup(): Promise<void> {
+    const stats = this.getCacheStats();
+    
+    // Remover chaves de baixa prioridade
+    const lowPriorityKeys = Array.from(this.strategies.entries())
+      .filter(([_, strategy]) => strategy.priority === 'low')
+      .map(([key, _]) => key);
+
+    for (const key of lowPriorityKeys) {
+      await this.invalidate(key);
+    }
+
+    this.logger.log(`Cache cleanup completed. Removed ${lowPriorityKeys.length} low-priority keys`, 'CACHE');
+  }
+
+  // Processar fila de invalidação
+  private async processInvalidationQueue(): Promise<void> {
+    if (this.invalidationQueue.size === 0) return;
+
+    const patterns = Array.from(this.invalidationQueue);
+    this.invalidationQueue.clear();
+
+    for (const pattern of patterns) {
+      try {
+        await this.invalidate(pattern);
+      } catch (error) {
+        this.logger.error(`Failed to process invalidation for pattern ${pattern}: ${error.message}`, 'CACHE');
+      }
+    }
+  }
+
+  // Obter chaves por padrão (simulado)
+  private async getKeysByPattern(pattern: string): Promise<string[]> {
+    // Em uma implementação real, isso usaria Redis ou outro sistema de cache
+    return [
+      `company:*:${pattern}`,
+      `company:${CompanyContext.getCompanyId() || 'anonymous'}:${pattern}`,
+    ];
+  }
+
+  // Iniciar processo de limpeza
+  private startCleanupProcess(): void {
+    setInterval(() => {
+      this.performCleanup();
+    }, this.cleanupInterval);
+  }
+
+  // Método para limpar todo o cache de uma empresa
+  async clearCompanyCache(companyId: string): Promise<void> {
+    const companyPrefix = `company:${companyId}:`;
+    
+    // Obter todas as chaves da empresa
+    const keys = await this.getKeysByPattern(companyPrefix);
+    
+    // Invalidar todas as chaves
+    for (const key of keys) {
+      await this.cacheService.del(key);
+      await this.advancedCache.del(key);
+    }
+
+    this.logger.log(`Cleared all cache for company ${companyId}`, 'CACHE');
+  }
+
+  // Método para obter saúde do cache
+  getCacheHealth(): {
+    status: 'healthy' | 'warning' | 'critical';
+    message: string;
+    details: Record<string, any>;
+  } {
+    const stats = this.getCacheStats();
+    
+    if (stats.hitRate > 0.8 && stats.memoryUsage < this.memoryThreshold) {
+      return {
+        status: 'healthy',
+        message: 'Cache is performing well',
+        details: stats,
+      };
+    } else if (stats.hitRate > 0.6 || stats.memoryUsage < this.memoryThreshold * 1.5) {
+      return {
+        status: 'warning',
+        message: 'Cache performance needs attention',
+        details: stats,
+      };
+    } else {
+      return {
+        status: 'critical',
+        message: 'Cache performance is poor',
+        details: stats,
+      };
+    }
+  }
+}

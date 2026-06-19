@@ -1,19 +1,10 @@
 import useSWR from 'swr';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
-import { getExecutiveDashboard } from '@/lib/api/modules/reports';
+import { getExecutiveDashboard, EnhancedReportResponse, ExecutiveDashboard } from '@/lib/api/modules/reports';
 import { isApiError } from '@/lib/api/errors';
 
-export interface DashboardMetrics {
-  totalLeads: number;
-  totalQuotes: number;
-  conversionRate: number | null;
-  completedOrders: number;
-  totalRevenue: number;
-  totalProfit: number;
-  activeTechs: number;
-  activeWarranties: number;
-}
+export interface DashboardMetrics extends ExecutiveDashboard {}
 
 /**
  * Hook para buscar métricas do dashboard executivo.
@@ -61,7 +52,10 @@ export const useDashboardMetrics = () => {
 
   const { data, error, isLoading, isValidating, mutate } = useSWR<DashboardMetrics>(
     '/reports/dashboard',
-    getExecutiveDashboard,
+    async () => {
+      const response = await getExecutiveDashboard();
+      return response.data;
+    },
     {
       // ✅ Polling menos agressivo: 30s (era 5s → redução de 83% nas requisições)
       refreshInterval: 30_000,

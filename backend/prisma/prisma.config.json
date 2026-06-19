@@ -1,0 +1,8 @@
+{
+  "$schema": "https://unpkg.com/@prisma/cli-monorepo@5.8.1/build/schema/index.json",
+  "datasources": {
+    "db": {
+      "url": env("DATABASE_URL")
+    }
+  }
+}

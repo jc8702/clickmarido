@@ -1,587 +1,329 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-}
-
-model Company {
-  id                    String                 @id @default(uuid())
-  name                  String
-  slug                  String                 @unique
-  cnpj                  String?                @unique
-  phone                 String?
-  email                 String?
-  address               String?
-  city                  String?
-  state                 String?
-  active                Boolean                @default(true)
-  deletedAt             DateTime?
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  logs                  AppLog[]
-  appointments          Appointment[]
-  auditLogs             AuditLog[]
-  clients               Client[]
-  conversations         Conversation[]
-  financialTransactions FinancialTransaction[]
-  followUps             FollowUp[]
-  materialMovements     MaterialMovement[]
-  materials             Material[]
-  quotes                Quote[]
-  roles                 Role[]
-  serviceOrders         ServiceOrder[]
-  services              Service[]
-  technicians           Technician[]
-  users                 User[]
-  warranties            Warranty[]
-  whatsappInstances     WhatsAppInstance[]
-
-  @@index([active])
-  @@map("companies")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id                String             @id @default(uuid())
-  email             String             @unique
-  name              String
-  password          String
-  isActive          Boolean            @default(true)
-  deletedAt         DateTime?
-  companyId         String
-  resetToken        String?
-  resetExpires      DateTime?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  auditLogs         AuditLog[]
-  clientHistories   ClientHistory[]
-  materialMovements MaterialMovement[]
-  sessions          Session[]
-  company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  roles             Role[]             @relation("UserRoles")
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String
+  password    String
+  companyId   String?
+  role        Role     @default(USER)
+  isActive    Boolean  @default(true)
+  resetToken  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@index([companyId])
-  @@index([companyId, isActive])
-  @@index([email])
+  // Relations
+  company     Company? @relation(fields: [companyId], references: [id])
+  serviceOrders ServiceOrder[]
+  reports     Report[]
+  warranties  Warranty[]
+  sessions    Session[]
+  appLogs     AppLog[]
+
   @@map("users")
 }
 
-model Session {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  userId    String
-  userAgent String?
-  ipAddress String?
-  expiresAt DateTime
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  cnpj      String   @unique
+  phone     String?
+  email     String?
+  address   String?
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt DateTime @updatedAt
 
-  @@index([userId])
-  @@index([expiresAt])
-  @@map("sessions")
-}
-
-model Role {
-  id          String       @id @default(uuid())
-  name        String
-  description String?
-  companyId   String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  company     Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  permissions Permission[] @relation("RolePermissions")
-  users       User[]       @relation("UserRoles")
-
-  @@unique([name, companyId])
-  @@index([companyId])
-  @@map("roles")
-}
-
-model Permission {
-  id          String   @id @default(uuid())
-  action      String   @unique
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  roles       Role[]   @relation("RolePermissions")
-
-  @@map("permissions")
-}
-
-model AuditLog {
-  id         String   @id @default(uuid())
-  action     String
-  entityName String
-  entityId   String?
-  oldValues  Json?
-  newValues  Json?
-  userId     String?
-  companyId  String
-  ipAddress  String?
-  userAgent  String?
-  createdAt  DateTime @default(now())
-  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user       User?    @relation(fields: [userId], references: [id])
-
-  @@index([companyId])
-  @@index([entityName, entityId])
-  @@index([createdAt])
-  @@map("audit_logs")
-}
-
-model AppLog {
-  id        String   @id @default(uuid())
-  level     String
-  message   String
-  context   String?
-  stack     String?
-  companyId String?
-  createdAt DateTime @default(now())
-  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  @@index([companyId])
-  @@index([companyId, level])
-  @@index([level])
-  @@map("app_logs")
-}
-
-model Client {
-  id            String          @id @default(uuid())
-  name          String
-  cpf           String?
-  phone         String
-  whatsapp      String?
-  email         String?
-  address       String?
-  cep           String?
-  city          String?
-  leadSource    String?
-  notes         String?
-  lat           Float?
-  lng           Float?
-  companyId     String
-  deletedAt     DateTime?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  appointments  Appointment[]
-  history       ClientHistory[]
-  company       Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  conversations Conversation[]
-  followUps     FollowUp[]
-  quotes        Quote[]
+  // Relations
+  users User[]
   serviceOrders ServiceOrder[]
-  warranties    Warranty[]
+  reports Report[]
+  warranties Warranty[]
+  clients Client[]
+  technicians Technician[]
 
-  @@unique([cpf, companyId])
-  @@index([companyId])
-  @@index([companyId, deletedAt])
-  @@index([companyId, name])
-  @@map("clients")
+  @@map("companies")
 }
 
-model WhatsAppInstance {
-  id            String         @id @default(uuid())
-  companyId     String
-  name          String
-  instanceId    String         @unique
-  status        String         @default("DISCONNECTED")
-  qrCode        String?
-  webhookUrl    String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  conversations Conversation[]
-  company       Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  @@index([companyId])
-  @@map("whatsapp_instances")
-}
-
-model Conversation {
-  id            String           @id @default(uuid())
-  companyId     String
-  instanceId    String
-  contactNumber String
-  contactName   String?
+model ServiceOrder {
+  id            String            @id @default(cuid())
+  title         String
+  description   String
+  status        ServiceOrderStatus @default(OPEN)
+  priority      Priority          @default(MEDIUM)
+  value         Float?
+  estimatedDate DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  completedAt   DateTime?
+  deletedAt     DateTime?
   clientId      String?
-  lastMessageAt DateTime?
-  unreadCount   Int              @default(0)
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  client        Client?          @relation(fields: [clientId], references: [id])
-  company       Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  instance      WhatsAppInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
-  messages      Message[]
+  technicianId  String?
 
-  @@unique([instanceId, contactNumber])
-  @@index([companyId])
-  @@index([companyId, unreadCount])
-  @@index([lastMessageAt])
-  @@map("conversations")
-}
+  // Relations
+  companyId     String
+  company       Company           @relation(fields: [companyId], references: [id])
+  userId        String
+  user          User              @relation(fields: [userId], references: [id])
+  client        Client?           @relation(fields: [clientId], references: [id])
+  technician    Technician?       @relation(fields: [technicianId], references: [id])
+  warranties    Warranty[]
+  quotes        Quote[]
+  payments      Payment[]
 
-model Message {
-  id             String       @id @default(uuid())
-  conversationId String
-  remoteJid      String?
-  fromMe         Boolean
-  messageType    String
-  content        String?
-  mediaUrl       String?
-  mediaMimeType  String?
-  timestamp      DateTime     @default(now())
-  read           Boolean      @default(false)
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  @@index([conversationId])
-  @@index([conversationId, timestamp])
-  @@index([timestamp])
-  @@map("messages")
-}
-
-model ClientHistory {
-  id          String   @id @default(uuid())
-  clientId    String
-  type        String
-  description String
-  createdById String?
-  createdAt   DateTime @default(now())
-  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  createdBy   User?    @relation(fields: [createdById], references: [id])
-
-  @@index([clientId])
-  @@map("client_histories")
+  @@map("service_orders")
 }
 
 model Service {
-  id            String            @id @default(uuid())
-  category      String
-  name          String
-  description   String?
-  value         Float
-  averageTime   Int
-  complexity    String
-  warranty      Int
-  specialty     String?
-  active        Boolean           @default(true)
-  companyId     String
-  deletedAt     DateTime?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  quoteServices QuoteService[]
-  materials     ServiceMaterial[]
-  company       Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  quantity    Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@index([companyId])
-  @@index([companyId, deletedAt])
+  // Relations
+  quotes QuoteService[]
+
   @@map("services")
 }
 
 model Quote {
-  id            String         @id @default(uuid())
-  number        Int
-  companyId     String
-  clientId      String
-  discount      Float          @default(0)
-  travelFee     Float          @default(0)
-  materials     Json?
-  totalValue    Float
-  status        String         @default("Rascunho")
-  signature     String?
-  signedAt      DateTime?
-  deletedAt     DateTime?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  services      QuoteService[]
-  client        Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  company       Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  serviceOrders ServiceOrder[]
+  id          String  @id @default(cuid())
+  value       Float
+  description String
+  status      String  @default("PENDING")
+  totalValue  Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@unique([number, companyId])
-  @@index([companyId])
-  @@index([companyId, status])
-  @@index([companyId, deletedAt])
-  // Índice composto para queries de reports: WHERE companyId AND deletedAt IS NULL
-  // Cobre: groupBy status, findMany com deletedAt: null
-  @@index([companyId, status, deletedAt])
-  @@index([clientId])
-  @@index([status])
+  // Relations
+  serviceOrderId String
+  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id])
+  payments       Payment[]
+  quoteServices  QuoteService[]
+
   @@map("quotes")
 }
 
 model QuoteService {
-  id        String  @id @default(uuid())
-  quoteId   String
-  serviceId String
-  quantity  Int     @default(1)
-  value     Float
-  quote     Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
-  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  quoteId     String
+  quote       Quote    @relation(fields: [quoteId], references: [id])
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id])
+  quantity    Int      @default(1)
+  value       Float
+  createdAt   DateTime @default(now())
 
   @@map("quote_services")
 }
 
-model Technician {
-  id            String         @id @default(uuid())
-  name          String
-  phone         String
-  specialty     String?
-  rating        Float          @default(0)
-  status        String         @default("Ativo")
-  lat           Float?
-  lng           Float?
-  companyId     String
-  deletedAt     DateTime?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  appointments  Appointment[]
-  serviceOrders ServiceOrder[]
-  company       Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+model Payment {
+  id          String     @id @default(cuid())
+  value       Float
+  status      PaymentStatus @default(PENDING)
+  method      PaymentMethod
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
-  @@index([companyId])
-  @@index([companyId, status])
-  @@index([companyId, deletedAt])
-  @@map("technicians")
-}
-
-model ServiceOrder {
-  id           String                  @id @default(uuid())
-  number       Int
-  companyId    String
-  clientId     String
-  technicianId String?
-  quoteId      String?
-  scheduledAt  DateTime?
-  totalValue   Float                   @default(0)
-  status       String                  @default("Pendente")
-  observations String?
-  signature    String?
-  clientRating Int?
-  clientReview String?
-  deletedAt    DateTime?
-  createdAt    DateTime                @default(now())
-  updatedAt    DateTime                @updatedAt
-  appointments Appointment[]
-  followUp     FollowUp?
-  checklists   ServiceOrderChecklist[]
-  materials    ServiceOrderMaterial[]
-  photos       ServiceOrderPhoto[]
-  services     ServiceOrderService[]
-  client       Client                  @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  company      Company                 @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  quote        Quote?                  @relation(fields: [quoteId], references: [id])
-  technician   Technician?             @relation(fields: [technicianId], references: [id])
-  warranties   Warranty[]
-
-  @@unique([number, companyId])
-  @@index([companyId])
-  @@index([companyId, status])
-  // Índice composto para reports: WHERE companyId AND status = 'Concluído' AND deletedAt IS NULL
-  // Evita seq scan com filtro triplo em tabela de alto volume
-  @@index([companyId, status, deletedAt])
-  @@index([companyId, scheduledAt])
-  @@index([clientId])
-  @@index([technicianId])
-  @@index([technicianId, status])
-  @@map("service_orders")
-}
-
-model ServiceOrderService {
-  id             String       @id @default(uuid())
+  // Relations
   serviceOrderId String
-  name           String
-  quantity       Int          @default(1)
-  value          Float
-  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id])
+  quoteId        String?
+  quote          Quote?       @relation(fields: [quoteId], references: [id])
 
-  @@map("service_order_services")
-}
-
-model ServiceOrderMaterial {
-  id             String       @id @default(uuid())
-  serviceOrderId String
-  materialId     String?
-  description    String
-  quantity       Float        @default(1)
-  unitValue      Float        @default(0)
-  material       Material?    @relation(fields: [materialId], references: [id])
-  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
-
-  @@map("service_order_materials")
-}
-
-model ServiceOrderPhoto {
-  id             String       @id @default(uuid())
-  serviceOrderId String
-  url            String
-  type           String
-  createdAt      DateTime     @default(now())
-  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
-
-  @@map("service_order_photos")
-}
-
-model ServiceOrderChecklist {
-  id             String       @id @default(uuid())
-  serviceOrderId String
-  item           String
-  checked        Boolean      @default(false)
-  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
-
-  @@map("service_order_checklist_items")
-}
-
-model FinancialTransaction {
-  id              String    @id @default(uuid())
-  type            String
-  category        String
-  value           Float
-  description     String?
-  transactionDate DateTime
-  dueDate         DateTime?
-  status          String    @default("PENDENTE")
-  paidAt          DateTime?
-  companyId       String
-  deletedAt       DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  company         Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  @@index([companyId])
-  @@index([companyId, type])
-  // Índice composto para aggregate de receitas/despesas: WHERE companyId AND type AND deletedAt IS NULL
-  @@index([companyId, deletedAt])
-  @@index([companyId, type, deletedAt])
-  @@index([companyId, status])
-  @@index([companyId, dueDate])
-  // Índice para relatório financeiro ordenado por data
-  @@index([companyId, transactionDate])
-  @@index([transactionDate])
-  @@map("financial_transactions")
-}
-
-model Appointment {
-  id             String        @id @default(uuid())
-  companyId      String
-  title          String
-  description    String?
-  startTime      DateTime
-  endTime        DateTime
-  clientId       String?
-  technicianId   String?
-  serviceOrderId String?
-  deletedAt      DateTime?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  client         Client?       @relation(fields: [clientId], references: [id])
-  company        Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  serviceOrder   ServiceOrder? @relation(fields: [serviceOrderId], references: [id])
-  technician     Technician?   @relation(fields: [technicianId], references: [id])
-
-  @@index([companyId])
-  @@index([technicianId])
-  @@index([companyId, technicianId, startTime])
-  @@index([startTime, endTime])
-  @@map("appointments")
-}
-
-model Material {
-  id               String                 @id @default(uuid())
-  name             String
-  category         String
-  quantity         Float                  @default(0)
-  minimumStock     Float                  @default(0)
-  averageCost      Float                  @default(0)
-  companyId        String
-  deletedAt        DateTime?
-  createdAt        DateTime               @default(now())
-  updatedAt        DateTime               @updatedAt
-  movements        MaterialMovement[]
-  company          Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  serviceUses      ServiceMaterial[]
-  serviceOrderUses ServiceOrderMaterial[]
-
-  @@unique([name, companyId])
-  @@index([companyId])
-  @@index([companyId, deletedAt])
-  @@map("materials")
-}
-
-model MaterialMovement {
-  id          String   @id @default(uuid())
-  materialId  String
-  type        String
-  quantity    Float
-  unitCost    Float    @default(0)
-  description String?
-  companyId   String
-  createdById String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  createdBy   User?    @relation(fields: [createdById], references: [id])
-  material    Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
-
-  @@index([materialId])
-  @@index([companyId])
-  @@map("material_movements")
-}
-
-model ServiceMaterial {
-  id         String   @id @default(uuid())
-  serviceId  String
-  materialId String
-  quantity   Float    @default(1)
-  material   Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
-  service    Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-
-  @@unique([serviceId, materialId])
-  @@map("service_materials")
+  @@map("payments")
 }
 
 model Warranty {
-  id             String       @id @default(uuid())
-  companyId      String
-  clientId       String
-  serviceOrderId String
-  type           String
-  description    String?
-  startDate      DateTime     @default(now())
-  endDate        DateTime
-  status         String       @default("ACTIVE")
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  client         Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  company        Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+  id          String            @id @default(cuid())
+  title       String
+  description String
+  status      WarrantyStatus     @default(ACTIVE)
+  startDate   DateTime
+  endDate     DateTime
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
-  @@index([companyId])
-  @@index([clientId])
-  @@index([serviceOrderId])
-  @@index([status])
+  // Relations
+  companyId   String
+  company     Company           @relation(fields: [companyId], references: [id])
+  serviceOrderId String
+  serviceOrder ServiceOrder     @relation(fields: [serviceOrderId], references: [id])
+  userId      String
+  user        User              @relation(fields: [userId], references: [id])
+
   @@map("warranties")
 }
 
-model FollowUp {
-  id             String       @id @default(uuid())
-  companyId      String
-  clientId       String
-  serviceOrderId String       @unique
-  sent1Day       Boolean      @default(false)
-  sent1DayAt     DateTime?
-  sent7Days      Boolean      @default(false)
-  sent7DaysAt    DateTime?
-  sent30Days     Boolean      @default(false)
-  sent30DaysAt   DateTime?
-  sent90Days     Boolean      @default(false)
-  sent90DaysAt   DateTime?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  client         Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  company        Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+model Report {
+  id          String   @id @default(cuid())
+  type        ReportType
+  title       String
+  data        Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@index([companyId])
-  @@index([clientId])
-  @@map("follow_ups")
+  // Relations
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("reports")
+}
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  action      String
+  entityType  String
+  entityId    String
+  userId      String?
+  ipAddress   String?
+  userAgent   String?
+  metadata    Json?
+  timestamp   DateTime  @default(now())
+  companyId   String?
+  createdAt   DateTime  @default(now())
+
+  @@map("audit_logs")
+}
+
+model Cache {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("cache")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("sessions")
+}
+
+model AppLog {
+  id          String   @id @default(cuid())
+  level       String
+  message     String
+  metadata    Json?
+  timestamp   DateTime @default(now())
+  userId      String?
+  companyId   String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("app_logs")
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  companyId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  company Company @relation(fields: [companyId], references: [id])
+  serviceOrders ServiceOrder[]
+
+  @@map("clients")
+}
+
+model Technician {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  specialty String?
+  companyId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  company Company @relation(fields: [companyId], references: [id])
+  serviceOrders ServiceOrder[]
+
+  @@map("technicians")
+}
+
+enum Role {
+  USER
+  ADMIN
+  MANAGER
+}
+
+enum ServiceOrderStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_TRANSFER
+  PIX
+  OTHER
+}
+
+enum WarrantyStatus {
+  ACTIVE
+  EXPIRED
+  CLAIMED
+  CANCELLED
+}
+
+enum ReportType {
+  SERVICE_ORDERS
+  PAYMENTS
+  WARRANTIES
+  FINANCIAL
+  PERFORMANCE
 }

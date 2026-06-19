@@ -1,0 +1,83 @@
+import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
+import { LoggerService } from '../../core/logger/logger.service';
+import { PerformanceOptimizationService } from '../services/performance-optimization.service';
+
+@Injectable()
+export class QueryOptimizationMiddleware implements NestMiddleware {
+  constructor(
+    private readonly logger: LoggerService,
+    private readonly performanceService: PerformanceOptimizationService,
+  ) {}
+
+  use(req: Request, res: Response, next: NextFunction): void {
+    const startTime = Date.now();
+    let queryCount = 0;
+    let queryTime = 0;
+
+    // Interceptar queries (simulado - em uma implementação real, isso seria feito via Prisma middleware)
+    const originalQuery = (res.locals as any).__prismaQuery;
+    if (originalQuery) {
+      (res.locals as any).__prismaQuery = async (query: string, args: any[]) => {
+        queryCount++;
+        const queryStart = Date.now();
+        
+        try {
+          const result = await originalQuery(query, args);
+          const queryDuration = Date.now() - queryStart;
+          queryTime += queryDuration;
+          
+          // Logar queries lentas
+          if (queryDuration > 100) {
+            this.logger.warn(
+              `Slow query detected: ${query} (${queryDuration}ms)`,
+              'DATABASE'
+            );
+          }
+          
+          return result;
+        } catch (error) {
+          const queryDuration = Date.now() - queryStart;
+          queryTime += queryDuration;
+          
+          this.logger.error(
+            `Failed query: ${query} (${queryDuration}ms) - ${error.message}`,
+            'DATABASE'
+          );
+          
+          throw error;
+        }
+      };
+    }
+
+    // Monitorar resposta
+    const originalEnd = res.end;
+    res.end = function(chunk?: any, encoding?: any) {
+      const responseTime = Date.now() - startTime;
+      const success = res.statusCode < 400;
+      const cacheHit = (res as any).cacheHit || false;
+
+      // Registrar métricas de performance
+      performanceService.recordRequest(
+        responseTime,
+        success,
+        cacheHit,
+        queryCount,
+        queryTime
+      );
+
+      // Logar performance
+      if (responseTime > 1000) {
+        logger.warn(
+          `Slow request: ${req.method} ${req.url} (${responseTime}ms)`,
+          'PERFORMANCE'
+        );
+      }
+
+      // Chamar método original
+      return originalEnd.call(this, chunk, encoding);
+    };
+
+    next();
+  }
+}

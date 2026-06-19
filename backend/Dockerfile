@@ -1,41 +1,45 @@
-FROM node:20-alpine AS builder
+# Multi-stage build for Click Marido Backend
+FROM node:20-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
 WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci --legacy-peer-deps --only=production
 
-# Root workspace files (lockfile garantido para npm ci)
-COPY package.json package-lock.json ./
+# Build the application
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
 
-# Backend source
-COPY backend/package.json backend/package-lock.json ./backend/
-COPY backend/ ./backend/
-
-# Install com ci usando lockfile da raiz (workspace-aware, reproduzível)
-RUN npm ci --legacy-peer-deps --prefer-offline
-
-WORKDIR /app/backend
+# Generate Prisma client
 RUN npx prisma generate
+
+# Build the application
 RUN npm run build
 
-FROM node:20-alpine AS runner
+# Production image, copy all the files and run next
+FROM base AS runner
 WORKDIR /app
 
-# Root workspace files para instalação reproduzível
-COPY package.json package-lock.json ./
+ENV NODE_ENV production
 
-# Apenas produção
-RUN npm ci --omit=dev --ignore-scripts --legacy-peer-deps
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-# Artifacts do build
-COPY --from=builder /app/backend/dist ./dist
-COPY --from=builder /app/backend/prisma ./prisma
-COPY --from=builder /app/backend/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/backend/node_modules/@prisma/client ./node_modules/@prisma/client
+# Copy built application
+COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 
-ENV NODE_ENV=production
-ENV PORT=3001
+USER nextjs
+
 EXPOSE 3001
 
-USER node
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3001/api/v1/health || exit 1
+ENV PORT 3001
+ENV HOSTNAME "0.0.0.0"
 
 CMD ["node", "dist/main"]

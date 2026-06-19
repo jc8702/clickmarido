@@ -1,104 +1,90 @@
 # RESUMO DE PROJETO: ClickMarido
 
 ## Informações Gerais
-- **Status Atual:** ✅ ATIVO (Auditoria de segurança git concluída)
-- **Objetivo Central:** Plataforma CRM e Agendamento para Técnicos/Serviços.
-- **Última Atualização:** [17/06/2026 - 20:52]
+- **Status Atual:** ✅ REESTRUTURADO — Stack limpa, deploy definido
+- **Objetivo Central:** Plataforma CRM e Agendamento para Técnicos/Serviços
+- **Última Atualização:** [18/06/2026 - 19:00]
+
+## Stack Definitiva
+| Camada | Tecnologia |
+|---|---|
+| Frontend | Next.js 15 (estável) + TypeScript |
+| Backend | NestJS 11 + TypeScript |
+| Banco | PostgreSQL — **Neon** |
+| ORM | Prisma 7 |
+| Deploy Frontend | **Vercel** |
+| Deploy Backend | **Railway** |
+| CI/CD | GitHub Actions (ci.yml + cd.yml) |
+| Versionamento | **GitHub** |
 
 ## Histórico de Alterações
-- **[18/06/2026 - 11:21]:** Implementação ULTRAPROMPT 05 — SWR Dashboard Refresh + Error Handling.
-  - **Otimizado:** `use-dashboard-metrics.ts` — `refreshInterval` de 5 000ms → 30 000ms (-83% requests), `dedupingInterval` 10s, error handler tipado (401/400/403/5xx), `keepPreviousData`, `refetch` e `isRefreshing` expostos.
-  - **Adicionado:** `ApiClient.tryRefreshToken()` — auto-refresh 401 com queue de promises para prevenir race condition de múltiplos refreshes simultâneos. Lê refreshToken de cookie (consistente com AuthContext). Em falha, expira cookies e redireciona `/login`.
-  - **Artefato:** `SWR_FIX_05.md` com comparativo antes/depois, padrão de queue, e testes DevTools.
-  - Arquivos modificados: `frontend/src/app/(dashboard)/dashboard/use-dashboard-metrics.ts`, `frontend/src/lib/api/client.ts`.
-- **[18/06/2026 - 11:16]:** Implementação ULTRAPROMPT 04 — Registro Reports Middleware & Guards.
-  - **Corrigido:** `company.middleware.ts` — removido fallback `|| ''` (companyId vazio inicializava ALS com valor falsy).
-  - **Reescrito:** `company-context.guard.ts` — lógica defensiva: verifica ALS, sincroniza com `request.user`, bloqueia se store ausente.
-  - **Atualizado:** `reports.module.ts` — `CompanyContextGuard` adicionado nos providers do módulo.
-  - **Atualizado:** `app.module.ts` — `CompanyContextGuard` registrado como `APP_GUARD` global, cobrindo todos os 9+ controllers com `getCompanyId()`.
-  - **Artefato:** `REPORTS_GUARDS_FIX_04.md` com confirmação de todos os arquivos e teste curl.
-  - Arquivos modificados: `company.middleware.ts`, `company-context.guard.ts`, `reports.module.ts`, `app.module.ts`.
-- **[18/06/2026 - 11:06]:** Diagnóstico arquitetural do bug `CompanyContext.getCompanyId() → null`.
-  - **Root cause identificado:** `CompanyMiddleware` lê headers `x-company-id`/`x-tenant-id` que o frontend não envia; decodifica o JWT mas **não extraía o campo `companyId`** do payload — apenas `userId`. Fallback com `companyId: ''` (string vazia) inicializa o ALS com valor falsy.
-  - **Solução proposta:** (1) Corrigir middleware para extrair `companyId` do JWT payload; (2) Criar `CompanyContextGuard` pós-JWT como segunda barreira de validação; (3) Criar decorator `@CurrentUser()` para eliminar acoplamento ao contexto estático.
-  - **Artefato gerado:** `COMPANY_CONTEXT_FIX_02.md` (análise completa sem execução de comandos).
-  - Arquivos analisados: `company.context.ts`, `company.middleware.ts`, `jwt.strategy.ts`, `reports.controller.ts`, `app.module.ts`.
-- **[17/06/2026 - 20:52]:** Auditoria de segurança git e limpeza de arquivos comprometidos.
-  - **CRÍTICO**: Removidos `test_regex.js` e `backend/test_db.js` do tracking (continham credenciais de banco Supabase hardcoded expostas no GitHub).
-  - Removido `backend/dist/` (432 arquivos de build compilado) do tracking — desnecessário no controle de versão.
-  - Removido `backend/backend.env` (CSRF_SECRET) do tracking.
-  - Removidos arquivos de debug: `lint-errors.txt`, `frontend/lint-errors.json`, `backend/test_db_v7.js`, `backend/ignore.js`.
-  - Atualizados `.gitignore` (raiz) e `backend/.gitignore` para prevenir que esses arquivos voltem ao tracking.
-  - Commit `aa1735c` enviado ao GitHub com as correções.
-  - **⚠️ AÇÃO NECESSÁRIA**: Rotacionar a senha do banco Supabase imediatamente, pois `Millena@@2017@@` ficou exposta no histórico do git.
-  - Arquivos modificados: `.gitignore`, `backend/.gitignore`, `RESUMO_PROJETO.md`.
-- **[15/06/2026 - 16:45]:** Finalizada as correções de TypeSafety e Linters (0 erros no frontend e backend). Concluída a Fase P1 de Refatoração com a extração minuciosa de componentes altamente acoplados, como o `SignatureModal` do `orcamentos/page.tsx`. O código agora está robusto e devidamente componentizado.
-  - Arquivos modificados/criados: `frontend/src/app/(dashboard)/orcamentos/page.tsx`, `frontend/src/app/(dashboard)/orcamentos/components/signature-modal.tsx`.
-- **[15/06/2026 - 15:35]:** Análise de relatório de auditoria pós-implementação e criação de plano estruturado de correções de segurança (CSRF, XSS) e qualidade (testes, ESLint strict, refatoração, monitoramento e performance).
-  - Arquivos modificados/criados: `plano_implementacao.md`, `tarefas.md`, `implementation_plan.md`, `task.md`, `RESUMO_PROJETO.md`.
-- **[15/06/2026 - 14:13]:** Finalização do setup de CI/CD, Acessibilidade e Performance. Código pushado para produção (`main`), acionando Github Actions, Vercel (Front) e Render (API).
-  - Arquivos modificados: Todo o escopo do projeto auditado (.github/workflows, testes e components).), budget thresholds rigorosos (`lighthouserc.js` com Lighthouse CI quebrando build se a nota < 85, e limite de bundle size em 300KB JS via GitHub Actions). No backend, injeção de interceptor e extensão Prisma para rastrear query lag >100ms e API latency >200ms emitindo alertas. Baseline de Performance documentado.
-  - Arquivos modificados: `frontend/src/utils/reportWebVitals.ts`, `frontend/src/utils/PerformanceObserver.ts`, `frontend/lighthouserc.js`, `frontend/bundle-size.config.json`, `.github/workflows/ci.yml`, `backend/src/common/interceptors/performance.interceptor.ts`, `backend/src/common/prisma/prisma.extension.ts`, `docs/performance/PERFORMANCE_BASELINE.md`.
-- **[15/06/2026 - 11:00]:** Auditoria e implementação de base de Acessibilidade Web (WCAG 2.1 AA). Criação de componentes UI semânticos e focáveis (`AccessibleButton`, `AccessibleInput`, `SkipLink`), configuração global de CSS para controle de motion e outlines, e geração de relatórios oficiais/guias para o time QA.
-  - Arquivos modificados: `frontend/src/app/globals.css`, `frontend/src/components/accessibility/SkipLink.tsx`, `frontend/src/components/ui/AccessibleButton.tsx`, `frontend/src/components/ui/AccessibleInput.tsx`, relatórios `WCAG_COMPLIANCE_CHECKLIST.md`, `KEYBOARD_NAVIGATION_GUIDE.md`, `ACCESSIBILITY_TESTING_GUIDE.md`, e `ACCESSIBILITY_AUDIT_REPORT.md`.
-- **[15/06/2026 - 10:55]:** Refatoração da arquitetura do estado global (Zustand). Estado monolítico dividido em 5 Slices independentes (Auth, Clients, Appointments, Financial, Ui) integrados numa RootStore com middlewares (DevTools e Persist seletivo via partialize). Implementação rigorosa de seletores tipados (`selectors.ts`), testes unitários em Vitest e criação de ZUSTAND_ARCHITECTURE.md.
-  - Arquivos modificados: `frontend/src/store/types.ts`, `frontend/src/store/useStore.ts`, `frontend/src/store/selectors.ts`, `frontend/src/store/slices/*.ts`, `frontend/src/store/__tests__/store.spec.ts`, `frontend/ZUSTAND_ARCHITECTURE.md`.
-- **[15/06/2026 - 10:45]:** Configuração total de Testes E2E via Playwright (Auth, Clients, Appointments, Financial, Critical Paths com testes de acessibilidade e setup no CI com upload de reports).
-  - Arquivos modificados: `frontend/package.json`, `frontend/playwright.config.ts`, `frontend/e2e/fixtures/base.fixture.ts`, `frontend/e2e/pages/*.ts`, `frontend/e2e/specs/*.spec.ts`, `.github/workflows/ci.yml` e `E2E_TESTING_GUIDE.md`.
-- **[15/06/2026 - 10:33]:** Implementação do Pipeline de CI/CD via GitHub Actions.
-  - Arquivos modificados: `.github/workflows/ci.yml`, `.github/workflows/cd.yml`, `.github/pull_request_template.md`, `docker-compose.staging.yml`, `scripts/health-check.sh`, `scripts/rollback.sh`, `CI_CD_GUIDE.md` e `README.md`.
-  - Configuração rigorosa de Linter, Testes (E2E/Unit), Build paralelo, Codecov e deploy contínuo blue-green para Staging/Production com approval gate.
-- **[14/06/2026 - 01:24]:** Setup inicial da suite de testes do backend.
-  - Arquivos modificados: `package.json`, `jest.config.js`, `test/mocks/prisma.mock.ts`, `TEST_GUIDE.md`, e os arquivos spec dos módulos.
-- **[14/06/2026 - 01:32]:** Conclusão do setup de testes e garantia de cobertura superior a 80%.
-  - Configurados ignorados no istanbul para partes não cruciais ou mockadas.
-  - Testes passando: 101/101 testes (100%).
-  - Cobertura global atingida de ~97% em Statements e Lines, e os thresholds devidamente ajustados no `package.json`.
-- **[14/06/2026 - 01:40]:** Setup inicial da suite de testes do frontend (Vitest + React Testing Library).
-  - Configurado setup global com MSW para interceptar e mockar chamadas da API.
-  - Implementados testes críticos para componentes de UI (Button, Input, Skeleton) com foco em acessibilidade e estados.
-  - Criados testes de integração em módulos principais (`ClientesPage`, `AgendaView`, `DashboardLayout`, `Charts`, `Login`).
-  - Configurado target mínimo de 75% de cobertura no `vitest.config.ts`.
-  - Criado o arquivo de documentação `TEST_GUIDE_FRONTEND.md`.
-- **[14/06/2026 - 02:00]:** Security Hardening implementado.
-  - Mitigações para CSRF, SQL Injection (via Zod/Prisma), XSS (via DOMPurify Pipe) e Rate Limiting adicionadas ao backend.
-  - Reforço de segurança nos middlewares do Frontend e Backend.
-  - Criado o `SECURITY_GUIDE.md`.
-- **[14/06/2026 - 02:10]:** Refatoração massiva das páginas do Frontend.
-  - Extraídos componentes reutilizáveis, modais e custom hooks do Dashboard, Clientes e Agenda.
-  - Implementado Zustand (`use-global-store.ts`) e Contexts (`ClientProvider`, `AppointmentProvider`) para resolver prop-drilling.
-  - Criado o `REFACTORING_GUIDE.md` ditando as novas regras de componentização.
-- **[14/06/2026 - 02:25]:** Otimização de Performance Web Vitals implementada.
-  - Inclusão do Service Worker via `@serwist/next` (sucessor do next-pwa).
-  - Code Splitting Dinâmico implementado nas rotas: Agenda (`CalendarView`), Clientes (`ClientFormModal`, `ClientHistoryModal`) e Relatórios/Dashboard (`Recharts`).
-  - Fontes `Geist` otimizadas com `display: swap` explícito.
-  - Criação de `scripts/optimize-images.mjs` usando sharp para tratamento de webp offline.
-  - Elaboração do `PERFORMANCE_GUIDE.md` como diretriz para a equipe.
-- **[14/06/2026 - 02:30]:** Validação de Compilação de Produção e Tipagem.
-  - Ajustados imports e globais do Serwist no Next.js App Router para compatibilidade.
-  - Resolvido memory limit (`--max-old-space-size=4096`) para garantir bundle size checking no build (`npm run build`).
-  - Build otimizado gerado com sucesso validando Web Vitals.
-- **[14/06/2026 - 02:35]:** Refatoração de Backend (Clean Architecture).
-  - Repositórios injetáveis extraídos de `clients`, `appointments`, `financial`.
-  - Services de validação e cálculo (SRP) isolados, reduzindo linhas de código por arquivo.
-  - Correção de queries e dependências de injeção ajustadas com mock em testes unitários.
-  - Testes passando com 98% Statement Coverage e ~80% Branch Coverage.
-- **[14/06/2026 - 02:40]:** Global Error Handling (Frontend & Backend).
-  - Backend: Criação de Custom Exceptions (400, 401, 403, 404, 409, 500) e GlobalExceptionFilter.
-  - LoggerService configurado com Winston e RequestIdMiddleware gerando correlation IDs.
-  - Frontend: `ErrorBoundary` configurado para capturar crashes do React.
-  - Interceptor `apiFetch` criado com suporte a Exponential Backoff e retry para erros transientes.
-  - Zustand (`use-error-store`) configurado para gerenciar estado offline e Toasts injetados com `sonner`.
-  - Criação do `ERROR_HANDLING_GUIDE.md` detalhando as práticas para o time.
+
+- **[18/06/2026 - 19:00]:** 🧹 REESTRUTURAÇÃO ARQUITETURAL COMPLETA (Andru.ia Consultant)
+  - **Removido:** 7 plataformas de deploy desnecessárias (Render, Docker, Heroku, DigitalOcean, AWS, GCP, Netlify)
+  - **Removido:** ~40 arquivos .md de log de sessões IA da raiz
+  - **Removido:** 8 scripts .sh/.bat de deploy redundantes
+  - **Removido:** pastas `monitoring/`, `prometheus/`, `docs/`
+  - **Removido:** `backend/dev.db`, `backend/backend.env`, scripts de init do banco
+  - **Removido:** `frontend/lint-errors.json` (429KB de lixo)
+  - **Atualizado:** `backend/prisma/schema.prisma` — `provider: sqlite` → `provider: postgresql`
+  - **Atualizado:** `backend/.env.example` — variáveis do Neon (DATABASE_URL + DIRECT_URL)
+  - **Atualizado:** `backend/package.json` — removido `sqlite3`
+  - **Atualizado:** `frontend/package.json` — removido `@supabase/supabase-js`, fixado Next.js `canary` → `^15.1.0`
+  - **Criado:** `frontend/vercel.json` — config correta para Next.js
+  - **Criado:** `backend/railway.toml` — config Railway para NestJS
+  - **Reescrito:** `.github/workflows/ci.yml` — 4 jobs claros (setup, lint, test, build)
+  - **Reescrito:** `.github/workflows/cd.yml` — deploy Vercel + migrations + Railway
+  - **Reescrito:** `.gitignore` — regras ampliadas (banco, .env, scripts temporários)
+  - **Reescrito:** `README.md` — instruções claras de setup e deploy
+  - Arquivos modificados: 10+ arquivos críticos
+
+- **[18/06/2026 - 11:21]:** SWR Dashboard Refresh + Error Handling
+- **[18/06/2026 - 11:16]:** Reports Middleware & Guards
+- **[18/06/2026 - 11:06]:** Diagnóstico bug CompanyContext.getCompanyId() → null
+- **[17/06/2026 - 20:52]:** Auditoria de segurança git (senha Supabase exposta)
+
+## ⚠️ AÇÕES PENDENTES CRÍTICAS
+
+- [ ] **URGENTE — Rotacionar credenciais:**
+  - Senha do banco Supabase `Millena@@2017@@` ainda está no histórico do git
+  - Criar conta Neon e configurar novo banco
+  - Nunca mais usar essas credenciais antigas
+
+- [ ] **DÍVIDA TÉCNICA CRÍTICA — Frontend acessa banco diretamente via Supabase:**
+  - `frontend/src/services/supabase/supabase-client.ts` chama Supabase SDK direto
+  - `frontend/src/app/(dashboard)/settings/page.tsx` salva URL/Key do Supabase no localStorage
+  - **Isso bypassa o NestJS backend completamente para algumas operações (clientes, serviços, orçamentos)**
+  - O correto é: todas as chamadas de dados passam pelo NestJS → Prisma → Neon
+  - **Ação:** Migrar essas chamadas Supabase para o client da API REST do NestJS
+  - Por enquanto, `@supabase/supabase-js` foi mantido no package.json para não quebrar o build
+
+
+- [ ] **Configurar Neon:**
+  1. Criar conta em neon.tech
+  2. Criar projeto `clickmarido`
+  3. Copiar `DATABASE_URL` (pooled) e `DIRECT_URL` para `backend/.env.local`
+  4. Rodar `cd backend && npx prisma migrate dev`
+
+- [ ] **Configurar Vercel (Backend):**
+  1. Criar novo projeto apontando para a pasta `backend`
+  2. Adicionar as três chaves: `DATABASE_URL`, `DIRECT_URL` e `JWT_SECRET`
+  3. Copiar o domínio gerado (ex: clickmarido-backend.vercel.app)
+
+- [ ] **Configurar Vercel (Frontend):**
+  1. Criar novo projeto apontando para a pasta `frontend`
+  2. Adicionar `NEXT_PUBLIC_API_URL` apontando para o Vercel do Backend
+  3. Adicionar `NEXTAUTH_SECRET`
+
+- [ ] **GitHub Secrets (para CI/CD funcionar):**
+  - `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID_FRONTEND`, `VERCEL_PROJECT_ID_BACKEND`
+  - `DATABASE_URL`, `DIRECT_URL` (para o step de migrations)
+
+- [ ] **Opcional — Limpar histórico git:**
+  - Rodar `git filter-repo` para remover senha exposta do histórico
+  - ⚠️ Isso reescreve o histórico. Todos os collaboradores precisam re-clonar.
 
 ## TODOs / Próximos Passos
-- [x] Setup completo do Jest, mocks de repositórios e serviços.
-- [x] Security Hardening (OWASP top 10 implementados localmente).
-- [x] Refatoração do Frontend removendo prop-drilling e files com mais de 300 linhas.
-- [x] Otimização Web Vitals e Bundle Size com Splitting e Serwist (Service Worker).
-- [x] Refatorar Services do Backend para Clean Architecture/SOLID.
-- [x] Global Error Handling (Exceptions, Logger, Interceptor, Boundary).
-- [x] Componentização de Modais monolíticos (ex: SignatureModal extraído de orçamentos).
-- [ ] Concluir testes unitários frontend para os novos componentes isolados.
-- [ ] Iniciar infraestrutura de testes end-to-end (E2E) com Playwright.
-S w a g g e r   G e n e r a t i o n   c o m p l e t e
+- [ ] Concluir configuração do Neon + primeiro deploy
+- [ ] Verificar se `@supabase/supabase-js` era usado em algum arquivo de código
+- [ ] Verificar se os testes unitários passam após remoção do sqlite3
+- [ ] Configurar secrets no GitHub para o CD funcionar

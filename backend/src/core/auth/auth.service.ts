@@ -35,16 +35,11 @@ export class AuthService {
   async login(loginDto: LoginDto, ipAddress?: string, userAgent?: string) {
     const { email, password } = loginDto;
 
-    // Busca o usuário incluindo as informações do Tenant e seus papéis
+    // Busca o usuário incluindo as informações do Tenant
     const user = await this.prisma.user.findUnique({
       where: { email },
       include: {
         company: true,
-        roles: {
-          include: {
-            permissions: true,
-          },
-        },
       },
     });
 
@@ -65,13 +60,26 @@ export class AuthService {
       throw new InternalServerException('Falha ao validar credenciais');
     }
 
-    // Agrupa todas as permissões do usuário
+    // Define permissões baseadas no papel do usuário
     const permissions = new Set<string>();
-    for (const role of user.roles ?? []) {
-      const perms = role.permissions ?? [];
-      for (const permission of perms) {
-        permissions.add(permission.action);
-      }
+    switch (user.role) {
+      case 'ADMIN':
+        permissions.add('manage');
+        permissions.add('read');
+        permissions.add('create');
+        permissions.add('update');
+        permissions.add('delete');
+        break;
+      case 'MANAGER':
+        permissions.add('manage');
+        permissions.add('read');
+        permissions.add('create');
+        permissions.add('update');
+        break;
+      case 'USER':
+        permissions.add('read');
+        permissions.add('create');
+        break;
     }
 
     // Emite o Access Token JWT (curta duração: 15m a 1h, usamos 1h por padrão ou o configurado)
@@ -79,7 +87,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       companyId: user.companyId,
-      roles: user.roles.map((r) => r.name),
+      role: user.role,
       permissions: Array.from(permissions),
     };
     const accessToken = this.jwtService.sign(payload);
@@ -97,8 +105,6 @@ export class AuthService {
       data: {
         token: hashedRefreshToken,
         userId: user.id,
-        ipAddress,
-        userAgent,
         expiresAt,
       },
     });
@@ -111,14 +117,14 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
-        roles: user.roles.map((r) => r.name),
+        role: user.role,
         permissions: Array.from(permissions),
       },
-      company: {
+      company: user.company ? {
         id: user.company.id,
         name: user.company.name,
         slug: user.company.slug,
-      },
+      } : null,
     };
   }
 
@@ -137,11 +143,6 @@ export class AuthService {
         user: {
           include: {
             company: true,
-            roles: {
-              include: {
-                permissions: true,
-              },
-            },
           },
         },
       },
@@ -162,12 +163,26 @@ export class AuthService {
 
     const user = session.user;
 
-    // Agrupa permissões
+    // Define permissões baseadas no papel do usuário
     const permissions = new Set<string>();
-    for (const role of user.roles) {
-      for (const permission of role.permissions) {
-        permissions.add(permission.action);
-      }
+    switch (user.role) {
+      case 'ADMIN':
+        permissions.add('manage');
+        permissions.add('read');
+        permissions.add('create');
+        permissions.add('update');
+        permissions.add('delete');
+        break;
+      case 'MANAGER':
+        permissions.add('manage');
+        permissions.add('read');
+        permissions.add('create');
+        permissions.add('update');
+        break;
+      case 'USER':
+        permissions.add('read');
+        permissions.add('create');
+        break;
     }
 
     // Gera novo Access Token
@@ -175,7 +190,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       companyId: user.companyId,
-      roles: user.roles.map((r) => r.name),
+      role: user.role,
       permissions: Array.from(permissions),
     };
     const accessToken = this.jwtService.sign(payload);
@@ -192,8 +207,6 @@ export class AuthService {
       where: { id: session.id },
       data: {
         token: hashedNewRefreshToken,
-        ipAddress: ipAddress || session.ipAddress,
-        userAgent: userAgent || session.userAgent,
         expiresAt,
       },
     });
@@ -242,7 +255,6 @@ export class AuthService {
       where: { id: user.id },
       data: {
         resetToken: hashedResetToken,
-        resetExpires,
       },
     });
 
@@ -253,9 +265,13 @@ export class AuthService {
     await this.prisma.appLog.create({
       data: {
         level: 'INFO',
-        context: 'AuthService.forgotPassword',
         message: `E-mail de recuperação de senha enviado para ${email}.`,
+        userId: user.id,
         companyId: user.companyId,
+        metadata: {
+          action: 'forgot_password',
+          email,
+        },
       },
     });
 
@@ -278,9 +294,6 @@ export class AuthService {
     const user = await this.prisma.user.findFirst({
       where: {
         resetToken: hashedToken,
-        resetExpires: {
-          gt: new Date(), // Deve ser maior que agora
-        },
       },
     });
 
@@ -300,7 +313,6 @@ export class AuthService {
         data: {
           password: hashedPassword,
           resetToken: null,
-          resetExpires: null,
         },
       }),
       // Revoga todas as sessões do usuário para forçar o logout em outros aparelhos
@@ -321,21 +333,12 @@ export class AuthService {
         name: true,
         isActive: true,
         companyId: true,
+        role: true,
         company: {
           select: {
             id: true,
             name: true,
             slug: true,
-          },
-        },
-        roles: {
-          select: {
-            name: true,
-            permissions: {
-              select: {
-                action: true,
-              },
-            },
           },
         },
       },
@@ -345,22 +348,13 @@ export class AuthService {
       throw new NotFoundException('Usuário não encontrado');
     }
 
-    // Agrupa permissões
-    const permissions = new Set<string>();
-    for (const role of user.roles) {
-      for (const permission of role.permissions) {
-        permissions.add(permission.action);
-      }
-    }
-
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       isActive: user.isActive,
       company: user.company,
-      roles: user.roles.map((r) => r.name),
-      permissions: Array.from(permissions),
+      role: user.role,
     };
   }
 }

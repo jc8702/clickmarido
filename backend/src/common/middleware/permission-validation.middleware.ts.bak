@@ -1,0 +1,80 @@
+import { Injectable, NestMiddleware, MiddlewareFunction } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
+import { PrismaService } from '../../core/prisma/prisma.service';
+import { CompanyContext } from '../company/company.context';
+
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+    companyId: string;
+  };
+}
+
+@Injectable()
+export class PermissionValidationMiddleware implements NestMiddleware {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async use(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const companyId = CompanyContext.getCompanyId();
+      
+      if (!companyId) {
+        return next();
+      }
+
+      // Log access pattern for security monitoring
+      await this.logAccessPattern(req, companyId);
+      
+      next();
+    } catch (error) {
+      console.error('Permission validation error:', error);
+      next();
+    }
+  }
+
+  private async logAccessPattern(req: Request, companyId: string) {
+    const userId = CompanyContext.getUserId();
+    const { method, url, ip, headers } = req;
+    
+    // Extract resource type from URL
+    const resourceType = this.extractResourceType(url);
+    
+    // Log access pattern for security monitoring
+    await this.prisma.accessPatternLog.create({
+      data: {
+        userId: userId || null,
+        companyId,
+        resourceType,
+        method,
+        endpoint: url,
+        ipAddress: ip,
+        userAgent: headers['user-agent'],
+        accessTime: new Date(),
+      },
+    }).catch(err => {
+      console.error('Failed to log access pattern:', err);
+    });
+  }
+
+  private extractResourceType(url: string): string {
+    const parts = url.split('/');
+    const lastPart = parts[parts.length - 1];
+    
+    // Map endpoint to resource type
+    const typeMap: Record<string, string> = {
+      'dashboard': 'DASHBOARD',
+      'commercial': 'COMMERCIAL_REPORT',
+      'operational': 'OPERATIONAL_REPORT',
+      'financial': 'FINANCIAL_REPORT',
+      'export': 'EXPORT',
+      'clients': 'CLIENTS',
+      'technicians': 'TECHNICIANS',
+      'service-orders': 'SERVICE_ORDERS',
+      'quotes': 'QUOTES',
+      'financial-transactions': 'FINANCIAL_TRANSACTIONS',
+    };
+    
+    return typeMap[lastPart] || 'UNKNOWN_RESOURCE';
+  }
+}
